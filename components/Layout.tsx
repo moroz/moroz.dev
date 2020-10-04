@@ -28,8 +28,7 @@ const Layout = ({ children, title = "This is the default title" }: Props) => (
     </header>
     {children}
     <footer>
-      <hr />
-      <span>I'm here to stay (Footer)</span>
+      <span>&copy; 2020 by Karol Moroz.</span>
     </footer>
   </div>
 );
