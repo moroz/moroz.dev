@@ -13,9 +13,8 @@ const Layout = ({ children, title = "This is the default title" }: Props) => (
       <title>{title}</title>
       <meta charSet="utf-8" />
       <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-      {/* <link rel="stylesheet" href="https://use.typekit.net/obo3mnv.css" /> */}
       <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet"
       />
     </Head>

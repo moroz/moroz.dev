@@ -5,13 +5,20 @@ const IndexPage = () => (
   <Layout title="Home | Next.js + TypeScript Example">
     <div className="landing">
       <div className="landing__hero">
-        <h1>Hello world.</h1>
-        <p>My name is Karol Moroz.</p>
-        <p>
-          I am a freelance software developer based in Kaohsiung, Taiwan,
-          specializing in Web application development using Elixir and React.js.
-        </p>
+        <p>Hello world. My name is</p>
+        <h1>Karol Moroz.</h1>
+        <h2>I build modern Web applications.</h2>
+        <div className="landing__description">
+          <p>
+            I am a software developer from Poland, currently living in
+            Kaohsiung,&nbsp;Taiwan (that&apos;s the city in the background).
+          </p>
+        </div>
+        <Link href="/contact">
+          <a className="landing__cta">Get in touch</a>
+        </Link>
       </div>
+      <img src="/km.png" alt="Karol Moroz" className="landing__human" />
     </div>
   </Layout>
 );
