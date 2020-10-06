@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import Head from "next/head";
 import Header from "./Header";
+import Footer from "./Footer";
 
 type Props = {
   children?: ReactNode;
@@ -26,9 +27,7 @@ const Layout = ({ children, title }: Props) => (
     </Head>
     <Header />
     {children}
-    <footer>
-      <span>&copy; 2020 by Karol Moroz.</span>
-    </footer>
+    <Footer />
   </div>
 );
 
