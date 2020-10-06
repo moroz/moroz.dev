@@ -8,6 +8,27 @@
   top: 0
   color: #fff
   z-index: 10
+  padding: 0 2rem
+  box-sizing: border-box
+
+  &__menu
+    display: flex
+
+    &:hover
+      a:not(:hover)
+        opacity: .5
+
+  &__branding
+    font-size: 2em
+
+  &__navlink, &__cta
+    transition: .2s ease-in-out
+    padding: 0 1em
+
+  &__cta
+    height: 50px
+    line-height: 50px
+    align-self: center
 
   a
     color: inherit

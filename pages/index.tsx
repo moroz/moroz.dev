@@ -15,7 +15,7 @@ const IndexPage = () => (
           </p>
         </div>
         <Link href="/contact">
-          <a className="landing__cta">Get in touch</a>
+          <a className="button landing__cta">Get in touch</a>
         </Link>
       </div>
       <img src="/km.png" alt="Karol Moroz" className="landing__human" />

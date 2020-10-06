@@ -16,10 +16,20 @@ const NavLink = ({ href, children }: NavLinkProps) => {
 const Header = () => {
   return (
     <header className="header">
-      <div className="header__branding">moroz.dev</div>
+      <div className="header__branding">
+        <Link href="/">
+          <a className="header__branding__logo">moroz.dev</a>
+        </Link>
+      </div>
       <nav className="header__menu">
         <NavLink href="/">Home</NavLink>
+        <NavLink href="/projects">Projects</NavLink>
+        <NavLink href="/blog">Blog</NavLink>
+        <NavLink href="/videos">Videos</NavLink>
         <NavLink href="/contact">Contact</NavLink>
+        <Link href="/">
+          <a className="header__cta button">R&eacute;sum&eacute;</a>
+        </Link>
       </nav>
     </header>
   );
