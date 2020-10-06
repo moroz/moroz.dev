@@ -9,7 +9,7 @@ type Props = {
 };
 
 const Layout = ({ children, title }: Props) => (
-  <div>
+  <div className="layout">
     <Head>
       <title>
         {title ? `${title.toLowerCase()} | moroz.dev` : "moroz.dev"}
@@ -26,7 +26,9 @@ const Layout = ({ children, title }: Props) => (
       /> */}
     </Head>
     <Header />
-    {children}
+    <main role="main" id="main">
+      {children}
+    </main>
     <Footer />
   </div>
 );

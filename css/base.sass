@@ -9,3 +9,20 @@ body
   font-family: $font-sans
   font-size: 1.25rem
   font-weight: 500
+
+.layout
+  display: flex
+  min-height: 100vh
+  flex-direction: column
+
+#main
+  flex: 1
+
+.page-title
+  +fluid-type(320px, 1600px, 24px, 55px)
+  margin-top: $header-height
+  text-align: center
+
+
+.container
+  padding: 0 calc(50vw - #{$container-width / 2})
