@@ -2,7 +2,7 @@ import Link from "next/link";
 import Layout from "../layout/Layout";
 
 const IndexPage = () => (
-  <Layout title="home">
+  <Layout title="home" className="layout--white-header">
     <div className="landing">
       <div className="landing__hero">
         <p>Hello world. My name is</p>

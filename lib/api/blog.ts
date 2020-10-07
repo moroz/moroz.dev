@@ -10,10 +10,11 @@ export function getPostData(filename: string): Post {
   const fileContents = fs.readFileSync(resolvedFilename, "utf8");
   const parsed = matter(fileContents);
   const { data, content } = parsed;
+  const date = new Date(data.date).toISOString();
   return {
     slug: data.slug,
     title: data.title,
-    date: String(data.date),
+    date,
     content: content,
     filename: resolvedFilename
   };
@@ -21,4 +22,8 @@ export function getPostData(filename: string): Post {
 
 export function getAllSlugs() {
   return fs.readdirSync(postsDirectory).map((name) => basename(name, ".md"));
+}
+
+export function getAllPostData() {
+  return getAllSlugs().map(getPostData);
 }

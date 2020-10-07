@@ -6,10 +6,11 @@ import Footer from "./Footer";
 type Props = {
   children?: ReactNode;
   title?: string;
+  className?: string;
 };
 
-const Layout = ({ children, title }: Props) => (
-  <div className="layout">
+const Layout = ({ children, title, className }: Props) => (
+  <div className={`layout ${className || ""}`}>
     <Head>
       <title>
         {title ? `${title.toLowerCase()} | moroz.dev` : "moroz.dev"}
