@@ -21,7 +21,10 @@ export function getPostData(filename: string): Post {
 }
 
 export function getAllSlugs() {
-  return fs.readdirSync(postsDirectory).map((name) => basename(name, ".md"));
+  return fs
+    .readdirSync(postsDirectory)
+    .filter((fn) => fn.match(/\.md$/))
+    .map((name) => basename(name, ".md"));
 }
 
 export function getAllPostData() {
