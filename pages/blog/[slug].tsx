@@ -1,7 +1,7 @@
 import { GetStaticPaths, GetStaticProps } from "next";
 import { Post } from "../../interfaces";
 import Layout from "../../layout/Layout";
-import { getAllSlugs, getPostData } from "../../lib/api/blog";
+import { getAllPostSlugs, getPostData } from "../../lib/api/blog";
 import { formatMarkdown } from "../../lib/api/markdown";
 
 interface Props {
@@ -36,7 +36,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const posts = getAllSlugs();
+  const posts = getAllPostSlugs();
 
   return {
     paths: posts.map((slug) => {

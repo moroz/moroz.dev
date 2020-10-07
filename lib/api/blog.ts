@@ -44,6 +44,14 @@ export function getAllSlugs(directory: string) {
     .map((name) => basename(name, ".md"));
 }
 
+export function getAllPostSlugs() {
+  return getAllSlugs(postsDirectory);
+}
+
+export function getAllVideoSlugs() {
+  return getAllSlugs(videosDirectory);
+}
+
 export function getAllPostData() {
   return getAllSlugs(postsDirectory).map(getPostData);
 }
