@@ -1,9 +1,10 @@
 import fs from "fs";
 import matter from "gray-matter";
 import { join, basename } from "path";
-import { Post } from "../../interfaces";
+import { Post, Video } from "../../interfaces";
 
 const postsDirectory = join(process.cwd(), "content/blog");
+const videosDirectory = join(process.cwd(), "content/videos");
 
 export function getPostData(filename: string): Post {
   const resolvedFilename = join(postsDirectory, `${filename}.md`);
@@ -20,19 +21,47 @@ export function getPostData(filename: string): Post {
   };
 }
 
-export function getAllSlugs() {
+export function getVideoData(filename: string): Video {
+  const resolvedFilename = join(videosDirectory, `${filename}.md`);
+  const fileContents = fs.readFileSync(resolvedFilename, "utf8");
+  const parsed = matter(fileContents);
+  const { data, content } = parsed;
+  const date = new Date(data.date).toISOString();
+  return {
+    slug: data.slug,
+    title: data.title,
+    date,
+    content: content,
+    youtube: data.youtube,
+    filename: resolvedFilename
+  };
+}
+
+export function getAllSlugs(directory: string) {
   return fs
-    .readdirSync(postsDirectory)
+    .readdirSync(directory)
     .filter((fn) => fn.match(/\.md$/))
     .map((name) => basename(name, ".md"));
 }
 
 export function getAllPostData() {
-  return getAllSlugs().map(getPostData);
+  return getAllSlugs(postsDirectory).map(getPostData);
+}
+
+export function getAllVideoData() {
+  return getAllSlugs(videosDirectory).map(getVideoData);
 }
 
 export function getSortedPostData() {
   return getAllPostData().sort((a, b) => {
+    if (a.date > b.date) return -1;
+    if (a.date < b.date) return 1;
+    return 0;
+  });
+}
+
+export function getSortedVideoData() {
+  return getAllVideoData().sort((a, b) => {
     if (a.date > b.date) return -1;
     if (a.date < b.date) return 1;
     return 0;

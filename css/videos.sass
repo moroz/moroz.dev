@@ -1,0 +1,54 @@
+.video_grid
+  display: grid
+  grid-template-columns: 1fr 1fr 1fr
+  grid-gap: 1rem
+  margin: 0 2rem
+
+.video_entry
+  width: 100%
+  overflow: hidden
+  line-height: 0
+  position: relative
+  text-decoration: none
+
+  &:hover
+    .video_entry__meta
+      opacity: 1
+
+  img
+    width: 100%
+    height: 100%
+    object-fit: cover
+
+  &--featured
+    grid-column: 1 / span 2
+    grid-row: 1 / span 2
+
+  &__meta
+    position: absolute
+    line-height: 1.4
+    background: transparentize($body-fg, .2)
+    opacity: 0
+    color: $body-bg
+    padding: 1em
+    bottom: 0
+    right: 0
+    top: 0
+    left: 0
+    display: flex
+    font-size: 1.5em
+    flex-direction: column
+    align-items: flex-end
+    justify-content: flex-end
+    text-align: right
+    transition: .2s ease-in-out
+    margin: 0
+
+    &:hover
+      opacity: 1
+
+    p
+      margin: 0
+
+  &__date
+    font-size: .9em
