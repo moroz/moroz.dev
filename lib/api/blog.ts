@@ -30,3 +30,11 @@ export function getAllSlugs() {
 export function getAllPostData() {
   return getAllSlugs().map(getPostData);
 }
+
+export function getSortedPostData() {
+  return getAllPostData().sort((a, b) => {
+    if (a.date > b.date) return -1;
+    if (a.date < b.date) return 1;
+    return 0;
+  });
+}

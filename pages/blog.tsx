@@ -2,7 +2,7 @@ import { GetStaticProps } from "next";
 import BlogEntry from "../components/BlogEntry";
 import { Post } from "../interfaces";
 import Layout from "../layout/Layout";
-import { getAllPostData, getAllSlugs } from "../lib/api/blog";
+import { getSortedPostData } from "../lib/api/blog";
 
 interface Props {
   posts: Post[];
@@ -22,7 +22,7 @@ const Blog = ({ posts }: Props) => {
 };
 
 export const getStaticProps: GetStaticProps = async () => {
-  const posts = getAllPostData();
+  const posts = getSortedPostData();
   return {
     props: {
       posts
