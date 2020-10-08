@@ -9,6 +9,12 @@ body
   font-family: $font-sans
   font-size: 1.25rem
   font-weight: 500
+  line-height: 1.5
+
+a:link
+
+  color: $primary
+  text-decoration: none
 
 .layout
   display: flex
@@ -29,6 +35,18 @@ body
   margin-top: $header-height
   text-align: center
 
+.mt-0
+  margin-top: 0 !important
 
 .container
   padding: 0 calc(50vw - #{$container-width / 2})
+
+  &.is-centered
+    position: absolute
+    top: 50%
+    left: 50%
+    transform: translate(-50%, -50%)
+    width: 50%
+
+.text-center
+  text-align: center
