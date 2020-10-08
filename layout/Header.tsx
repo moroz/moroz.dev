@@ -27,8 +27,10 @@ const Header = () => {
         <NavLink href="/blog">Blog</NavLink>
         <NavLink href="/videos">Videos</NavLink>
         <NavLink href="/contact">Contact</NavLink>
-        <Link href="/">
-          <a className="header__cta button">R&eacute;sum&eacute;</a>
+        <Link href="/resume.pdf">
+          <a className="header__cta button" target="_blank">
+            R&eacute;sum&eacute;
+          </a>
         </Link>
       </nav>
     </header>
