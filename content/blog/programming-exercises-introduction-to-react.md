@@ -1,5 +1,5 @@
 ---
-title: "Programming exercises: FizzBuzz"
+title: "Programming exercises for 小海豹: Introduction to React"
 date: 2020-10-25
 slug: programming-exercises-introduction-to-react
 ---
