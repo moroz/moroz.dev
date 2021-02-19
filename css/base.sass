@@ -10,6 +10,7 @@ body
   font-size: 1.25rem
   font-weight: 500
   line-height: 1.5
+  +fluid-type($mobile-width, $desktop-width, 16px, 20px)
 
 a:link
 
@@ -40,6 +41,8 @@ a:link
 
 .container
   padding: 0 calc(50vw - #{$container-width / 2})
+  box-sizing: border-box
+
 
   &.is-centered
     position: absolute
@@ -47,6 +50,11 @@ a:link
     left: 50%
     transform: translate(-50%, -50%)
     width: 50%
+
+  @media screen and (max-width: 800px)
+    width: 100%
+    padding: 20px
+
 
 .text-center
   text-align: center
