@@ -16,6 +16,11 @@
   +mobile
     padding: 0 20px
   box-sizing: border-box
+  transition: .2s ease-in-out
+
+  &--opaque
+    background: white
+    color: rgba(0,0,0,.67)
 
   &__branding
     font-size: 2em
@@ -59,6 +64,10 @@
       &:hover
         a:not(:hover)
           opacity: .5
+
+  +mobile
+    &--opaque &__menu
+      background: white
 
   a
     color: inherit

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Hamburger from "./Hamburger";
 
 interface NavLinkProps {
@@ -17,9 +17,27 @@ const NavLink = ({ href, children }: NavLinkProps) => {
 
 const Header = () => {
   const [hamburgerOpen, setHamburgerOpen] = useState(false);
+  const [opaque, setOpaque] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  const handleScroll = useCallback(() => {
+    setOpaque(window.pageYOffset > ref.current?.clientHeight!);
+  }, [setOpaque, ref.current]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
-    <header className={`header ${hamburgerOpen ? "header--menu-open" : ""}`}>
+    <header
+      className={`header ${hamburgerOpen ? "header--menu-open" : ""} ${
+        opaque ? "header--opaque" : ""
+      }`}
+      ref={ref}
+    >
       <div className="header__branding">
         <Link href="/">
           <a className="header__branding__logo">moroz.dev</a>

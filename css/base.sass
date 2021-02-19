@@ -25,8 +25,9 @@ a:link
   &--white-header
 
     .header
-      background: transparent
-      color: white
+      &:not(.header--opaque)
+        background: transparent
+        color: white
 
       &__menu
 
@@ -65,3 +66,14 @@ a:link
 
 .text-center
   text-align: center
+
+code, pre
+  font-family: $font-monospace
+
++mobile
+  .remark-highlight
+    padding: .9rem !important
+
+  pre code
+    font-size: .5rem
+    line-height: 1.2
