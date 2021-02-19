@@ -28,12 +28,18 @@ a:link
       background: transparent
       color: white
 
+      &__menu
+
+        background: transparentize(black, .4)
+
 #main
   flex: 1
 
 .page-title
   +fluid-type(320px, 1600px, 24px, 55px)
   margin-top: $header-height
+  +mobile
+    margin-top: $mobile-header-height
   text-align: center
 
 .mt-0
@@ -49,7 +55,8 @@ a:link
     top: 50%
     left: 50%
     transform: translate(-50%, -50%)
-    width: 50%
+    +gt-mobile
+      width: 50%
 
   @media screen and (max-width: 800px)
     width: 100%

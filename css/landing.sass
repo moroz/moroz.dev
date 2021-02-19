@@ -15,12 +15,19 @@ $hello-gradient: linear-gradient(to bottom, $hello-stop-1, $hello-stop-2)
   position: relative
 
   &__hero
-    position: absolute
-    top: 50%
-    left: 5rem
-    line-height: 1.5
-    transform: translateY(-50%)
-    width: 60%
+    +gt-mobile
+      position: absolute
+      top: 50%
+      left: 5rem
+      transform: translateY(-50%)
+      width: 60%
+      line-height: 1.5
+
+    +mobile
+      margin-top: $mobile-header-height + 16
+      width: 100%
+      line-height: 1.4
+      padding-left: 20px
 
   &__human
     position: absolute
@@ -28,6 +35,9 @@ $hello-gradient: linear-gradient(to bottom, $hello-stop-1, $hello-stop-2)
     height: 85%
     bottom: 0
     right: 0
+
+    +mobile
+      height: 45%
 
   &__cta
     margin-top: 1.75em
@@ -44,6 +54,9 @@ $hello-gradient: linear-gradient(to bottom, $hello-stop-1, $hello-stop-2)
     font-size: 3rem
     margin: 0
 
+    +mobile
+      font-size: 2rem
+
   h1
     background-image: $hello-gradient
     -webkit-background-clip: text
@@ -55,3 +68,6 @@ $hello-gradient: linear-gradient(to bottom, $hello-stop-1, $hello-stop-2)
     margin-top: 0
     margin-bottom: 0
     font-weight: bold
+
+    +mobile
+      font-size: 3rem

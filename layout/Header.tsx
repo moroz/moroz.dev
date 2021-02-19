@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { useState } from "react";
+import Hamburger from "./Hamburger";
 
 interface NavLinkProps {
   href: string;
@@ -14,13 +16,19 @@ const NavLink = ({ href, children }: NavLinkProps) => {
 };
 
 const Header = () => {
+  const [hamburgerOpen, setHamburgerOpen] = useState(false);
+
   return (
-    <header className="header">
+    <header className={`header ${hamburgerOpen ? "header--menu-open" : ""}`}>
       <div className="header__branding">
         <Link href="/">
           <a className="header__branding__logo">moroz.dev</a>
         </Link>
       </div>
+      <Hamburger
+        open={hamburgerOpen}
+        onToggle={() => setHamburgerOpen((t) => !t)}
+      />
       <nav className="header__menu">
         <NavLink href="/">Home</NavLink>
         <NavLink href="/projects">Projects</NavLink>
