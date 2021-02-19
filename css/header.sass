@@ -18,9 +18,10 @@
   box-sizing: border-box
   transition: .2s ease-in-out
 
-  &--opaque
-    background: white
-    color: rgba(0,0,0,.67)
+  +mobile
+    &--opaque
+      background: white
+      color: rgba(0,0,0,.67)
 
   &__branding
     font-size: 2em
