@@ -50,14 +50,14 @@ a:link
   padding: 0 calc(50vw - #{$container-width / 2})
   box-sizing: border-box
 
-
   &.is-centered
     position: absolute
     top: 50%
     left: 50%
     transform: translate(-50%, -50%)
     +gt-mobile
-      width: 50%
+      p
+        min-width: 800px
 
   @media screen and (max-width: 800px)
     width: 100%

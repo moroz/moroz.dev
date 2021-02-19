@@ -1,8 +1,10 @@
 .video_grid
-  display: grid
-  grid-template-columns: 1fr 1fr 1fr
-  grid-gap: 1rem
-  margin: 0 2rem
+  margin: 0 20px
+  +gt-mobile
+    display: grid
+    grid-gap: 1rem
+    grid-template-columns: 1fr 1fr 1fr
+    margin: 0 2rem
 
 .video_entry
   width: 100%
@@ -10,6 +12,9 @@
   line-height: 0
   position: relative
   text-decoration: none
+  +mobile
+    display: block
+    margin-bottom: 1.25rem
 
   &:hover
     .video_entry__meta
