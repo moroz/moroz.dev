@@ -15,6 +15,7 @@ export function getPostData(filename: string): Post {
   return {
     slug: data.slug,
     title: data.title,
+    lang: data.lang ?? "en",
     date,
     content: content,
     filename: resolvedFilename

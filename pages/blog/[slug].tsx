@@ -11,10 +11,10 @@ interface Props {
 }
 
 const BlogPostPage = ({ post, html }: Props) => {
-  const { title, date } = post;
+  const { title, date, lang = "en" } = post;
   return (
     <Layout title={title}>
-      <div className="container">
+      <div className="container blog-post" lang={lang}>
         <h1 className="page-title">{title}</h1>
         <p className="blog__date">{day(date).format("MMMM D, YYYY")}</p>
         <div
