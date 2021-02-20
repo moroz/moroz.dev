@@ -2,6 +2,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Hamburger from "./Hamburger";
 
+const SCROLL_THRESHOLD = 40;
+
 interface NavLinkProps {
   href: string;
   children: any;
@@ -18,11 +20,10 @@ const NavLink = ({ href, children }: NavLinkProps) => {
 const Header = () => {
   const [hamburgerOpen, setHamburgerOpen] = useState(false);
   const [opaque, setOpaque] = useState(false);
-  const ref = useRef<HTMLDivElement | null>(null);
 
   const handleScroll = useCallback(() => {
-    setOpaque(window.pageYOffset > ref.current?.clientHeight!);
-  }, [setOpaque, ref.current]);
+    setOpaque(window.pageYOffset >= SCROLL_THRESHOLD);
+  }, [setOpaque]);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
@@ -36,17 +37,14 @@ const Header = () => {
       className={`header ${hamburgerOpen ? "header--menu-open" : ""} ${
         opaque ? "header--opaque" : ""
       }`}
-      ref={ref}
     >
-      <div className="header__branding">
-        <Link href="/">
-          <a className="header__branding__logo">moroz.dev</a>
-        </Link>
+      <div className="header__content">
+        <div className="header__branding">
+          <Link href="/">
+            <a className="header__branding__logo">moroz.dev</a>
+          </Link>
+        </div>
       </div>
-      <Hamburger
-        open={hamburgerOpen}
-        onToggle={() => setHamburgerOpen((t) => !t)}
-      />
       <nav className="header__menu">
         <NavLink href="/">Home</NavLink>
         <NavLink href="/projects">Projects</NavLink>
@@ -59,6 +57,10 @@ const Header = () => {
           </a>
         </Link>
       </nav>
+      <Hamburger
+        open={hamburgerOpen}
+        onToggle={() => setHamburgerOpen((t) => !t)}
+      />
     </header>
   );
 };

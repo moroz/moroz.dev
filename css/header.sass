@@ -1,27 +1,42 @@
 .header
-  display: flex
-  justify-content: space-between
-  width: 100%
-  height: $header-height
-  line-height: $header-height
-  +mobile
-    height: $mobile-menu-unit
-    line-height: $mobile-menu-unit
-    border-bottom: 1px solid currentColor
   position: fixed
   top: 0
-  background-color: #fff
   z-index: 10
-  padding: 0 2rem
-  +mobile
-    padding: 0 20px
-  box-sizing: border-box
-  transition: .2s ease-in-out
+  left: 0
+  right: 0
+  justify-content: space-between
+  height: $mobile-menu-unit
+  line-height: $mobile-menu-unit
 
-  +mobile
+  +gt-mobile
+    display: flex
+    height: $header-height
+    line-height: $header-height
+  &__content
+    top: 0
+    padding: 0 2rem
+    box-sizing: border-box
+    transition: background .2s ease-in-out, opacity .2s ease-in-out
+    display: flex
+    width: 100%
+    height: $header-height
+    line-height: $header-height
+    +mobile
+      z-index: 15
+      padding: 0 20px
+      position: fixed
+      height: $mobile-menu-unit
+      line-height: $mobile-menu-unit
+      border-bottom: 1px solid currentColor
+
+  +gt-mobile
+    transition: box-shadow .2s ease-in-out
     &--opaque
-      background: white
-      color: rgba(0,0,0,.67)
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1)
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05)
+
+  &--opaque
+    background: white
 
   &__branding
     font-size: 2em
@@ -32,7 +47,7 @@
     padding: 0 1em
 
     +mobile
-      padding: 0 20px
+      padding: $mobile-content-padding
       height: $mobile-menu-unit
       line-height: $mobile-menu-unit
 
@@ -44,13 +59,18 @@
 
   &__menu
     display: flex
+    align-items: center
+    +gt-mobile
+      padding-right: 2rem
+      justify-content: flex-end
+      z-index: 17
 
     +mobile
-      background: white
       text-align: right
       flex-direction: column
       position: fixed
-      top: $mobile-menu-unit
+      top: 0
+      padding-top: $mobile-menu-unit
       left: 0
       right: 0
       bottom: 0
@@ -67,14 +87,16 @@
           opacity: .5
 
   +mobile
-    &--opaque &__menu
+    &__menu
       background: white
 
   a
     color: inherit
+    transition: none
     text-decoration: none
 
 .header--menu-open
+  color: black !important
   .header__menu
     opacity: 1
     pointer-events: auto

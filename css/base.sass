@@ -11,6 +11,7 @@ body
   font-weight: 500
   line-height: 1.5
   +fluid-type($mobile-width, $desktop-width, 16px, 20px)
+  overflow-y: scroll
 
 a:link
 
@@ -23,15 +24,12 @@ a:link
   flex-direction: column
 
   &--white-header
-
     .header
       &:not(.header--opaque)
+        border-bottom: none
+        box-shadow: none
         background: transparent
         color: white
-
-      +mobile
-        &__menu
-          background: transparentize(black, .4)
 
 #main
   flex: 1
@@ -61,7 +59,7 @@ a:link
 
   @media screen and (max-width: 800px)
     width: 100%
-    padding: 20px
+    padding: $mobile-content-padding-x
 
 
 .text-center
@@ -70,10 +68,12 @@ a:link
 code, pre
   font-family: $font-monospace
 
+  word-break: break-word
+
 +mobile
   .remark-highlight
-    padding: .9rem !important
+    font-size: .8rem
+    padding: .8rem .8rem .5rem !important
 
   pre code
-    font-size: .5rem
     line-height: 1.2

@@ -26,7 +26,11 @@ a.blog_feed__entry__title
 .blog
   &__content
     +fluid-type(320px, 1600px, 18px, 24px)
-    line-height: 1.5
+    line-height: 1.58
+
+    &:lang(zh-Hant)
+      > p
+        text-indent: 2em
 
     h1, h2, h3
       text-align: center
