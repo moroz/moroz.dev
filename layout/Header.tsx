@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Hamburger from "./Hamburger";
 
 const SCROLL_THRESHOLD = 40;
