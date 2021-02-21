@@ -2,6 +2,7 @@ import fs from "fs";
 import matter from "gray-matter";
 import { join, basename } from "path";
 import { Post, Video } from "../../interfaces";
+import day from "dayjs";
 
 const postsDirectory = join(process.cwd(), "content/blog");
 const videosDirectory = join(process.cwd(), "content/videos");
@@ -12,11 +13,13 @@ export function getPostData(filename: string): Post {
   const parsed = matter(fileContents);
   const { data, content } = parsed;
   const date = new Date(data.date).toISOString();
+  const datePretty = day(date).format("MMMM D, YYYY");
   return {
     slug: data.slug,
     title: data.title,
     lang: data.lang ?? "en",
     date,
+    datePretty,
     content: content,
     filename: resolvedFilename
   };
@@ -28,10 +31,12 @@ export function getVideoData(filename: string): Video {
   const parsed = matter(fileContents);
   const { data, content } = parsed;
   const date = new Date(data.date).toISOString();
+  const datePretty = day(date).format("MMMM D, YYYY");
   return {
     slug: data.slug,
     title: data.title,
     date,
+    datePretty,
     content: content,
     youtube: data.youtube,
     filename: resolvedFilename

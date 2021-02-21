@@ -3,7 +3,6 @@ import { Post } from "../../interfaces";
 import Layout from "../../layout/Layout";
 import { getAllPostSlugs, getPostData } from "../../lib/api/blog";
 import { formatMarkdown } from "../../lib/api/markdown";
-import day from "dayjs";
 
 interface Props {
   post: Post;
@@ -11,12 +10,12 @@ interface Props {
 }
 
 const BlogPostPage = ({ post, html }: Props) => {
-  const { title, date, lang = "en" } = post;
+  const { title, datePretty, lang = "en" } = post;
   return (
     <Layout title={title}>
       <div className="container blog-post" lang={lang}>
         <h1 className="page-title">{title}</h1>
-        <p className="blog__date">{day(date).format("MMMM D, YYYY")}</p>
+        <p className="blog__date">{datePretty}</p>
         <div
           className="blog__content"
           dangerouslySetInnerHTML={{ __html: html }}

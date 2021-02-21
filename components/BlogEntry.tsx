@@ -1,14 +1,13 @@
 import React from "react";
 import Link from "next/link";
 import { Post } from "../interfaces";
-import day from "dayjs";
 
 interface Props {
   post: Post;
 }
 
 const BlogEntry = ({ post }: Props) => {
-  const { slug, title, date } = post;
+  const { slug, title, datePretty } = post;
   const path = `/blog/${post.slug}/`;
 
   return (
@@ -17,9 +16,7 @@ const BlogEntry = ({ post }: Props) => {
         {/* <span className="blog_feed__entry__type">
           {youtube ? "Video" : "Article"}{" "}
         </span> */}
-        <span className="blog_feed__entry__date">
-          {day(date).format("MMMM D, YYYY")}
-        </span>
+        <span className="blog_feed__entry__date">{datePretty}</span>
       </p>
       <Link href={path}>
         <a className="blog_feed__entry__title">{title}</a>
