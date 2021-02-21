@@ -72,12 +72,14 @@
       flex-direction: column
       position: fixed
       top: 0
-      padding-top: $mobile-menu-unit
       left: 0
       right: 0
       bottom: 0
       z-index: 10
-      align-items: flex-end
+      align-items: stretch
+      text-align: center
+      padding: $mobile-content-padding
+      padding-top: $mobile-menu-unit
       font-size: 1.2rem
       opacity: 0
       pointer-events: none
@@ -90,7 +92,8 @@
 
   +mobile
     &__menu
-      background: white
+      background: var(--body-bg)
+      color: var(--body-fg)
 
   a
     color: inherit
@@ -98,7 +101,7 @@
     text-decoration: none
 
 .header--menu-open
-  color: black !important
+  color: var(--body-fg)
   .header__menu
     opacity: 1
     pointer-events: auto

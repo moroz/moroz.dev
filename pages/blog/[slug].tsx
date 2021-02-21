@@ -3,6 +3,7 @@ import { Post } from "../../interfaces";
 import Layout from "../../layout/Layout";
 import { getAllPostSlugs, getPostData } from "../../lib/api/blog";
 import { formatMarkdown } from "../../lib/api/markdown";
+import Link from "next/link";
 
 interface Props {
   post: Post;
@@ -20,6 +21,9 @@ const BlogPostPage = ({ post, html }: Props) => {
           className="blog__content"
           dangerouslySetInnerHTML={{ __html: html }}
         />
+        <Link href="/blog">
+          <a>&lt;&lt; Back to blog</a>
+        </Link>
       </div>
     </Layout>
   );
