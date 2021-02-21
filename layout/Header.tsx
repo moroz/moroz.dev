@@ -47,7 +47,7 @@ const Header = () => {
       </div>
       <nav className="header__menu">
         <NavLink href="/">Home</NavLink>
-        <NavLink href="/projects">Projects</NavLink>
+        {/* <NavLink href="/projects">Projects</NavLink> */}
         <NavLink href="/blog">Blog</NavLink>
         <NavLink href="/videos">Videos</NavLink>
         <NavLink href="/contact">Contact</NavLink>
