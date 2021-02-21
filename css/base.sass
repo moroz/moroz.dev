@@ -4,8 +4,8 @@ html, body
   font-size: 100%
 
 body
-  background: $body-bg
-  color: $body-fg
+  background: var(--body-bg)
+  color: var(--body-fg)
   font-family: $font-sans
   font-size: 1.25rem
   font-weight: 500
@@ -14,9 +14,11 @@ body
   overflow-y: scroll
 
 a:link
-
-  color: $primary
+  color: var(--link-color)
   text-decoration: none
+
+a:visited
+  color: var(--link-visited)
 
 .layout
   display: flex
