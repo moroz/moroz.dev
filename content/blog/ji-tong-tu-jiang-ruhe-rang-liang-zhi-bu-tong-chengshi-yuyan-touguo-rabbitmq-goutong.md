@@ -7,8 +7,9 @@ lang: zh-Hant
 
 ## 摘要
 
-本文描寫了如何透過 RabbitMQ 使 Node.js 與 Elixir 即時溝通。
-這個作法可以套用在近幾年很時尚的微型服務上。
+本文描寫了如何透過 RabbitMQ 使 Node.js 與 Elixir 即時溝通，並提供一個模擬專案來展現實際解決方案。
+
+<a href="https://github.com/moroz/rabbitmq_demo" target="_blank" rel="noopener noreferer">Show me the code! / 我要看程式碼！</a>
 
 ## 序
 
@@ -34,4 +35,14 @@ Elixir 的測項文法簡潔，執行速度非常快。
 
 ## 範例專案介紹
 
+本文所提到的模擬專案由兩款小型應用程式組成（可以稱之為微型服務），分別命名為 Producer （訊息生成端）與 Consumer （訊息接受端）。
+Producer 的專案
 
+Node.js 那一款應用程式提供一個簡單的 API 接口，可以接受 JSON 格式的付款通知（模擬收款服務）並轉達給
+Elixir。
+
+```bash
+curl --location --request POST 'http://localhost:3000/api/payments/fulfill' \
+--header 'Content-Type: application/json' \
+--data-raw '{"order_id": 42, "fulfilled_at": 1613916290, "payment_method": "WECHAT_PAY"}'
+```
