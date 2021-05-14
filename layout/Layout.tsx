@@ -18,7 +18,7 @@ const Layout = ({ children, title, className }: Props) => (
       <meta charSet="utf-8" />
       <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600&display=swap"
         rel="stylesheet"
       />
     </Head>
