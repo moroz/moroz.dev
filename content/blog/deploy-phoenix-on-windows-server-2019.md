@@ -180,7 +180,7 @@ imports its settings from inside `config/prod.exs`.
 
 ### Runtime configuration and secrets
 
-Create an empty file at `config/runtime.exs`. When building a release, Mix will recongize the file and enable the release to use
+Create an empty file at `config/runtime.exs`. When building a release, Mix will recognize the file and enable the release to use
 a `release.exs` file for start-up configuration. This may require you to have Elixir installed on your deployment machine.
 
 ### Automatically run migrations
@@ -271,8 +271,8 @@ your whole application compiled with dependencies. You can now copy it to your p
 In Windows Explorer, the package will not be recognized, but Git bash comes with `tar` and `gunzip`, so
 you can unpack the file just fine using `tar xzf`. The `-C` flag may come in handy to pick a target directory.
 
-Once the release is unpacked, you can run it using a batch script packaged inside the file. Below is a screenshot
-of an Elixir release running:
+Once the release is unpacked, you can run it using the batch script packaged inside the `bin/` directory of the release
+archive. Below is a screenshot of a release running and receiving connections:
 
 <a href="/images/windows-release-running.png" target="_blank" rel="noopener noreferer">
 <img width="100%" src="/images/windows-release-running.png" alt="JSON API running from an Elixir release" />
