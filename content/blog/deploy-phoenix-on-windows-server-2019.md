@@ -51,7 +51,7 @@ The steps below have been tested on a barebones x86\_64 Windows 10 installation 
 
 This post only covers *running* a release on a Windows Server instance. Actually *deploying it*, as in: "putting it in a supervision tree" or "developing a workflow to reliably replace old releases with new ones," is beyond the scope of this article.
 
-### Setting up build environment
+## Setting up build environment
 
 Let's start by installing the necessary software. On your build machine (Windows 10), install Erlang from a binary package for Windows. By default, the Elixir installer uses [version 21.3](http://erlang.org/download/otp_win64_21.3.exe), but you may choose a newer release if your software depends on features only available in newer versions of OTP.
 Keep the installer (`otp_win64_21.3.exe`), you will need to install the same version on your production machine.
@@ -69,11 +69,14 @@ PostgreSQL installers for Windows are available at [EnterpriseDB](https://www.en
 If possible, install Elixir on your production server using the web installer.
 You may also want to download NGINX to serve a front end application or to facilitate the process of securing your application with HTTPS.
 
-### Preparing the release
+## Preparing the release
 
-If you have ever deployed an Elixir release, the steps below will be familiar.
+These steps are essentially the same as when preparing a release for any other platform, such as GNU/Linux, BSD, or even Docker.
+If you have ever deployed an Elixir release on another platform, you probably know what to do.
 
-First, in `config/prod.exs`, set your application's endpoint to function as a server. The minimal required configuration is as follows:
+### Set `server: true`
+
+First, in `config/prod.exs`, tell your application's endpoint to function as a server. The minimal required configuration is as follows:
 
 ```elixir
 config :myapp, MyAppWeb.Endpoint,
@@ -81,13 +84,60 @@ config :myapp, MyAppWeb.Endpoint,
   server: true
 ```
 
-By default, a Phoenix application comes with a `config/prod.secret.exs` file. You may want to delete this file and the code that
-imports its settings from inside `config/prod.exs`.
+What this does is tell the endpoint to start listening on port 4000 using HTTP when as soon as it is started by its supervisor.
 
-Create an empty file at `config/runtime.exs`. When building a release, Mix will recongize the file and enable the release to use
-a `release.exs` file for start-up configuration.
+### Add a release configuration in `mix.exs`
 
-Build script:
+The `mix.exs` contains an exported function called project, which returns a keyword list.
+At the end of that keyword list, add the key `:releases` with the value being a call to a new
+private function called `releases/0`, like so:
+
+```elixir
+defmodule MyApp.MixProject do
+  use Mix.Project
+
+  def project do
+    [
+      app: :my_app,
+      version: "0.1.0",
+      elixir: "~> 1.7",
+      elixirc_paths: elixirc_paths(Mix.env()),
+      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
+      start_permanent: Mix.env() == :prod,
+      aliases: aliases(),
+      deps: deps(),
+      releases: releases()
+    ]
+  end
+
+  # ...
+  # omitted for brevity
+
+  defp releases do
+    [
+      my_app: [
+        include_executables_for: [:windows],
+        applications: [
+          my_app: :permanent
+        ],
+        steps: [:assemble, :tar]
+      ]
+    ]
+  end
+end
+```
+
+Thus we have defined a release configuration called `my_app`, with the OTP application `:my_app`
+starting permanently. The line `steps: [:assemble, :tar]` tells Mix to actually assemble a release
+and create a convenient `.tar.gz` archive (tarball) that we can conveniently paste to the production
+machine over RDP.
+
+### Add a shell script to build your release
+
+By default, Windows does not provide a POSIX-compliant shell. However, we can still execute shell scripts
+inside the GNU-like MINGW environment bundled with Git.
+Below is a simple script that will pull changes from the upstream repository, install Elixir dependencies,
+compile the application and assemble a release:
 
 ```shell
 #!/bin/sh
@@ -97,14 +147,16 @@ set -e
 export MIX_ENV=prod
 RELEASE_NAME=myapp
 
-echo "Discarding changes in the working tree..."
-git clean -fd
-git checkout -- .
+# OPTIONAL (and potentially desctructive): skip these lines if you are building
+# on your development machine.
+# echo "Discarding changes in the working tree..."
+# git clean -fd
+# git checkout -- .
 
 echo "Pulling..."
 git pull
 
-echo "Installing hex and rebar, if needed..."
+echo "Installing hex and rebar..."
 mix local.hex --force
 mix local.rebar --force
 
@@ -117,6 +169,12 @@ mix compile
 echo "Assembling release..."
 mix release $RELEASE_NAME --overwrite
 ```
+
+By default, a Phoenix application comes with a `config/prod.secret.exs` file. You may want to delete this file and the code that
+imports its settings from inside `config/prod.exs`.
+
+Create an empty file at `config/runtime.exs`. When building a release, Mix will recongize the file and enable the release to use
+a `release.exs` file for start-up configuration.
 
 Migrator:
 
