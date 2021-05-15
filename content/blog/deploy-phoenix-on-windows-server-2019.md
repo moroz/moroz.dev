@@ -106,6 +106,7 @@ defmodule MyApp.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
+      # Add this line:
       releases: releases()
     ]
   end
@@ -137,7 +138,7 @@ machine over RDP.
 By default, Windows does not provide a POSIX-compliant shell. However, we can still execute shell scripts
 inside the GNU-like MINGW environment bundled with Git.
 Below is a simple script that will pull changes from the upstream repository, install Elixir dependencies,
-compile the application and assemble a release:
+compile the application and assemble a release. Put these lines inside `scripts/build-release.sh`:
 
 ```shell
 #!/bin/sh
@@ -147,8 +148,9 @@ set -e
 export MIX_ENV=prod
 RELEASE_NAME=myapp
 
-# OPTIONAL (and potentially desctructive): skip these lines if you are building
-# on your development machine.
+# OPTIONAL (and potentially desctructive):
+# This will discard all changes you may have made in your working directory.
+# Skip these lines if you are building on your development machine.
 # echo "Discarding changes in the working tree..."
 # git clean -fd
 # git checkout -- .
@@ -169,6 +171,9 @@ mix compile
 echo "Assembling release..."
 mix release $RELEASE_NAME --overwrite
 ```
+
+Normally, you should set the executable flag on the script with `chmod +x scripts/build-release.sh`, but on Windows, it doesn't
+really make a difference, because NTFS doesn't make this distinction anyway.
 
 By default, a Phoenix application comes with a `config/prod.secret.exs` file. You may want to delete this file and the code that
 imports its settings from inside `config/prod.exs`.
