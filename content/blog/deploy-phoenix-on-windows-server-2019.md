@@ -178,8 +178,14 @@ really make a difference, because NTFS doesn't make this distinction anyway.
 By default, a Phoenix application comes with a `config/prod.secret.exs` file. You may want to delete this file and the code that
 imports its settings from inside `config/prod.exs`.
 
+### Runtime configuration and secrets
+
 Create an empty file at `config/runtime.exs`. When building a release, Mix will recongize the file and enable the release to use
-a `release.exs` file for start-up configuration.
+a `release.exs` file for start-up configuration. This may require you to have Elixir installed on your deployment machine.
+
+### Automatically run migrations
+
+You can add a simple `Task` to run Ecto migrations on startup:
 
 Migrator:
 
@@ -207,6 +213,70 @@ defmodule MyApp.Migrator do
   end
 end
 ```
+
+Then, add it to the supervision tree in your application module:
+
+```elixir
+defmodule MyApp.Application do
+  # See https://hexdocs.pm/elixir/Application.html
+  # for more information on OTP Applications
+  @moduledoc false
+
+  use Application
+
+  # Add this line
+  @tasks if Mix.env() == :prod, do: [MyApp.Migrator], else: []
+
+  def start(_type, _args) do
+    children =
+      [
+        # Start the Ecto repository
+        MyApp.Repo,
+        # Start the Telemetry supervisor
+        MyAppWeb.Telemetry,
+        # Start the PubSub system
+        {Phoenix.PubSub, name: MyApp.PubSub},
+        # Start the Endpoint (http/https)
+        MyAppWeb.Endpoint
+        # Start a worker by calling: MyApp.Worker.start_link(arg)
+        # {MyApp.Worker, arg}
+      # and this
+      ] ++ @tasks
+
+    # See https://hexdocs.pm/elixir/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: MyApp.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+
+  # Tell Phoenix to update the endpoint configuration
+  # whenever the application is updated.
+  def config_change(changed, _new, removed) do
+    MyAppWeb.Endpoint.config_change(changed, removed)
+    :ok
+  end
+end
+```
+
+## Actually building the release
+
+When your application is all set up, you can build a release using the bash script we added before:
+
+```bash
+scripts/build-release.sh
+```
+
+If everything succeeds, you will get a `.tar.gz` file inside `_build/prod/rel/my_app`. This file contains
+your whole application compiled with dependencies. You can now copy it to your production machine over RDP.
+In Windows Explorer, the package will not be recognized, but Git bash comes with `tar` and `gunzip`, so
+you can unpack the file just fine using `tar xzf`. The `-C` flag may come in handy to pick a target directory.
+
+Once the release is unpacked, you can run it using a batch script packaged inside the file. Below is a screenshot
+of an Elixir release running:
+
+<a href="/images/windows-release-running.png" target="_blank" rel="noopener noreferer">
+<img width="100%" src="/images/windows-release-running.png" alt="JSON API running from an Elixir release" />
+</a>
 
 <!--
 8. Clone the repository onto the build machine.
