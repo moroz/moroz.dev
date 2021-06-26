@@ -19,10 +19,12 @@ const BlogPostPage = ({ post, html }: Props) => {
           <h1 className="page-title">{title}</h1>
           <p className="blog__date">{datePretty}</p>
         </header>
-        <div className="blog__summary">
-          <h3>Abstract</h3>
-          {summary}
-        </div>
+        {summary ? (
+          <div className="blog__summary">
+            <h3>Abstract</h3>
+            <div dangerouslySetInnerHTML={{ __html: summary }} />
+          </div>
+        ) : null}
         <main
           role="main"
           className="blog__content"
