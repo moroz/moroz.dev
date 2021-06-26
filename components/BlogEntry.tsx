@@ -7,34 +7,26 @@ interface Props {
 }
 
 const BlogEntry = ({ post }: Props) => {
-  const { slug, title, datePretty } = post;
+  const { slug, title, datePretty, summary } = post;
   const path = `/blog/${post.slug}/`;
 
   return (
-    <div className="blog_feed__entry" key={slug}>
+    <article className="blog_feed__entry" key={slug}>
       <p className="blog_feed__entry__meta">
-        {/* <span className="blog_feed__entry__type">
-          {youtube ? "Video" : "Article"}{" "}
-        </span> */}
         <span className="blog_feed__entry__date">{datePretty}</span>
       </p>
       <Link href={path}>
-        <a className="blog_feed__entry__title">{title}</a>
+        <a className="blog_feed__entry__title">
+          <h3>{title}</h3>
+        </a>
       </Link>
-      {/* {youtube ? (
-        <YT title={title} youtube={youtube} defer />
-      ) : (
-        <p className="blog_feed__entry__excerpt">{excerpt}</p>
-      )} */}
-      {/* {excerpt.trim().length > 1 ? ( */}
-      <p>
+      {summary ? <p className="blog_feed__entry__abstract">{summary}</p> : null}
+      <p className="blog_feed__entry__actions">
         <Link href={path}>
           <a>Read article</a>
         </Link>
       </p>
-      {/* ) : null} */}
-      {/* <Tags tags={tags} /> */}
-    </div>
+    </article>
   );
 };
 

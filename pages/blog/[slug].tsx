@@ -11,20 +11,27 @@ interface Props {
 }
 
 const BlogPostPage = ({ post, html }: Props) => {
-  const { title, datePretty, lang = "en" } = post;
+  const { summary, title, datePretty, lang = "en" } = post;
   return (
     <Layout title={title}>
-      <div className="container blog-post" lang={lang}>
-        <h1 className="page-title">{title}</h1>
-        <p className="blog__date">{datePretty}</p>
-        <div
+      <article className="container blog-post" lang={lang}>
+        <header>
+          <h1 className="page-title">{title}</h1>
+          <p className="blog__date">{datePretty}</p>
+        </header>
+        <div className="blog__summary">
+          <h3>Abstract</h3>
+          {summary}
+        </div>
+        <main
+          role="main"
           className="blog__content"
           dangerouslySetInnerHTML={{ __html: html }}
         />
         <Link href="/blog">
           <a>&lt;&lt; Back to blog</a>
         </Link>
-      </div>
+      </article>
     </Layout>
   );
 };

@@ -6,6 +6,7 @@ export interface Post {
   content: string;
   filename: string;
   lang?: string;
+  summary?: string;
 }
 
 export interface Video {

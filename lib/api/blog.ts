@@ -20,6 +20,7 @@ export function getPostData(filename: string): Post {
     lang: data.lang ?? "en",
     date,
     datePretty,
+    summary: data.summary ?? null,
     content: content,
     filename: resolvedFilename
   };

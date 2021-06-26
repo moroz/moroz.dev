@@ -1,29 +1,40 @@
 .blog_feed__entry
   margin-bottom: 2rem
-  p
+  &__actions
     margin: 0
 
-p.blog_feed__entry__meta
-  margin-bottom: -.2em
+  &__abstract
+    margin-top: 0
+    margin-bottom: .5rem
+
+  &__meta
+    margin-bottom: -.2em
+
+  &__title
+    &, h3
+      +fluid-type(450px, 1024px, 22px, 32px)
+      display: block
+      line-height: 1.45
+      text-decoration: none
+      color: inherit
+      font-weight: 800
+      margin-top: 0
+      margin-bottom: .5rem
+
+    &:link, &:visited
+      color: var(--emph-text)
+    &:hover
+      color: var(--link-color)
+
 
 .blog_feed__entry__date
   color: var(--dimmed-text)
 
-a.blog_feed__entry__title
-  +fluid-type(450px, 1024px, 22px, 32px)
-  display: block
-  line-height: 1.45
-  text-decoration: none
-  color: var(--emph-text)
-  font-weight: 800
-  margin-bottom: .5rem
-
-  &:visited
-    color: var(--emph-text)
-  &:hover
-    color: var(--link-color)
-
 .blog
+  &__summary
+    margin: 0 10% 2rem
+    text-align: center
+
   &__content
     +fluid-type(320px, 1600px, 17px, 21px)
     line-height: 1.58
