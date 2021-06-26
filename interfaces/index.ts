@@ -7,6 +7,7 @@ export interface Post {
   filename: string;
   lang?: string;
   summary?: string | null;
+  draft: boolean;
 }
 
 export interface Video {

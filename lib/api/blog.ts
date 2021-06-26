@@ -20,6 +20,7 @@ export async function getPostData(filename: string): Promise<Post> {
     slug: data.slug,
     title: data.title,
     lang: data.lang ?? "en",
+    draft: data.draft ?? false,
     date,
     datePretty,
     summary: summary ?? null,
@@ -70,11 +71,13 @@ export function getAllVideoData() {
 }
 
 export async function getSortedPostData() {
-  return (await getAllPostData()).sort((a, b) => {
-    if (a.date > b.date) return -1;
-    if (a.date < b.date) return 1;
-    return 0;
-  });
+  return (await getAllPostData())
+    .filter((post) => !post.draft)
+    .sort((a, b) => {
+      if (a.date > b.date) return -1;
+      if (a.date < b.date) return 1;
+      return 0;
+    });
 }
 
 export function getSortedVideoData() {
