@@ -22,7 +22,7 @@ const Blog = ({ posts }: Props) => {
 };
 
 export const getStaticProps: GetStaticProps = async () => {
-  const posts = getSortedPostData();
+  const posts = await getSortedPostData();
   return {
     props: {
       posts

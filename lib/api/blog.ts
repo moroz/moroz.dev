@@ -3,24 +3,26 @@ import matter from "gray-matter";
 import { join, basename } from "path";
 import { Post, Video } from "../../interfaces";
 import day from "dayjs";
+import { formatMarkdown } from "./markdown";
 
 const postsDirectory = join(process.cwd(), "content/blog");
 const videosDirectory = join(process.cwd(), "content/videos");
 
-export function getPostData(filename: string): Post {
+export async function getPostData(filename: string): Promise<Post> {
   const resolvedFilename = join(postsDirectory, `${filename}.md`);
   const fileContents = fs.readFileSync(resolvedFilename, "utf8");
   const parsed = matter(fileContents);
   const { data, content } = parsed;
   const date = new Date(data.date).toISOString();
   const datePretty = day(date).format("MMMM D, YYYY");
+  const summary = data.summary ? await formatMarkdown(data.summary) : null;
   return {
     slug: data.slug,
     title: data.title,
     lang: data.lang ?? "en",
     date,
     datePretty,
-    summary: data.summary ?? null,
+    summary: summary ?? null,
     content: content,
     filename: resolvedFilename
   };
@@ -59,16 +61,16 @@ export function getAllVideoSlugs() {
   return getAllSlugs(videosDirectory);
 }
 
-export function getAllPostData() {
-  return getAllSlugs(postsDirectory).map(getPostData);
+export async function getAllPostData() {
+  return await Promise.all(getAllSlugs(postsDirectory).map(getPostData));
 }
 
 export function getAllVideoData() {
   return getAllSlugs(videosDirectory).map(getVideoData);
 }
 
-export function getSortedPostData() {
-  return getAllPostData().sort((a, b) => {
+export async function getSortedPostData() {
+  return (await getAllPostData()).sort((a, b) => {
     if (a.date > b.date) return -1;
     if (a.date < b.date) return 1;
     return 0;

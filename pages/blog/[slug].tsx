@@ -37,7 +37,7 @@ const BlogPostPage = ({ post, html }: Props) => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const post = getPostData(params?.slug as string);
+  const post = await getPostData(params?.slug as string);
   const html = await formatMarkdown(post.content);
   return {
     props: {

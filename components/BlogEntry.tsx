@@ -20,7 +20,12 @@ const BlogEntry = ({ post }: Props) => {
           <h3>{title}</h3>
         </a>
       </Link>
-      {summary ? <p className="blog_feed__entry__abstract">{summary}</p> : null}
+      {summary ? (
+        <div
+          className="blog_feed__entry__abstract"
+          dangerouslySetInnerHTML={{ __html: summary }}
+        />
+      ) : null}
       <p className="blog_feed__entry__actions">
         <Link href={path}>
           <a>Read article</a>
