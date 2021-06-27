@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next",
-    "build": "next build && next export",
+    "build": "next build && next-sitemap && next export",
     "start": "next",
     "type-check": "tsc"
   },
@@ -13,6 +13,7 @@
     "dayjs": "^1.9.1",
     "gray-matter": "^4.0.2",
     "next": "^11.0.1",
+    "next-sitemap": "^1.6.124",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "remark": "^12.0.1",
@@ -24,6 +25,9 @@
     "@types/node": "^12.12.21",
     "@types/react": "^16.9.16",
     "@types/react-dom": "^16.9.4",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "eslint": "^7.29.0",
+    "eslint-config-next": "^11.0.1",
     "typescript": "4.3.2"
   },
   "license": "MIT"
