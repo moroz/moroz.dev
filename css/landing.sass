@@ -4,6 +4,7 @@ $landing-overlay: linear-gradient($landing-overlay-color, $landing-overlay-color
 $hello-stop-1: #fbdd97
 $hello-stop-2: #d3fbfb
 $hello-gradient: linear-gradient(to bottom, $hello-stop-1, $hello-stop-2)
+$hello-fallback: #e6edcc
 
 .landing
   background: $landing-overlay, url(../images/landing-bg.jpg)
@@ -51,8 +52,9 @@ $hello-gradient: linear-gradient(to bottom, $hello-stop-1, $hello-stop-2)
       height: 45vh
       width: calc(202 / 288 * 45vh)
 
-  &__cta
+  &__cta.button
     margin-top: 1.75em
+    color: #fff
 
   &__description
     width: 80%
@@ -83,3 +85,10 @@ $hello-gradient: linear-gradient(to bottom, $hello-stop-1, $hello-stop-2)
 
     +mobile
       font-size: 3rem
+
++non-retina
+  .is-desktop.is-safari
+    .landing h1
+      background: none
+      -webkit-text-fill-color: unset
+      color: $hello-fallback

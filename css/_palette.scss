@@ -6,8 +6,8 @@ $dark-body-text: transparentize(#fff, 0.4);
 $dark-emph-text: transparentize(#fff, 0.13);
 $dark-dimmed-text: transparentize(#fff, 0.62);
 
-$light-primary: rgb(0, 122, 255);
-$dark-primary: rgb(10, 132, 255);
+$light-primary: rgb(255, 45, 85);
+$dark-primary: rgb(255, 55, 85);
 
 $light: (
   "body-bg": #fff,
@@ -32,7 +32,7 @@ $light: (
   "red": rgb(255, 59, 48),
   "error": rgb(255, 59, 48),
   "purple": rgb(175, 82, 222),
-  "link-color": #0070c9,
+  "link-color": $light-primary,
   "link-visited": darken(rgb(175, 82, 222), 20%),
   "primary": $light-primary,
   "placeholder": #aaa,
@@ -65,7 +65,7 @@ $dark: (
   "error": rgb(255, 69, 58),
   "purple": rgb(191, 90, 242),
   "link-color": $dark-primary,
-  "link-visited": darken(rgb(191, 90, 242), 5%),
+  "link-visited": lighten(rgb(191, 90, 242), 10%),
   "primary": $dark-primary,
   "placeholder": $dark-dimmed-text,
   "emph-text": $dark-emph-text,
