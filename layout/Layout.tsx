@@ -17,10 +17,18 @@ const Layout = ({ children, title, className }: Props) => (
       </title>
       <meta charSet="utf-8" />
       <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600&display=swap"
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossOrigin="crossorigin"
+      />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
         rel="stylesheet"
       />
+      <link rel="icon" href="/favicon.svg" />
+      <meta name="theme-color" content="#ffb3b3" />
     </Head>
     <Header />
     <main role="main" id="main">

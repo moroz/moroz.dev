@@ -16,6 +16,7 @@ export async function getPostData(filename: string): Promise<Post> {
   const date = new Date(data.date).toISOString();
   const datePretty = day(date).format("MMMM D, YYYY");
   const summary = data.summary ? await formatMarkdown(data.summary) : null;
+  const summaryPlain = data.summary ?? null;
   return {
     slug: data.slug,
     title: data.title,
@@ -23,7 +24,8 @@ export async function getPostData(filename: string): Promise<Post> {
     draft: data.draft ?? false,
     date,
     datePretty,
-    summary: summary ?? null,
+    summary,
+    summaryPlain,
     content: content,
     filename: resolvedFilename
   };

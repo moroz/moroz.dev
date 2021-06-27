@@ -4,6 +4,7 @@ import Layout from "../../layout/Layout";
 import { getAllPostSlugs, getPostData } from "../../lib/api/blog";
 import { formatMarkdown } from "../../lib/api/markdown";
 import Link from "next/link";
+import Head from "next/head";
 
 interface Props {
   post: Post;
@@ -11,9 +12,14 @@ interface Props {
 }
 
 const BlogPostPage = ({ post, html }: Props) => {
-  const { summary, title, datePretty, lang = "en" } = post;
+  const { summary, summaryPlain, title, datePretty, lang = "en" } = post;
   return (
     <Layout title={title}>
+      {summaryPlain ? (
+        <Head>
+          <meta name="description" content={summaryPlain} />
+        </Head>
+      ) : null}
       <article className="container blog-post" lang={lang}>
         <header>
           <h1 className="page-title">{title}</h1>

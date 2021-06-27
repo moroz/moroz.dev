@@ -7,6 +7,7 @@ export interface Post {
   filename: string;
   lang?: string;
   summary?: string | null;
+  summaryPlain: string | null;
   draft: boolean;
 }
 
