@@ -48,7 +48,12 @@ $hello-gradient: linear-gradient(to bottom, $hello-stop-1, $hello-stop-2)
     right: 0
 
     +mobile
-      height: 45%
+      width: calc(202 / 360 * 100vw)
+      height: calc(288 / 360 * 100vw)
+
+    @media screen and (min-width: 410px)
+      width: calc(260 / 410 * 100vw)
+      height: calc(370 / 410 * 100vw)
 
   &__cta
     margin-top: 1.75em
