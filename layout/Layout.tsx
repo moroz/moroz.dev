@@ -9,6 +9,8 @@ type Props = {
   className?: string;
 };
 
+const description = `Learn Web development with Karol Moroz. Programming tips & tricks, Elixir, React, Svelte, TypeScript learning resources, blog, videos, and more.`;
+
 const Layout = ({ children, title, className }: Props) => (
   <div className={`layout ${className || ""}`}>
     <Head>
@@ -17,6 +19,7 @@ const Layout = ({ children, title, className }: Props) => (
       </title>
       <meta charSet="utf-8" />
       <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      <meta name="description" content={description} />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link
         rel="preconnect"

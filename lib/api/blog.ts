@@ -5,6 +5,8 @@ import { Post, Video } from "../../interfaces";
 import day from "dayjs";
 import { formatMarkdown } from "./markdown";
 
+const isDev = process.env.NODE_ENV !== "production";
+
 const postsDirectory = join(process.cwd(), "content/blog");
 const videosDirectory = join(process.cwd(), "content/videos");
 
@@ -74,7 +76,7 @@ export function getAllVideoData() {
 
 export async function getSortedPostData() {
   return (await getAllPostData())
-    .filter((post) => !post.draft)
+    .filter((post) => isDev || !post.draft)
     .sort((a, b) => {
       if (a.date > b.date) return -1;
       if (a.date < b.date) return 1;
