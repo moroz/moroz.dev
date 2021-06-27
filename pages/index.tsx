@@ -18,7 +18,25 @@ const IndexPage = () => (
           <a className="button landing__cta">Get in touch</a>
         </Link>
       </div>
-      <img src="/km.png" alt="Karol Moroz" className="landing__human" />
+      <picture>
+        <source
+          media="(max-width: 599px)"
+          type="image/webp"
+          srcSet="/km-half.webp"
+        />
+        <source
+          media="(max-width: 599px)"
+          type="image/png"
+          srcSet="/km-half.png"
+        />
+        <source
+          media="(min-width: 600px)"
+          type="image/webp"
+          srcSet="/km.webp"
+        />
+        <source media="(min-width: 600px)" type="image/png" srcSet="/km.png" />
+        <img src="/km.png" alt="Karol Moroz" className="landing__human" />
+      </picture>
     </div>
   </Layout>
 );
