@@ -73,14 +73,15 @@ code, pre
   word-break: break-word
 
 .remark-highlight
-  font-size: .9em
+  &, pre, pre code
+    font-size: 1.15rem
 
   +mobile
-    padding: .8rem .8rem .5rem !important
+    padding: .8em .8em .5em !important
 
 +ios
   .remark-highlight
     font-size: 10px
 
-  pre code
-    line-height: 1.4
+    pre code
+      line-height: 1.4
