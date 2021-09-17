@@ -2,6 +2,7 @@
 title: Using Elixir Livebook for Phoenix Development
 slug: using-elixir-livebook-for-phoenix-development
 date: 2021-07-04
+draft: true
 summary: |
   This article describes my Elixir development workflow
   using Livebook.
