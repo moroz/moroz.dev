@@ -69,12 +69,18 @@ a:visited
 
 code, pre
   font-family: $font-monospace
-
   word-break: break-word
+
+:not(pre) > code
+  background: darken(white, 5%)
+  color: #2980b9
+  font-size: .95em
+  white-space: nowrap
 
 .remark-highlight
   &, pre, pre code
     font-size: 1.15rem
+    font-family: $font-monospace
 
   +mobile
     padding: .8em .8em .5em !important
