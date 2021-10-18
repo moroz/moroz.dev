@@ -111,33 +111,19 @@ yarn create vite --template react-ts assets
 `yarn create` is a neat wrapper for `create-*` generators, so `yarn create vite` will install and run the NPM package `create-vite`.
 This also works with other generators, such as the classic `create-react-app`.
 
-### Copy files over to Phoenix
+### Add a watcher
 
-Copy the whole Vite project to the `assets` directory of your phoenix application, and remove `index.html`.
-
-
-### Uninstall esbuild
-
-Remove the `esbuild` dependency in `mix.exs` and unlock it:
-
-```
-mix deps.unlock esbuild
-```
-
-Remove the block starting with `config :esbuild` inside `config/config.exs`.
-
-
-### Replace watcher
-
-In `config/dev.exs`, replace the code that launches esbuild with a call to the new Vite watcher:
+In `config/dev.exs`, configure Phoenix endpoint to start the Vite.js watcher with the application:
 
 ```elixir
 config :vite_demo, ViteDemoWeb.Endpoint,
+  # Binding to loopback ipv4 address prevents access from other machines.
+  # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 4000],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  # ...
+  secret_key_base: "k1rc/Ae3Lkg8gO7BIgKP/oDw9jE9gFGPZhZVlKL9N0gG5yU97iiwlcDgs8GTnpLb",
   watchers: [
     node: [
       "node_modules/vite/bin/vite.js",
@@ -146,8 +132,9 @@ config :vite_demo, ViteDemoWeb.Endpoint,
   ]
 ```
 
-
 ### Install SASS and Bulma
+
+Inside the `assets` directory, let's install `sass` (Dart SASS) and the Bulma CSS framework:
 
 ```
 cd assets
@@ -155,18 +142,16 @@ yarn add -D sass @types/node
 yarn add bulma
 ```
 
-
-### Install Phoenix deps
-
-This step is optional.
+If you need to also work with the JS libraries provided by Phoenix, e.g. to implement link tags using HTTP methods different from `GET`, or to use Phoenix LiveView, install Phoenix JS dependencies from NPM:
 
 ```
 yarn add -D @types/phoenix
 yarn add phoenix phoenix_html phoenix_live_view
 ```
 
+### Configure Vite
 
-### Configure Vite (1)
+Replace the content of `assets/vite.config.ts` with the following:
 
 ```typescript
 import { defineConfig } from "vite";
@@ -183,13 +168,6 @@ export default defineConfig(({ command }: any) => {
     process.stdin.resume();
   }
 
-  // ...
-```
-
-
-### Configure Vite (2)
-
-```typescript
   return {
     publicDir: "static",
     plugins: [react()],
@@ -214,6 +192,56 @@ export default defineConfig(({ command }: any) => {
 });
 ```
 
+This file is a TypeScript module that exports a decorated function which returns a config object. Let us quickly go over the contents of this function. 
+
+```typescript
+  const isDev = command !== "build";
+```
+
+We check the command used to launch `vite` as some settings will be different in development and production builds.
+In development, `vite` will be launched with the command `serve`, and for deployment builds, with `build`.
+
+```typescript
+  if (isDev) {
+    // Terminate the watcher when Phoenix quits
+    process.stdin.on("close", () => {
+      process.exit(0);
+    });
+
+    process.stdin.resume();
+  }
+```
+
+In development, the watcher process should terminate exactly at the same time as the Phoenix process supervising it.
+For reasons I don't fully understand as of this writing, the termination of the parent process results in the standard input device (`STDIN`) being closed for the child process.
+Therefore, we listen for a `close` event on the `STDIN` device to clean up Vite's memory, unbind ports, etc.
+
+```typescript
+  return {
+    publicDir: "static",
+    plugins: [react()],
+    build: {
+      target: "esnext", // build for recent browsers
+      outDir: "../priv/static", // emit assets to priv/static
+      emptyOutDir: true,
+      sourcemap: isDev, // enable source map in dev build
+      manifest: false, // do not generate manifest.json
+      rollupOptions: {
+        input: {
+          main: "./src/main.tsx"
+        },
+        output: {
+          entryFileNames: "assets/[name].js", // remove hash
+          chunkFileNames: "assets/[name].js",
+          assetFileNames: "assets/[name][extname]"
+        }
+      }
+    }
+  };
+```
+
+This fragment instructs Vite to look for static asset files (to be copied without processing) under `assets/static`, and configures the React plugin.
+The `build` part configures entry points, target directories, and filename patterns for compiled assets.
 
 ### Import Vite assets in layout (1)
 
