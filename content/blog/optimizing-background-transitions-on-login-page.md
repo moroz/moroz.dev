@@ -135,6 +135,7 @@ body
       top: 50%
       right: 0
       left: 0
+      min-width: 100%
       transform: translateY(-50%)
 ```
 
@@ -242,3 +243,5 @@ export default function DynamicBackgrounds() {
   return true;
 }
 ```
+
+If you navigate to this page now, you should see 

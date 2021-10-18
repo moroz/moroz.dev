@@ -37,7 +37,9 @@ $light: (
   "primary": $light-primary,
   "placeholder": #aaa,
   "emph-text": $light-emph-text,
-  "dimmed-text": $light-dimmed-text
+  "dimmed-text": $light-dimmed-text,
+  "code-bg": darken(white, 3%),
+  "code-fg": darken(#16a085, 3%)
 );
 
 $dark: (
@@ -69,7 +71,9 @@ $dark: (
   "primary": $dark-primary,
   "placeholder": $dark-dimmed-text,
   "emph-text": $dark-emph-text,
-  "dimmed-text": $dark-dimmed-text
+  "dimmed-text": $dark-dimmed-text,
+  "code-bg": #000,
+  "code-fg": #ffb000
 );
 
 html {
