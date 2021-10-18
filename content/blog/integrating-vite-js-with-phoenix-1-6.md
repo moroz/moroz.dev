@@ -243,21 +243,27 @@ Therefore, we listen for a `close` event on the `STDIN` device to clean up Vite'
 This fragment instructs Vite to look for static asset files (to be copied without processing) under `assets/static`, and configures the React plugin.
 The `build` part configures entry points, target directories, and filename patterns for compiled assets.
 
-### Import Vite assets in layout (1)
+### Import Vite assets in layout
 
-Add a function to your `LayoutView` to tell you whether you are running in `dev`:
+If we launch `mix phx.server` at this point, we should still see the default Phoenix application page:
+
+<a href="/images/vite/initial-view.png" target="_blank">
+<img src="/images/vite/initial-view.png" alt="Screenshot of Phoenix application page in Safari" />
+</a>
+
+Now, let us break it all so we can have some fun with React.
+With a Vite.js-based workflow, we will import different asset files in development and in production builds. Therefore, we will need a way to conditionally render `<script>` tags based on Mix environment.
+However, since `Mix` is not available in releases, we need to cache the Mix environment at compile time.
+To this end, add a function to your `LayoutView` module to tell you if you are running in `dev`:
 
 ```elixir
 @env Mix.env() # remember value at compile time
 def dev_env?, do: @env == :dev
 ```
 
+Armed with our helper, we can now add a partial called `_preamble.html.heex` inside `lib/vite_demo_web/templates/layout`:
 
-### Import Vite assets in layout (2)
-
-Add a partial called `_preamble.html.heex` in the directory for layout templates:
-
-```eex
+```erb
 <%= if dev_env?() do %>
   <script type="module">
     import RefreshRuntime from "http://localhost:3000/@react-refresh";
@@ -269,17 +275,52 @@ Add a partial called `_preamble.html.heex` in the directory for layout templates
   <script type="module" src="http://localhost:3000/@vite/client"></script>
   <script type="module" src="http://localhost:3000/src/main.tsx"></script>
 <% else %>
-  <link phx-track-static rel="stylesheet"
-    href={Routes.static_path(@conn, "/assets/main.css")}/>
-  <script defer phx-track-static type="text/javascript"
-    src={Routes.static_path(@conn, "/assets/main.js")}></script>
+  <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/main.css")}/>
+  <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/main.js")}></script>
 <% end %>
 ```
 
+The topmost `<script>` tag is a polyfill needed to modify the DOM. The snippet comes from [Vite.js documentation](https://vitejs.dev/guide/backend-integration.html).
+
+Now, in `lib/vite_demo_web/templates/layout/root.html.heex`, swap the default `<link>` and `<script>` tags for a call to `render/2`, like so:
+
+```erb
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <%= csrf_meta_tag() %>
+    <%= live_title_tag assigns[:page_title] || "ViteDemo", suffix: " · Phoenix Framework" %>
+    <%= render "_preamble.html", assigns %>
+  </head>
+  <body>
+    <%= @inner_content %>
+  </body>
+</html>
+```
+
+### Replace default content
+
+Swap the contents of `lib/vite_demo_web/templates/page/index.html.heex` with a container for our React application:
+
+```html
+<div id="root"></div>
+```
+
+If you go to the browser now, you should see a React application correctly rendered:
+
+<a href="/images/vite/logo-404.png" target="_blank">
+<img src="/images/vite/logo-404.png" alt="Working React App but without assets" />
+</a>
+
+However, notice that the React logo image is not being correctly loaded. This is because the source of the image is pointing to `http://localhost:4000/src/logo.svg`, attempting to fetch the file from Phoenix.
 
 ### Serve raw assets with Phoenix
 
-In your `endpoint.ex`, add a `Plug.Static` to serve raw files from `assets`:
+We need to instruct Phoenix to serve files at `assets/src` over the usual endpoint. This is only necessary in development.
+This is in fact very easy, just add this snippet inside `lib/vite_demo_web/endpoint.ex`:
 
 ```elixir
 if Mix.env() == :dev do
@@ -290,20 +331,15 @@ if Mix.env() == :dev do
 end
 ```
 
+Now the image loads fine, and we didn't even have to restart the server!
 
-### Replace default content
+<a href="/images/vite/logo-loaded.png" target="_blank">
+<img src="/images/vite/logo-loaded.png" alt="Working React App" />
+</a>
 
-Remove the header in layouts and swap the contents of `page/index.html.heex` with a container for our React application:
-
-```html
-<div id="root"></div>
-```
-
-
-### Create a stylesheet hierarchy (1)
+### Setting up stylesheets
 
 Under `assets/src`, create a folder called `sass` with three files: `app.sass`, `_variables.sass`, and `bulma.sass`.
-
 
 ### `_variables.sass`
 
