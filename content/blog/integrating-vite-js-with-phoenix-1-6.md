@@ -242,6 +242,7 @@ Therefore, we listen for a `close` event on the `STDIN` device to clean up Vite'
 
 This fragment instructs Vite to look for static asset files (to be copied without processing) under `assets/static`, and configures the React plugin.
 The `build` part configures entry points, target directories, and filename patterns for compiled assets.
+We disable source maps in production builds and opt not to generate a manifest file&mdash;Phoenix has its own mechanism for generating cache manifest files that is incompatible with Vite's.
 
 ### Import Vite assets in layout
 
@@ -339,9 +340,10 @@ Now the image loads fine, and we didn't even have to restart the server!
 
 ### Setting up stylesheets
 
+Now let's style up the application with a customized Bulma setup.
 Under `assets/src`, create a folder called `sass` with three files: `app.sass`, `_variables.sass`, and `bulma.sass`.
 
-### `_variables.sass`
+In `_variables.sass`, we set up some variables and import a custom Web font:
 
 ```scss
 @import url('https://fonts.googleapis.com/css?family=Nunito:400,700')
@@ -366,8 +368,7 @@ $input-border-color: transparent
 $input-shadow: none
 ```
 
-
-### `bulma.sass`
+In `bulma.sass`, import all the necessary parts of the framework:
 
 ```scss
 @charset "utf-8"
@@ -384,8 +385,7 @@ $input-shadow: none
 @import "../../node_modules/bulma/sass/layout/section.sass"
 ```
 
-
-### `app.sass`
+Finally, put the setup together by importing both files inside `app.sass`:
 
 ```scss
 @import variables
@@ -393,16 +393,13 @@ $input-shadow: none
 @import bulma
 ```
 
-
-### Import the SASS files
-
-Inside `main.tsx`, import the SASS entry file:
+Finally, swap any imports to `.css` or `.sass` files inside `main.tsx` for an import of our `.sass` entry file:
 
 ```typescript
 import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
-import "./sass/app.sass";
+import "./sass/app.sass"; // changed here
 
 ReactDOM.render(
   <React.StrictMode>
@@ -412,10 +409,15 @@ ReactDOM.render(
 );
 ```
 
+Now the application will be nicely styled, but the layout completely messed up:
+
+<a href="/images/vite/bulma-old-content.png" target="_blank">
+<img src="/images/vite/bulma-old-content.png" alt="Bulma working but content messed up" />
+</a>
 
 ### Replace React content
 
-Inside `App.tsx`, replace the default content:
+Let's build something prettier inside `App.tsx`:
 
 ```typescript
 import { useState, useCallback } from "react";
@@ -447,11 +449,16 @@ function App() {
 export default App;
 ```
 
+Now we get a nice and clean hero with a counter button. The cool thing is that if we just change a tiny part of the application, such as styles, only the modified part of the application will be reloaded in the browser, and the state of your components will be preserved.
+
+<a href="/images/vite/final-product.png" target="_blank">
+<img src="/images/vite/final-product.png" alt="Our final product: React application running over Phoenix" />
+</a>
 
 ### Deployment
 
-With this setup, you don't need to do anything extra to compile your assets for a production deployment. A call to `yarn build` inside assets will emit all necessary files to `priv/static/assets`, and Phoenix will take it from there.
+With an application set up like this, deployments should work fine out of the box.
+you don't need to do anything extra to compile your assets for a production deployment. A call to `yarn build` inside assets will emit all necessary files to `priv/static/assets`, and Phoenix will take it from there.
 
-
-## Thank 🦃
+Thank you for reading and I hope I helped.
 
