@@ -47,7 +47,7 @@ const Layout = ({ children, title, className }: Props) => {
           rel="stylesheet"
         />
         <link rel="icon" href="/favicon.svg" />
-        <meta name="theme-color" content="#ffb3b3" />
+        <meta name="theme-color" content="#131723" />
       </Head>
       <Header />
       <main role="main" id="main">
