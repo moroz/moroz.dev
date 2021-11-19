@@ -1,20 +1,20 @@
-$landing-overlay-color: rgba(0,0,0,.35)
+$landing-overlay-color: rgba(0,0,0,.65)
 $landing-overlay: linear-gradient($landing-overlay-color, $landing-overlay-color)
 
 $hello-stop-1: #fbdd97
 $hello-stop-2: #d3fbfb
 $hello-gradient: linear-gradient(to bottom, $hello-stop-1, $hello-stop-2)
-$hello-fallback: #e6edcc
+$hello-fallback: #4da0b0
 
 .landing
   background: $landing-overlay, url(../images/landing-bg.jpg)
 
-  @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution:.001dpcm)
-    @supports (background-image: -webkit-image-set(url('tile.webp') 1x))
-      background-image: $landing-overlay, url(../images/landing-bg.webp)
+  // @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution:.001dpcm)
+  //   @supports (background-image: -webkit-image-set(url('tile.webp') 1x))
+  //     background-image: $landing-overlay, url(../images/landing-bg.webp)
 
-  @supports (flex-basis: max-content) and (-moz-appearance: meterbar)
-    background-image: $landing-overlay, url(../images/landing-bg.webp)
+  // @supports (flex-basis: max-content) and (-moz-appearance: meterbar)
+  //   background-image: $landing-overlay, url(../images/landing-bg.webp)
 
   height: 100vh
   background-repeat: no-repeat
@@ -81,7 +81,7 @@ $hello-fallback: #e6edcc
     font-size: 4rem
     margin-top: 0
     margin-bottom: 0
-    font-weight: bold
+    font-weight: 900
 
     +mobile
       font-size: 3rem

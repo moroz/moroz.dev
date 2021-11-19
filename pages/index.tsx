@@ -9,10 +9,7 @@ const IndexPage = () => (
         <h1>Karol Moroz.</h1>
         <h2>I build modern Web applications.</h2>
         <div className="landing__description">
-          <p>
-            I am a software developer from Poland, currently living in
-            Kaohsiung,&nbsp;Taiwan (that&apos;s the city in the background).
-          </p>
+          <p>I am a software developer based in Warsaw, Poland.</p>
         </div>
         <Link href="/contact">
           <a className="button landing__cta">Get in touch</a>

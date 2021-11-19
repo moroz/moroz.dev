@@ -43,7 +43,7 @@ const Layout = ({ children, title, className }: Props) => {
           crossOrigin="crossorigin"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Fira+Mono&family=Poppins:ital,wght@0,400;0,600;1,400&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Fira+Mono&family=Merriweather+Sans:ital,wght@0,400;0,700;0,800;1,400&display=swap"
           rel="stylesheet"
         />
         <link rel="icon" href="/favicon.svg" />
