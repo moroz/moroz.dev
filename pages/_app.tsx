@@ -5,8 +5,12 @@ import "prismjs/plugins/line-numbers/prism-line-numbers.css";
 import "../css/app.sass";
 import * as gtag from "../lib/gtag";
 import { useRouter } from "next/router";
+import { ApolloProvider } from "@apollo/client";
+import { useApollo } from "../lib/apolloClient";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const client = useApollo(pageProps);
+
   const router = useRouter();
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -17,7 +21,12 @@ function MyApp({ Component, pageProps }: AppProps) {
       router.events.off("routeChangeComplete", handleRouteChange);
     };
   }, [router.events]);
-  return <Component {...pageProps} />;
+
+  return (
+    <ApolloProvider client={client}>
+      <Component {...pageProps} />
+    </ApolloProvider>
+  );
 }
 
 export default MyApp;

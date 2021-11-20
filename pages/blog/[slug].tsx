@@ -5,6 +5,8 @@ import { getAllPostSlugs, getPostData } from "../../lib/api/blog";
 import { formatMarkdown } from "../../lib/api/markdown";
 import Link from "next/link";
 import Head from "next/head";
+import { useRouter } from "next/router";
+import CommentList from "../../components/comments/CommentList";
 
 interface Props {
   post: Post;
@@ -12,6 +14,8 @@ interface Props {
 }
 
 const BlogPostPage = ({ post, html }: Props) => {
+  const router = useRouter();
+  const path = router.pathname;
   const { summary, summaryPlain, title, datePretty, lang = "en" } = post;
   return (
     <Layout title={title}>
@@ -40,6 +44,7 @@ const BlogPostPage = ({ post, html }: Props) => {
           <a>&lt;&lt; Back to blog</a>
         </Link>
       </article>
+      <CommentList url={path} />
     </Layout>
   );
 };
