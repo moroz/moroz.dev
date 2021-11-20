@@ -7,15 +7,18 @@ import Link from "next/link";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import CommentList from "../../components/comments/CommentList";
+import { addApolloState, initializeApollo } from "../../lib/apolloClient";
+import { LIST_COMMENTS } from "../../gql/commentQueries";
 
 interface Props {
   post: Post;
   html: string;
 }
 
-const BlogPostPage = ({ post, html }: Props) => {
+const BlogPostPage = (props: Props) => {
+  const { post, html } = props;
   const router = useRouter();
-  const path = router.pathname;
+  const path = router.asPath;
   const { summary, summaryPlain, title, datePretty, lang = "en" } = post;
   return (
     <Layout title={title}>
@@ -50,14 +53,27 @@ const BlogPostPage = ({ post, html }: Props) => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const post = await getPostData(params?.slug as string);
+  const apolloClient = initializeApollo();
+
+  const slug = params!.slug as string;
+  const post = await getPostData(slug);
   const html = await formatMarkdown(post.content);
-  return {
+
+  await apolloClient.query({
+    query: LIST_COMMENTS,
+    variables: {
+      url: `/blog/${slug}`
+    }
+  });
+
+  const baseProps = {
     props: {
       post,
       html
     }
   };
+
+  return addApolloState(apolloClient, baseProps);
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
