@@ -6,7 +6,7 @@ $dark-body-text: transparentize(#fff, 0.4);
 $dark-emph-text: transparentize(#fff, 0.13);
 $dark-dimmed-text: transparentize(#fff, 0.62);
 
-$light-primary: rgb(255, 45, 85);
+$light-primary: #DB0021;
 $dark-primary: rgb(255, 55, 85);
 
 $light: (
@@ -38,8 +38,8 @@ $light: (
   "placeholder": #aaa,
   "emph-text": $light-emph-text,
   "dimmed-text": $light-dimmed-text,
-  "code-bg": darken(white, 3%),
-  "code-fg": darken(#16a085, 3%)
+  "code-bg": #f4f4f4,
+  "code-fg": #14806A
 );
 
 $dark: (
