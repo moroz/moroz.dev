@@ -7,6 +7,7 @@
     &, & > p
       margin-top: 0
       margin-bottom: .5rem
+      +system-font
 
   &__meta
     margin-bottom: -.2em
@@ -32,6 +33,9 @@
   color: var(--dimmed-text)
 
 .blog
+  h1, h2, h3, h4, h5, h6
+    +default-font
+
   &__summary
     margin: 0 10% 2rem
     text-align: center
@@ -39,6 +43,8 @@
   &__content
     +fluid-type(320px, 1600px, 17px, 21px)
     line-height: 1.58
+    p
+      +system-font
 
     img
       width: 100%

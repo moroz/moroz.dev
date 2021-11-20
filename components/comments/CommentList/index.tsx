@@ -1,13 +1,16 @@
 import React from "react";
-import { useListCommentsQuery } from "../../../gql/commentQueries";
+import { Comment } from "../../../interfaces/comments";
 
 interface Props {
-  url: string;
+  comments: Comment[];
 }
 
-const CommentList = ({ url }: Props) => {
-  const { data } = useListCommentsQuery(url);
-  return <div>{data ? <pre>{JSON.stringify(data, null, 2)}</pre> : null}</div>;
+const CommentList = ({ comments }: Props) => {
+  return (
+    <div>
+      {comments ? <pre>{JSON.stringify(comments, null, 2)}</pre> : null}
+    </div>
+  );
 };
 
 export default CommentList;

@@ -9,6 +9,8 @@ import { useRouter } from "next/router";
 import CommentList from "../../components/comments/CommentList";
 import { addApolloState, initializeApollo } from "../../lib/apolloClient";
 import { LIST_COMMENTS } from "../../gql/commentQueries";
+import NewCommentForm from "../../components/comments/NewCommentForm";
+import CommentSection from "../../components/comments/CommentSection";
 
 interface Props {
   post: Post;
@@ -18,7 +20,7 @@ interface Props {
 const BlogPostPage = (props: Props) => {
   const { post, html } = props;
   const router = useRouter();
-  const path = router.asPath;
+  const url = router.asPath;
   const { summary, summaryPlain, title, datePretty, lang = "en" } = post;
   return (
     <Layout title={title}>
@@ -47,7 +49,7 @@ const BlogPostPage = (props: Props) => {
           <a>&lt;&lt; Back to blog</a>
         </Link>
       </article>
-      <CommentList url={path} />
+      <CommentSection url={url} />
     </Layout>
   );
 };
