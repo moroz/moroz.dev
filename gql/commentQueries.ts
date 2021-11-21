@@ -34,5 +34,6 @@ export interface ListCommentsQueryVars {
 
 export const useListCommentsQuery = (url: string) =>
   useQuery<ListCommentsQueryResult, ListCommentsQueryVars>(LIST_COMMENTS, {
-    variables: { url }
+    variables: { url },
+    fetchPolicy: typeof window === "undefined" ? undefined : "cache-and-network"
   });
