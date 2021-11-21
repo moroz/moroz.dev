@@ -16,6 +16,7 @@
     "graphql": "^16.0.1",
     "gray-matter": "^4.0.2",
     "lodash": "^4.17.21",
+    "marked": "^4.0.4",
     "next": "12",
     "next-sitemap": "^1.6.124",
     "react": "^16.12.0",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.177",
+    "@types/marked": "^4.0.1",
     "@types/node": "^12.12.21",
     "@types/react": "^16.9.16",
     "@types/react-dom": "^16.9.4",

@@ -1,5 +1,6 @@
 import React from "react";
 import { Comment } from "../../../interfaces/comments";
+import CommentItem from "../CommentItem";
 
 interface Props {
   comments: Comment[];
@@ -8,7 +9,9 @@ interface Props {
 const CommentList = ({ comments }: Props) => {
   return (
     <div>
-      {comments ? <pre>{JSON.stringify(comments, null, 2)}</pre> : null}
+      {comments?.map((comment) => (
+        <CommentItem comment={comment} key={comment.id} />
+      ))}
     </div>
   );
 };

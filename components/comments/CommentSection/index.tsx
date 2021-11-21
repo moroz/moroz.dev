@@ -13,8 +13,8 @@ const CommentSection = ({ url }: Props) => {
   return (
     <section id="comments" className="blog-comments container">
       <h2>Comments ({comments.length})</h2>
-      <NewCommentForm />
       <CommentList comments={comments} />
+      <NewCommentForm />
     </section>
   );
 };

@@ -6,10 +6,8 @@ import { formatMarkdown } from "../../lib/api/markdown";
 import Link from "next/link";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import CommentList from "../../components/comments/CommentList";
 import { addApolloState, initializeApollo } from "../../lib/apolloClient";
 import { LIST_COMMENTS } from "../../gql/commentQueries";
-import NewCommentForm from "../../components/comments/NewCommentForm";
 import CommentSection from "../../components/comments/CommentSection";
 
 interface Props {
