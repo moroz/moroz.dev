@@ -1,4 +1,3 @@
-import { remark } from "remark";
 import html from "remark-html";
 import remarkParse from "remark-parse";
 import remarkStringify from "remark-stringify";
