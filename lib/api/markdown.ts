@@ -1,20 +1,17 @@
-import remark from "remark";
+import { remark } from "remark";
 import html from "remark-html";
+import remarkParse from "remark-parse";
+import remarkStringify from "remark-stringify";
+import { unified } from "unified";
 
 export async function formatMarkdown(md: string) {
-  const result = await remark()
-    .use(html)
-    .use(require("@silvenon/remark-smartypants"))
+  const result = await unified()
+    .use(remarkParse)
+    .use(remarkStringify)
     .use(require("remark-prism"), {
-      plugins: [
-        "prismjs/plugins/autolinker/prism-autolinker",
-        "prismjs/plugins/diff-highlight/prism-diff-highlight",
-        "prismjs/plugins/inline-color/prism-inline-color",
-        "prismjs/plugins/line-numbers/prism-line-numbers",
-        "prismjs/plugins/treeview/prism-treeview",
-        "prismjs/plugins/show-invisibles/prism-show-invisibles"
-      ]
+      /* options */
     })
+    .use(html, { sanitize: false })
     .process(md);
   return result.toString();
 }
