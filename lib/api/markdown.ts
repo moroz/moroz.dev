@@ -21,6 +21,5 @@ export async function mdToReact(md: string) {
 }
 
 export async function formatMarkdown(md: string) {
-  const result = marked(md);
-  return result;
+  return marked(md);
 }

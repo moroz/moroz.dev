@@ -10,7 +10,6 @@
   "dependencies": {
     "@apollo/client": "^3.4.17",
     "@mdx-js/mdx": "^1.6.22",
-    "@silvenon/remark-smartypants": "^1.0.0",
     "clsx": "^1.1.1",
     "dayjs": "^1.9.1",
     "deepmerge": "^4.2.2",
@@ -30,8 +29,6 @@
     "remark": "14",
     "remark-html": "^13.0.1",
     "remark-parse": "^10.0.1",
-    "remark-prism": "^1.1.14",
-    "remark-rehype": "^10.0.1",
     "sass": "^1.26.11"
   },
   "devDependencies": {
