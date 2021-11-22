@@ -8,6 +8,7 @@ export interface Comment {
   signature: string;
   updatedAt: string;
   url: string;
+  website: string;
 }
 
 export interface CommentInput {

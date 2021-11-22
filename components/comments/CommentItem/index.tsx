@@ -15,6 +15,15 @@ const CommentItem = ({ comment }: Props) => {
           {" "}
           on {formatDateTime(comment.insertedAt)}
         </span>
+
+        {comment.website ? (
+          <>
+            {"  "}
+            <a href={comment.website} target="_blank" rel="noopener noreferer">
+              Website
+            </a>
+          </>
+        ) : null}
       </p>
       <div
         className={classes.body}

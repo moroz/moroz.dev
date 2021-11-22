@@ -9,12 +9,15 @@ html, body
 body
   background: var(--body-bg)
   color: var(--body-fg)
-  font-family: $font-sans
+  font-family: $font-system
   font-size: 1.25rem
   font-weight: 400
   line-height: 1.5
   +fluid-type($mobile-width, $desktop-width, 16px, 20px)
   overflow-y: scroll
+
+h1, h2, h3, h4, h5, h6
+  font-family: $font-sans
 
 a:link
   color: var(--link-color)
@@ -97,3 +100,4 @@ code, pre
 
     pre code
       line-height: 1.4
+      font-size: 10px

@@ -8,6 +8,9 @@
   height: $mobile-menu-unit
   line-height: $mobile-menu-unit
 
+  h1
+    margin: 0
+
   +gt-mobile
     display: flex
     height: $header-height
@@ -47,6 +50,7 @@
   &__navlink, &__cta
     transition: .2s ease-in-out
     padding: 0 1em
+    +default-font
 
     +mobile
       padding: $mobile-content-padding

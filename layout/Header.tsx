@@ -39,11 +39,11 @@ const Header = () => {
       }`}
     >
       <div className="header__content">
-        <div className="header__branding">
+        <h1 className="header__branding">
           <Link href="/">
             <a className="header__branding__logo">moroz.dev</a>
           </Link>
-        </div>
+        </h1>
       </div>
       <nav className="header__menu">
         <NavLink href="/">Home</NavLink>
