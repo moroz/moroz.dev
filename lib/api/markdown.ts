@@ -1,20 +1,25 @@
-import remark from "remark";
-import html from "remark-html";
+import { serialize } from "next-mdx-remote/serialize";
+import { marked } from "marked";
+import rehypeHighlight from "rehype-highlight";
+import { lowlight } from "lowlight/lib/core.js";
+import sass from "highlight.js/lib/languages/scss";
+import elixir from "highlight.js/lib/languages/elixir";
+import erb from "highlight.js/lib/languages/erb";
+const pug = require("highlight-pug/pug");
+
+lowlight.registerLanguage("pug", pug);
+lowlight.registerLanguage("sass", sass);
+lowlight.registerLanguage("elixir", elixir);
+lowlight.registerLanguage("erb", erb);
+
+export async function mdToReact(md: string) {
+  return serialize(md, {
+    mdxOptions: {
+      rehypePlugins: [rehypeHighlight]
+    }
+  });
+}
 
 export async function formatMarkdown(md: string) {
-  const result = await remark()
-    .use(html)
-    .use(require("@silvenon/remark-smartypants"))
-    .use(require("remark-prism"), {
-      plugins: [
-        "prismjs/plugins/autolinker/prism-autolinker",
-        "prismjs/plugins/diff-highlight/prism-diff-highlight",
-        "prismjs/plugins/inline-color/prism-inline-color",
-        "prismjs/plugins/line-numbers/prism-line-numbers",
-        "prismjs/plugins/treeview/prism-treeview",
-        "prismjs/plugins/show-invisibles/prism-show-invisibles"
-      ]
-    })
-    .process(md);
-  return result.toString();
+  return marked(md);
 }

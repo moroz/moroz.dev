@@ -8,7 +8,7 @@ summary: |
 
 This article describes the process of integrating a new [Phoenix 1.6](https://www.phoenixframework.org/) application with [Vite.js](https://vitejs.dev/) for development and deployment purposes.
 We are going to configure assets bundling for a barebones React.js/TypeScript application and style it with [Bulma](https://bulma.io/) and [SASS](https://sass-lang.com/).
-This article was originally released as a [Reveal.js presentation](https://vite-ppt.moroz.dev/) for internal use at my current company.
+This article was originally released as a <a href="https://vite-ppt.moroz.dev/" target="_blank" rel="noopener noreferer">Reveal.js presentation</a> for internal use at my current company.
 This version aims to expand and elucidate on the original content.
 
 ### Why do we need to worry about JS bundling?
@@ -56,49 +56,6 @@ mix phx.new --no-ecto --no-assets vite_demo
 ```
 
 When the generator asks you whether you want to fetch and install dependencies, just press Enter and everything will proceed automatically.
-
-<!--
-### What we get in the project
-
-The project comes with the package `esbuild` preinstalled:
-
-```elixir
-# mix.exs
-{:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
-```
-
-In `config/config.exs`, there is a section of default settings for `esbuild`:
-
-```elixir
-# Configure esbuild (the version is required)
-config :esbuild,
-  version: "0.12.18",
-  default: [
-    args:
-      ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
-    cd: Path.expand("../assets", __DIR__),
-    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
-  ]
-```
-
-`config/dev.exs` configures a watcher for `esbuild`:
-
-```elixir
-config :vite_demo, ViteDemoWeb.Endpoint,
-  # Binding to loopback ipv4 address prevents access from other machines.
-  # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: 4000],
-  check_origin: false,
-  code_reloader: true,
-  debug_errors: true,
-  secret_key_base: "uL9kvsB8Mlm50ERmP0e7ZKESidYe/RXs7RuCJPu94/3sVyEK0GIAtFRggCaiekYW",
-  watchers: [
-    # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
-  ]
-
-```
--->
 
 ### Creating a config for Vite.js
 
