@@ -1,16 +1,26 @@
-import html from "remark-html";
-import remarkParse from "remark-parse";
-import remarkStringify from "remark-stringify";
-import { unified } from "unified";
+import { serialize } from "next-mdx-remote/serialize";
+import { marked } from "marked";
+import rehypeHighlight from "rehype-highlight";
+import { lowlight } from "lowlight/lib/core.js";
+import sass from "highlight.js/lib/languages/scss";
+import elixir from "highlight.js/lib/languages/elixir";
+import erb from "highlight.js/lib/languages/erb";
+const pug = require("highlight-pug/pug");
+
+lowlight.registerLanguage("pug", pug);
+lowlight.registerLanguage("sass", sass);
+lowlight.registerLanguage("elixir", elixir);
+lowlight.registerLanguage("erb", erb);
+
+export async function mdToReact(md: string) {
+  return serialize(md, {
+    mdxOptions: {
+      rehypePlugins: [rehypeHighlight]
+    }
+  });
+}
 
 export async function formatMarkdown(md: string) {
-  const result = await unified()
-    .use(remarkParse)
-    .use(remarkStringify)
-    .use(require("remark-prism"), {
-      /* options */
-    })
-    .use(html, { sanitize: false })
-    .process(md);
-  return result.toString();
+  const result = marked(md);
+  return result;
 }

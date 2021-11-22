@@ -78,22 +78,21 @@ code, pre
   background: var(--code-bg)
   color: var(--code-fg)
   font-size: .95em
-  white-space: nowrap
+  // white-space: nowrap
   line-height: 1.3
   font-weight: bold
   padding: 0 .125em
+  word-wrap: break-word
 
-.remark-highlight
-  &, pre, pre code
-    font-size: 1.15rem
-    font-family: $font-monospace
+pre
+  font-size: 1.1rem
+  overflow-x: auto
 
-  +mobile
-    padding: .8em .8em .5em !important
++mobile
+  pre
+    display: flex
+    font-size: 1rem
 
-+ios
-  .remark-highlight
-    font-size: 10px
-
-    pre code
-      line-height: 1.4
+    code
+      overflow: visible
+      width: 100%

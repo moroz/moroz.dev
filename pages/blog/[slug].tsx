@@ -2,17 +2,18 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import { Post } from "../../interfaces";
 import Layout from "../../layout/Layout";
 import { getAllPostSlugs, getPostData } from "../../lib/api/blog";
-import { formatMarkdown } from "../../lib/api/markdown";
+import { mdToReact } from "../../lib/api/markdown";
 import Link from "next/link";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { addApolloState, initializeApollo } from "../../lib/apolloClient";
 import { LIST_COMMENTS } from "../../gql/commentQueries";
 import CommentSection from "../../components/comments/CommentSection";
+import { MDXRemote } from "next-mdx-remote";
 
 interface Props {
   post: Post;
-  html: string;
+  html: any;
 }
 
 const BlogPostPage = (props: Props) => {
@@ -38,11 +39,9 @@ const BlogPostPage = (props: Props) => {
             <div dangerouslySetInnerHTML={{ __html: summary }} />
           </div>
         ) : null}
-        <main
-          role="main"
-          className="blog__content"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        <main role="main" className="blog__content">
+          <MDXRemote {...html} />
+        </main>
         <Link href="/blog">
           <a>&lt;&lt; Back to blog</a>
         </Link>
@@ -57,7 +56,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const slug = params!.slug as string;
   const post = await getPostData(slug);
-  const html = await formatMarkdown(post.content);
+  const html = await mdToReact(post.content);
 
   await apolloClient.query({
     query: LIST_COMMENTS,

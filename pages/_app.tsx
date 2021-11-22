@@ -1,7 +1,5 @@
 import { useEffect } from "react";
 import type { AppProps } from "next/app";
-import "../css/vendor/prism-vsc-dark-plus.css";
-import "prismjs/plugins/line-numbers/prism-line-numbers.css";
 import "../css/app.sass";
 import * as gtag from "../lib/gtag";
 import { useRouter } from "next/router";
