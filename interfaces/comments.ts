@@ -9,6 +9,7 @@ export interface Comment {
   updatedAt: string;
   url: string;
   website: string;
+  iAmARobot: boolean;
 }
 
 export interface CommentInput {

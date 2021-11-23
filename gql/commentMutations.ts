@@ -1,5 +1,6 @@
 import { useMutation } from "@apollo/client";
 import gql from "graphql-tag";
+import { MutationResult } from "../interfaces/common";
 import { Comment, CommentInput } from "../interfaces/comments";
 import { COMMENT_DETAILS_FRAGMENT, LIST_COMMENTS } from "./commentQueries";
 
@@ -8,13 +9,17 @@ export const CREATE_COMMENT = gql`
 
   mutation CreateComment($input: CommentInput!) {
     createComment(input: $input) {
-      ...CommentDetails
+      success
+      errors
+      data {
+        ...CommentDetails
+      }
     }
   }
 `;
 
 export interface CreateCommentMutationResult {
-  createComment: Comment | null;
+  createComment: MutationResult<Comment>;
 }
 
 export interface CreateCommentMutationVars {
@@ -26,7 +31,7 @@ export const useCreateCommentMutation = () =>
     CREATE_COMMENT,
     {
       update(cache, { data }) {
-        const newComment = data?.createComment;
+        const newComment = data?.createComment.data;
         if (!newComment) return;
         const url = newComment.url;
         const { listComments } = cache.readQuery({

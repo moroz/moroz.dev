@@ -64,6 +64,14 @@ const NewCommentForm = () => {
           register={register}
         />
       </div>
+      <div className="visually-hidden">
+        <InputField
+          type="checkbox"
+          name="iAmARobot"
+          label="I am not a human"
+          register={register}
+        />
+      </div>
       <button type="submit" disabled={mutating}>
         Submit comment
       </button>
