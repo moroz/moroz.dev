@@ -1,3 +1,4 @@
+import { ChangeEvent } from "react";
 import clsx from "clsx";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
@@ -6,9 +7,28 @@ import { CommentInput } from "../../../interfaces/comments";
 import InputField from "../InputField";
 import classes from "./NewCommentForm.module.sass";
 
+const isValidURL = (url: string) => {
+  try {
+    const parsed = new URL(url);
+    if (!["http:", "https:"].includes(parsed.protocol)) return false;
+    if (!parsed.host.match(/\./)) return false;
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 const NewCommentForm = () => {
   const router = useRouter();
-  const { register, handleSubmit, reset } = useForm<CommentInput>();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    clearErrors,
+    formState: { errors },
+    setValue
+  } = useForm<CommentInput>();
   const url = router.asPath;
   const [mutate, { loading: mutating }] = useCreateCommentMutation();
 
@@ -17,6 +37,34 @@ const NewCommentForm = () => {
     const result = await mutate({ variables: { input } });
     if (result.data?.createComment?.success) {
       reset();
+    } else {
+      clearErrors();
+      const errors = result.data?.createComment.errors ?? {};
+      Object.keys(errors).forEach((key: any) => {
+        (errors as any)[key]?.forEach((error: string) => {
+          setError(key, { message: error, type: "validate" });
+        });
+      });
+    }
+  };
+
+  const validateWebsite = (e: ChangeEvent<HTMLInputElement>) => {
+    let url = e.target.value.trim();
+    if (!url) {
+      clearErrors("website");
+      return;
+    }
+    if (!url.match(/^https?:\/\//)) {
+      url = `http://${url}`;
+      setValue("website", url);
+    }
+    if (!isValidURL(url)) {
+      setError("website", {
+        type: "validate",
+        message: "is not a valid website URL"
+      });
+    } else {
+      clearErrors("website");
     }
   };
 
@@ -48,6 +96,7 @@ const NewCommentForm = () => {
           id="new_comment_signature"
           label="Your name:"
           register={register}
+          errors={errors}
           required
         />
         <InputField
@@ -55,13 +104,16 @@ const NewCommentForm = () => {
           id="new_comment_email"
           label="Email:"
           register={register}
+          errors={errors}
           required
         />
         <InputField
           name="website"
           id="new_comment_website"
           label="Website:"
+          errors={errors}
           register={register}
+          onBlur={validateWebsite}
         />
       </div>
       <div className="visually-hidden">

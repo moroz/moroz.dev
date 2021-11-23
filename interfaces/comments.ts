@@ -16,4 +16,6 @@ export interface CommentInput {
   body: string;
   signature: string;
   url: string;
+  website: string;
+  email: string;
 }
