@@ -15,7 +15,7 @@ const NewCommentForm = () => {
   const onSubmit = async (partial: CommentInput) => {
     const input = { ...partial, url };
     const result = await mutate({ variables: { input } });
-    if (result.data?.createComment?.id) {
+    if (result.data?.createComment?.success) {
       reset();
     }
   };
