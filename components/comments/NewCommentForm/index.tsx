@@ -122,6 +122,7 @@ const NewCommentForm = () => {
           name="iAmARobot"
           label="I am not a human"
           register={register}
+          tabIndex={-1}
         />
       </div>
       <button type="submit" disabled={mutating}>
