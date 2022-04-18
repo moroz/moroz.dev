@@ -1,0 +1,11 @@
+[[redirects]]
+  from = "https://makeprogramming.fun/*"
+  to = "https://moroz.dev/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.makeprogramming.fun/*"
+  to = "https://moroz.dev/:splat"
+  status = 301
+  force = true
