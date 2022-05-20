@@ -4,6 +4,7 @@ import rehypeHighlight from "rehype-highlight";
 import { lowlight } from "lowlight/lib/core.js";
 import sass from "highlight.js/lib/languages/scss";
 import elixir from "highlight.js/lib/languages/elixir";
+import swift from "highlight.js/lib/languages/swift";
 import erb from "highlight.js/lib/languages/erb";
 const pug = require("highlight-pug/pug");
 
@@ -11,6 +12,7 @@ lowlight.registerLanguage("pug", pug);
 lowlight.registerLanguage("sass", sass);
 lowlight.registerLanguage("elixir", elixir);
 lowlight.registerLanguage("erb", erb);
+lowlight.registerLanguage("swift", swift);
 
 export async function mdToReact(md: string) {
   return serialize(md, {
