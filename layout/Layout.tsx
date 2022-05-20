@@ -36,16 +36,6 @@ const Layout = ({ children, title, className }: Props) => {
         <meta charSet="utf-8" />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
         <meta name="description" content={description} />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="crossorigin"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
         <link rel="icon" href="/favicon.svg" />
         <meta name="theme-color" content="#131723" />
       </Head>
