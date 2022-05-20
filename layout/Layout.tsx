@@ -30,9 +30,7 @@ const Layout = ({ children, title, className }: Props) => {
   return (
     <div className={`layout ${className || ""} ${classes}`}>
       <Head>
-        <title>
-          {title ? `${title.toLowerCase()} | moroz.dev` : "moroz.dev"}
-        </title>
+        <title>{title ? `${title} | moroz.dev` : "moroz.dev"}</title>
         <meta charSet="utf-8" />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
         <meta name="description" content={description} />
