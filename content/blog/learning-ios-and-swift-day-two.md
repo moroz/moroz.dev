@@ -21,7 +21,9 @@ My Linux laptop runs Debian 11, so I downloaded the toolchain for Ubuntu 20.04 (
 I installed its dependencies using a snippet copied from the Website:
 
 ```bash
-sudo apt-get install binutils git gnupg2 libc6-dev libcurl4 libedit2 libgcc-9-dev libpython2.7 libsqlite3-0 libstdc++-9-dev libxml2 libz3-dev pkg-config tzdata uuid-dev zlib1g-dev
+sudo apt-get install binutils git gnupg2 libc6-dev libcurl4 libedit2 libgcc-9-dev \
+  libpython2.7 libsqlite3-0 libstdc++-9-dev libxml2 libz3-dev pkg-config tzdata \
+  uuid-dev zlib1g-dev
 ```
 
 I downloaded a tarball with the toolkit and extracted it to a folder (I opted for `~/ios`). I then added `~/ios/usr/bin` to the `PATH` in `~/.zshrc`.
@@ -95,12 +97,12 @@ for word in CommandLine.arguments.suffix(from: 1) {
 This part iterates over all words in ARGV, starting from the second one.
 The `.suffix(from: Int)` method slices a collection, starting from element with index `from` to the end of the collection.
 There is also a `.prefix()` method that does the same, but on the other end of the collection.
-Iteration is implemented using `for ... in { ... }`.
+Iteration is implemented using `for ... in ... { ... }`.
 
 ## The CLI in action
 
 ```bash
-# swiftc is the compiler. You can also compile and run a Swift flie
+# swiftc is the compiler. You can also compile and run a Swift file
 # using the swift command
 $ swiftc palindrome.swift 
 $ ./palindrome  
