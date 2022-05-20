@@ -19,15 +19,13 @@ Rationale: I have been procrastinating learning new things for too long, telling
 
 ### What I learned on day 1
 
-`let` defines immutable variables while `var` defines immutable variables.
+`let` defines immutable variables while `var` defines mutable variables.
 
 ```swift
 // var defines a mutable variable
 // String type is called String
 var greeting = "Hello, playground"
-```
 
-```
 // let defines an immutable variable
 // Defaults to Int type (i32?)
 let x = 10
