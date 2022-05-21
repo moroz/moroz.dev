@@ -28,7 +28,7 @@ const Layout = ({ children, title, className }: Props) => {
   }, [hydrated]);
 
   return (
-    <div className={`layout ${className || ""} ${classes}`}>
+    <div className={clsx("layout", className, hydrated && classes)}>
       <Head>
         <title>{title ? `${title} | moroz.dev` : "moroz.dev"}</title>
         <meta charSet="utf-8" />

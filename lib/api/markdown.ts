@@ -6,6 +6,7 @@ import sass from "highlight.js/lib/languages/scss";
 import elixir from "highlight.js/lib/languages/elixir";
 import swift from "highlight.js/lib/languages/swift";
 import erb from "highlight.js/lib/languages/erb";
+import smartypants from "remark-smartypants";
 const pug = require("highlight-pug/pug");
 
 lowlight.registerLanguage("pug", pug);
@@ -17,7 +18,8 @@ lowlight.registerLanguage("swift", swift);
 export async function mdToReact(md: string) {
   return serialize(md, {
     mdxOptions: {
-      rehypePlugins: [rehypeHighlight]
+      rehypePlugins: [rehypeHighlight],
+      remarkPlugins: [smartypants]
     }
   });
 }

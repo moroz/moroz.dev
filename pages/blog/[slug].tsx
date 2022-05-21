@@ -26,16 +26,6 @@ const BlogPostPage = (props: Props) => {
       {summaryPlain ? (
         <Head>
           <meta name="description" content={summaryPlain} />
-          <link
-            media="(prefers-color-scheme: dark)"
-            rel="stylesheet"
-            href="/css/an-old-hope.css"
-          />
-          <link
-            media="(prefers-color-scheme: light)"
-            rel="stylesheet"
-            href="/css/solarized-light.css"
-          />
         </Head>
       ) : null}
       <article className="container blog-post" lang={lang}>

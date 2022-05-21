@@ -20,8 +20,8 @@ My Linux laptop runs Debian 11, so I downloaded the toolchain for Ubuntu 20.04 (
 
 I installed its dependencies using a snippet copied from the Website:
 
-```bash
-sudo apt-get install binutils git gnupg2 libc6-dev libcurl4 libedit2 libgcc-9-dev \
+```shell
+$ sudo apt-get install binutils git gnupg2 libc6-dev libcurl4 libedit2 libgcc-9-dev \
   libpython2.7 libsqlite3-0 libstdc++-9-dev libxml2 libz3-dev pkg-config tzdata \
   uuid-dev zlib1g-dev
 ```
@@ -101,7 +101,7 @@ Iteration is implemented using `for ... in ... { ... }`.
 
 ## The CLI in action
 
-```bash
+```shell
 # swiftc is the compiler. You can also compile and run a Swift file
 # using the swift command
 $ swiftc palindrome.swift 
