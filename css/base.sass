@@ -56,6 +56,11 @@ a:visited
   padding: 0 calc(50vw - #{$container-width * 0.5})
   box-sizing: border-box
 
+  @media screen and (max-width: #{$container-width})
+    max-width: 100%
+    padding-left: 1.5rem
+    padding-right: 1.5rem
+
   &.is-centered
     position: absolute
     top: 50%
