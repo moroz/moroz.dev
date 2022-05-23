@@ -1,7 +1,18 @@
 const Footer = () => {
   return (
     <footer className="footer">
-      <span>&copy; 2020-2022 by Karol Moroz.</span>
+      <p>&copy; 2020-2022 by Karol Moroz.</p>
+      <small>
+        The source code of this website is available on{" "}
+        <a
+          href="https://github.com/moroz/moroz.dev"
+          target="_blank"
+          rel="noopener noreferer"
+        >
+          Github
+        </a>
+        .
+      </small>
     </footer>
   );
 };

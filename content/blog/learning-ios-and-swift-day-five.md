@@ -11,6 +11,12 @@ Swift comes with a feature-rich system of data types, including enumerations, st
 All of these are quite similar to their Rust counterparts, except that in Rust, there are no classes.
 Today I introduce some facts about enumerations, also known as `enum`s.
 
+In order to be able to quickly test Swift scripts, I defined a keybinding to run the script inside Neovim:
+
+```vim
+nnoremap <Leader>mr :vert ter swift %<CR>a
+```
+
 A Swift enumeration, in its simplest form, is defined with just a name and cases.
 Its values are abstract values with no `rawValue` property:
 
