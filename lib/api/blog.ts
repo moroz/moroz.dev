@@ -16,33 +16,60 @@ interface BlogEntry {
   filename: string;
 }
 
+interface BasicPostData {
+  slug: string;
+  title: string;
+  lang: string;
+  date: string;
+  datePretty: string;
+  summary: string | null;
+  draft: boolean;
+}
+
 export async function getPostDataBySlug(slug: string) {
   const path = glob.sync(`${postsDirectory}/**/${slug}.md`)[0];
   return getPostData({ slug, filename: path });
 }
 
-export async function getPostData({
-  filename: filename
-}: BlogEntry): Promise<Post> {
-  const fileContents = fs.readFileSync(filename, "utf8");
-  const parsed = matter(fileContents);
-  const { data, content } = parsed;
+export async function buildMetadata(data: Record<string, any>) {
   const date = new Date(data.date).toISOString();
   const datePretty = day(date).format("MMMM D, YYYY");
   const summary = data.summary ? await formatMarkdown(data.summary) : null;
   const summaryPlain = data.summary ?? null;
   return {
-    slug: data.slug,
-    title: data.title,
-    lang: data.lang ?? "en",
-    draft: data.draft ?? false,
     date,
     datePretty,
     summary,
     summaryPlain,
+    slug: data.slug,
+    title: data.title,
+    lang: data.lang ?? "en",
+    draft: data.draft ?? false
+  };
+}
+
+export function readAndParseMarkdownFile(filename: string) {
+  const fileContents = fs.readFileSync(filename, "utf8");
+  return matter(fileContents);
+}
+
+export async function getPostData({
+  filename: filename
+}: BlogEntry): Promise<Post> {
+  const { data, content } = readAndParseMarkdownFile(filename);
+  const metadata = await buildMetadata(data);
+  return {
+    ...metadata,
     content,
     filename
   };
+}
+
+export function getBasicPostData({
+  filename
+}: BlogEntry): Promise<BasicPostData> {
+  const { data } = readAndParseMarkdownFile(filename);
+  return buildMetadata(data);
 }
 
 export function getVideoData({ filename }: BlogEntry): Video {
@@ -81,7 +108,7 @@ export function getAllVideoSlugs() {
 }
 
 export async function getAllPostData() {
-  return await Promise.all(getAllSlugs(postsDirectory).map(getPostData));
+  return await Promise.all(getAllSlugs(postsDirectory).map(getBasicPostData));
 }
 
 export function getAllVideoData() {
