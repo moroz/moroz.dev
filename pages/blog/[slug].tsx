@@ -1,7 +1,7 @@
 import { GetStaticPaths, GetStaticProps } from "next";
 import { Post } from "../../interfaces";
 import Layout from "../../layout/Layout";
-import { getAllPostSlugs, getPostData } from "../../lib/api/blog";
+import { getAllPostSlugs, getPostDataBySlug } from "../../lib/api/blog";
 import { mdToReact } from "../../lib/api/markdown";
 import Link from "next/link";
 import Head from "next/head";
@@ -55,7 +55,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const apolloClient = initializeApollo();
 
   const slug = params!.slug as string;
-  const post = await getPostData(slug);
+  const post = await getPostDataBySlug(slug);
   const html = await mdToReact(post.content);
 
   await apolloClient.query({
@@ -79,7 +79,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const posts = getAllPostSlugs();
 
   return {
-    paths: posts.map((slug) => {
+    paths: posts.map(({ slug }) => {
       return {
         params: {
           slug

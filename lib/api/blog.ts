@@ -4,15 +4,27 @@ import { join, basename } from "path";
 import { Post, Video } from "../../interfaces";
 import day from "dayjs";
 import { formatMarkdown } from "./markdown";
+import glob from "glob";
 
 const isDev = process.env.NODE_ENV !== "production";
 
 const postsDirectory = join(process.cwd(), "content/blog");
 const videosDirectory = join(process.cwd(), "content/videos");
 
-export async function getPostData(filename: string): Promise<Post> {
-  const resolvedFilename = join(postsDirectory, `${filename}.md`);
-  const fileContents = fs.readFileSync(resolvedFilename, "utf8");
+interface BlogEntry {
+  slug: string;
+  filename: string;
+}
+
+export async function getPostDataBySlug(slug: string) {
+  const path = glob.sync(`${postsDirectory}/**/${slug}.md`)[0];
+  return getPostData({ slug, filename: path });
+}
+
+export async function getPostData({
+  filename: filename
+}: BlogEntry): Promise<Post> {
+  const fileContents = fs.readFileSync(filename, "utf8");
   const parsed = matter(fileContents);
   const { data, content } = parsed;
   const date = new Date(data.date).toISOString();
@@ -28,14 +40,13 @@ export async function getPostData(filename: string): Promise<Post> {
     datePretty,
     summary,
     summaryPlain,
-    content: content,
-    filename: resolvedFilename
+    content,
+    filename
   };
 }
 
-export function getVideoData(filename: string): Video {
-  const resolvedFilename = join(videosDirectory, `${filename}.md`);
-  const fileContents = fs.readFileSync(resolvedFilename, "utf8");
+export function getVideoData({ filename }: BlogEntry): Video {
+  const fileContents = fs.readFileSync(filename, "utf8");
   const parsed = matter(fileContents);
   const { data, content } = parsed;
   const date = new Date(data.date).toISOString();
@@ -45,17 +56,20 @@ export function getVideoData(filename: string): Video {
     title: data.title,
     date,
     datePretty,
-    content: content,
+    content,
     youtube: data.youtube,
-    filename: resolvedFilename
+    filename
   };
 }
 
 export function getAllSlugs(directory: string) {
-  return fs
-    .readdirSync(directory)
-    .filter((fn) => fn.match(/\.md$/))
-    .map((name) => basename(name, ".md"));
+  return glob.sync(`${directory}/**/*.md`).map((filename) => {
+    const slug = basename(filename, ".md");
+    return {
+      slug,
+      filename
+    };
+  });
 }
 
 export function getAllPostSlugs() {
