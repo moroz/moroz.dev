@@ -11,11 +11,11 @@ summary: "In this post, I explain why I wrote almost nothing in terms of code to
 
 I built a very simple iOS app that displayed a button:
 
-![Final application](/images/ios-7/final-product.png)
+![Final application](/images/ios-7/final-product.webp)
 
 Once the button is clicked, a message is displayed:
 
-![Final application](/images/ios-7/message.png)
+![Final application](/images/ios-7/message.webp)
 
 Here is the controller method that handles the event:
 
