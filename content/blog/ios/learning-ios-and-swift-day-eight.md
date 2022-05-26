@@ -3,6 +3,7 @@ title: "Learning iOS and Swift. Day 8: Starting off a SwiftUI app"
 date: 2022-05-26
 slug: learning-ios-and-swift-day-eight
 lang: en-US
+draft: true
 
 summary: ""
 ---
@@ -46,7 +47,8 @@ Apparently, closures like this are heavily used in SwiftUI.
 
 ## `TabView` -- _the_ tool to build endless tutorial screens
 
-`TabView` -- simple tab navigation. Each child node becomes a separate view.
+`TabView` is a component used to build a simple tab navigation.
+Each child view becomes a separate tab, and you can set a label on each subview using the `tabItem(_ label:)` method.
 
 ```swift
 TabView {
