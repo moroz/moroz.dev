@@ -43,6 +43,21 @@
   &__content
     +fluid-type(320px, 1600px, 17px, 21px)
     line-height: 1.58
+    counter-reset: figure
+
+    figcaption
+      font-size: .85em
+      text-align: center
+      margin-top: .2em
+      counter-increment: figure
+
+      &::before
+        content: "Fig. " counter(figure) ": "
+
+    figure.bordered-figure
+      img
+        border: 1px solid #aaa
+
     p
       +system-font
 

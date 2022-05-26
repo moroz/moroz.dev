@@ -57,3 +57,17 @@ TabView {
     Text("Exercise 2").tabItem { Text("Exercise 2") }
 }
 ```
+
+This markup, when compiled, displays the following view with barely legible tabs at the bottom:
+
+<figure class="bordered-figure">
+<img src="/images/ios-8/tabview-with-labels.webp" />
+<figcaption>TabView with default styling (text labels)</figcaption>
+</figure>
+
+
+
+<figure class="bordered-figure">
+<img src="/images/ios-8/tabview-with-dots.webp" />
+<figcaption>TabView with <code>PageTabViewStyle</code> and <code>backgroundDisplayMode: .always</code></figcaption>
+</figure>
