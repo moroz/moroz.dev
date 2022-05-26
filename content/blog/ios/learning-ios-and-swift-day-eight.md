@@ -42,9 +42,6 @@ print(mappedDict)
 
 Apparently, closures like this are heavily used in SwiftUI.
 
-`VStack` -- vertical stack, similar to a flexbox with `flex-direction: column;`
-`HStack` -- horizontal stack, similar to a classical flexbox
-
 ## `TabView` -- _the_ tool to build endless tutorial screens
 
 `TabView` is a component used to build a simple tab navigation.
@@ -65,9 +62,92 @@ This markup, when compiled, displays the following view with barely legible tabs
 <figcaption>TabView with default styling (text labels)</figcaption>
 </figure>
 
+The `TabView` can be configured to hide the labels and display dots instead, not unlike many tutorials you may have seen in popular applications. In order to do this, we can add `.tabViewStyle` and `.indexViewStyle` modifiers, like so:
 
+```swift
+TabView {
+        WelcomeView()
+        ExerciseView(index: 0)
+        ExerciseView(index: 1)
+    }
+        .tabViewStyle(PageTabViewStyle())
+        .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+```
+
+This way, tab labels can be removed.
 
 <figure class="bordered-figure">
 <img src="/images/ios-8/tabview-with-dots.webp" />
 <figcaption>TabView with <code>PageTabViewStyle</code> and <code>backgroundDisplayMode: .always</code></figcaption>
 </figure>
+
+Later on, the app will display several screens presenting videos of different exercises.
+For these views, the tutorial instructs to define a component like this:
+
+```swift
+import SwiftUI
+
+struct ExerciseView: View {
+    let videoNames = ["squat", "step-up", "burpee", "sun-salute"]
+    let exerciseNames = ["Squat", "Step Up", "Burpee", "Sun Salute"]
+
+    let index: Int
+
+    var body: some View {
+        Text(exerciseNames[index])
+    }
+}
+```
+
+As you can see, the component API is dead simple. A minimal component would be comprised of a `struct` with `View` protocol, defining a calculated property `body`.
+Thanks to SwiftUI's protocol magic, the statement `let index: Int`, defining a property without a default value, is automatically converted to a required prop.
+
+I tried to find a way to also pass optional props to components.
+I annotated a property with an optional type.
+This way, the property cannot be omitted when rendering the component, but it can be `nil`, which is easy enough.
+In order to conditionally display a component (akin to `{condition ? <Component /> : null}` in React), it suffices to wrap the content in an `if` statement.
+
+```swift
+let anotherProp: String?
+
+var body: some View {
+    VStack {
+        Text(exerciseNames[index])
+        if let text = anotherProp {
+            Text(text)
+        }
+    }
+}
+```
+
+Note the use of a `VStack` view. This is a wrapper that puts components one on top of the other, just like a flexbox with `flex-direction: column;`.
+There is also a `HStack`, which, unsurprisingly, behaves kind of like a flexbox with `flex-direction: row;`.
+
+Finally, in the main view of the application, we iterate over a range:
+
+```swift
+struct ContentView: View {
+    var body: some View {
+        TabView {
+            WelcomeView()
+            ForEach(0 ..< 4) {
+                ExerciseView(index: $0, anotherProp: "Exercise no. \($0 + 1)")
+            }
+        }
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+    }
+}
+```
+
+The dots on the bottom of the screen are now hidden, leaving the end user clueless with regard to navigation.
+This is done by removing `.indexViewStyle` and passing `indexDisplayMode: .never` to `PageTabViewStyle` in `.tabViewStyle`.
+
+The `ForEach` component is SwiftUI's way of iterating over the elements of a collection or range, but I'm guessing there is also some sort of a list component, as these are usually more performant than iterations on mobile OSes.
+At this point, the application looks like this:
+
+<figure class="bordered-figure">
+<img src="/images/ios-8/final-view.webp" />
+<figcaption>TabView with dots hidden.</figcaption>
+</figure>
+
+That's all for today, and I will see you tomorrow.
