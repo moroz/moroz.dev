@@ -3,16 +3,19 @@ title: "Learning iOS and Swift. Day 8: Starting off a SwiftUI app"
 date: 2022-05-26
 slug: learning-ios-and-swift-day-eight
 lang: en-US
-draft: true
 
-summary: ""
+summary: "Following a tutorial from a book, I build a TabView with custom components and several predefined views and components from the SwiftUI framework."
 ---
+
+## Useful keyboard shortcuts in Xcode
 
 &#x2325;&#x2318;P -- resume preview of a SwiftUI scene
 
 There is a keyboard shortcut similar to &#x2318;P that opens up a fuzzy file finder.
 By default, this dialog is assigned to &#x21e7;&#x2318;O, while &#x2318;P is assigned to _Print_.
 I remapped the file finder to &#x2318;P and removed the _Print_ binding altogether (who needs a print dialog in an IDE, anyway???).
+
+## Closures
 
 It turns out that you can omit parentheses when passing a closure to a function or method.
 Moreover, if a closure consists of only a single expression, the value of this expression will be implicitly `return`ed, so the `return` keyword can be omitted.
