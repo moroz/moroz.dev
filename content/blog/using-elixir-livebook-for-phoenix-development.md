@@ -72,8 +72,8 @@ $ livebook server
 When you click on the link in the terminal, you should see Livebook's welcome screen,
 like the one in the screenshot below:
 
-<a href="/images/livebook/up-and-running.png" target="_blank">
-<img src="/images/livebook/up-and-running.png" alt="JSON API running from an Elixir release" />
+<a href="/images/livebook/up-and-running.webp" target="_blank">
+<img src="/images/livebook/up-and-running.webp" alt="JSON API running from an Elixir release" />
 </a>
 
 Now, click on the bright purple _New notebook_ button in the upper right corner of the page.

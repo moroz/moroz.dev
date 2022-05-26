@@ -274,8 +274,8 @@ you can unpack the file just fine using `tar xzf`. The `-C` flag may come in han
 Once the release is unpacked, you can run it using the batch script packaged inside the `bin/` directory of the release
 archive. Below is a screenshot of a release running and receiving connections:
 
-<a href="/images/windows-release-running.png" target="_blank" rel="noopener noreferer">
-<img width="100%" src="/images/windows-release-running.png" alt="JSON API running from an Elixir release" />
+<a href="/images/windows-release-running.webp" target="_blank" rel="noopener noreferer">
+<img width="100%" src="/images/windows-release-running.webp" alt="JSON API running from an Elixir release" />
 </a>
 
 <!--

@@ -205,8 +205,8 @@ We disable source maps in production builds and opt not to generate a manifest f
 
 If we launch `mix phx.server` at this point, we should still see the default Phoenix application page:
 
-<a href="/images/vite/initial-view.png" target="_blank">
-<img src="/images/vite/initial-view.png" alt="Screenshot of Phoenix application page in Safari" />
+<a href="/images/vite/initial-view.webp" target="_blank">
+<img src="/images/vite/initial-view.webp" alt="Screenshot of Phoenix application page in Safari" />
 </a>
 
 Now, let us break it all so we can have some fun with React.
@@ -269,8 +269,8 @@ Swap the contents of `lib/vite_demo_web/templates/page/index.html.heex` with a c
 
 If you go to the browser now, you should see a React application correctly rendered:
 
-<a href="/images/vite/logo-404.png" target="_blank">
-<img src="/images/vite/logo-404.png" alt="Working React App but without assets" />
+<a href="/images/vite/logo-404.webp" target="_blank">
+<img src="/images/vite/logo-404.webp" alt="Working React App but without assets" />
 </a>
 
 However, notice that the React logo image is not being correctly loaded. This is because the source of the image is pointing to `http://localhost:4000/src/logo.svg`, attempting to fetch the file from Phoenix.
@@ -291,8 +291,8 @@ end
 
 Now the image loads fine, and we didn't even have to restart the server!
 
-<a href="/images/vite/logo-loaded.png" target="_blank">
-<img src="/images/vite/logo-loaded.png" alt="Working React App" />
+<a href="/images/vite/logo-loaded.webp" target="_blank">
+<img src="/images/vite/logo-loaded.webp" alt="Working React App" />
 </a>
 
 ### Setting up stylesheets
@@ -368,8 +368,8 @@ ReactDOM.render(
 
 Now the application will be nicely styled, but the layout completely messed up:
 
-<a href="/images/vite/bulma-old-content.png" target="_blank">
-<img src="/images/vite/bulma-old-content.png" alt="Bulma working but content messed up" />
+<a href="/images/vite/bulma-old-content.webp" target="_blank">
+<img src="/images/vite/bulma-old-content.webp" alt="Bulma working but content messed up" />
 </a>
 
 ### Replace React content
@@ -408,8 +408,8 @@ export default App;
 
 Now we get a nice and clean hero with a counter button. The cool thing is that if we just change a tiny part of the application, such as styles, only the modified part of the application will be reloaded in the browser, and the state of your components will be preserved.
 
-<a href="/images/vite/final-product.png" target="_blank">
-<img src="/images/vite/final-product.png" alt="Our final product: React application running over Phoenix" />
+<a href="/images/vite/final-product.webp" target="_blank">
+<img src="/images/vite/final-product.webp" alt="Our final product: React application running over Phoenix" />
 </a>
 
 ### Deployment
