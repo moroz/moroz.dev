@@ -16,7 +16,7 @@ Xcode stores customized keybindings at `~/Library/Developer/Xcode/UserData/KeyBi
 I moved this file to my [dotfiles](https://gitlab.com/moroz2137/dotfiles) repository and put a symlink to the version-controlled file in its place.
 This way I can synchronize my keyboard settings between machines.
 
-## Autoformatting and autocompletion in Swift files in Neovim
+## Autoformatting and autocompletion for Swift files in Neovim
 
 I come from an Elixir and React background.
 Both ecosystems come with very good code formatting tools, and I expect my IDE to format my source code each time I save a file.
@@ -109,7 +109,7 @@ There is a `VideoPlayer` component, brough into scope with `import AVKit`.
 If you have an iOS device, you have probably used this component many times, not realizing what it was--it is the default video player component with controls, like the one in iOS Safari.
 The URLs for videos are obtained using `Bundle.main.url(forResource:withExtension:)`, which returns an optional `URL?`.
 The function provides URLs for resources embedded locally in the project's bundle.
-If an URL cannot be found, an error message in red is displayed in its place.
+If a URL cannot be found, an error message in red is displayed in its place.
 The `Text` component can be used with `Date`s, and knows how to handle them in many different styles.
 In this example, it is used as a countdown `.timer`.
 There is a `Spacer` component, which basically just `flex-stretch`es itself, like a `\vfill` in LaTeX.
@@ -117,9 +117,9 @@ There is a `Spacer` component, which basically just `flex-stretch`es itself, lik
 When building components, a good practice is to build them without any outside padding, so that they can be used in different settings.
 Padding can then be added to any `View` using the `.padding()` modifier.
 
-Another useful feature of SwiftUI is `Image`, giving access to an insane collection of icons bundled with the system SF Pro font.
-It seems that many icons in iOS and macOS 11+ are implemented using these icons, including the green battery symbol with a Harry Potter scar:
-You can learn more about them at the website of [SF Symbols](https://developer.apple.com/sf-symbols/).
+Another useful feature of SwiftUI is `Image`, providing access to an insane collection of icons bundled with the system font SF Pro.
+It seems that many icons in iOS and macOS 11+ are implemented using these icons, including the green battery symbol with a Harry Potter scar.
+You can learn more about these icons at the website of [SF Symbols](https://developer.apple.com/sf-symbols/).
 
 <figure>
 <img src="/images/ios-9/screen-color-medium_2x.webp" />
