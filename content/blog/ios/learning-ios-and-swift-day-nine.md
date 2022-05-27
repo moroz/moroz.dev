@@ -4,7 +4,10 @@ date: 2022-05-27
 slug: learning-ios-and-swift-day-nine
 lang: en-US
 
-summary: ""
+summary: |
+  Tips and tricks for synchronizing Xcode's keyboard shortcuts between devices, autoformatting Swift files in Neovim, and IntelliSense.
+  Brief description of a prototype scene built along chapter 3 of <em>SwiftUI Apprentice</em>.
+
 ---
 
 ## Syncing Xcode keyboard settings between devices
