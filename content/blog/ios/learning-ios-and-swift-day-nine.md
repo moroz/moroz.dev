@@ -112,7 +112,7 @@ The function provides URLs for resources embedded locally in the project's bundl
 If a URL cannot be found, an error message in red is displayed in its place.
 The `Text` component can be used with `Date`s, and knows how to handle them in many different styles.
 In this example, it is used as a countdown `.timer`.
-There is a `Spacer` component, which basically just `flex-stretch`es itself, like a `\vfill` in LaTeX.
+There is a `Spacer` component, which basically just `flex-grow`s itself, like a `\vfill` in LaTeX.
 
 When building components, a good practice is to build them without any outside padding, so that they can be used in different settings.
 Padding can then be added to any `View` using the `.padding()` modifier.
