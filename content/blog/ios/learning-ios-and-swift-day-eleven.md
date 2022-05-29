@@ -3,7 +3,6 @@ title: "Learning iOS and Swift. Day 11: Essential state management, modals"
 date: 2022-05-29
 slug: learning-ios-and-swift-day-eleven
 lang: en-US
-draft: true
 
 summary: |
   Today I explore basic state management using `@State`, `@Binding`, and `@Environment` property wrappers.
