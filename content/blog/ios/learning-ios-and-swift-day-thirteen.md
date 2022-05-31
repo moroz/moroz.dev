@@ -3,7 +3,6 @@ title: "Learning iOS and Swift. Day 13: Persistent storage APIs, SQLite3"
 date: 2022-05-31
 slug: learning-ios-and-swift-day-thirteen
 lang: en-US
-draft: true
 
 summary: |
   I intended to write about `@AppStorage` and `@SceneStorage`, but I ended up playing around with SQLite3 in C and Swift.
