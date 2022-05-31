@@ -46,3 +46,5 @@ $ gcc -o version-c -lsqlite3 version.c
 $ ./version-c
 3.37.0
 ```
+
+I tried to run the same program on Linux with GCC, but since the dependency resolution and linking algorithm is different (and it's not my field of expertise, anyway), it only compiled when built with Clang.
