@@ -93,3 +93,8 @@ html {
   }
 }
 
+@mixin light {
+  @media (prefers-color-scheme: light) {
+    @content;
+  }
+}

@@ -20,14 +20,22 @@ Of course, there already exist applications that provide the same functionality,
 
 Today I built a barebones index view that lists all practices stored in the database, and embedded it in a `NavigationView`:
 
-<figure class="bordered-figure">
-<img src="/images/ios-16/index-view.webp" />
-<figcaption>List of all Four Preliminary Practices.</figcaption>
+<figure class="dark-light-figure">
+  <picture>
+    <source srcset="/images/ios-16/index-view.webp" media="(prefers-color-scheme: light)" />
+    <source srcset="/images/ios-16/index-view-dark.webp" media="(prefers-color-scheme: dark)" />
+    <img src="/images/ios-16/index-view.webp" />
+  </picture>
+  <figcaption>List of all Four Preliminary Practices.</figcaption>
 </figure>
 
 By clicking on a name, the user is redirected to the corresponding practice view:
 
-<figure class="bordered-figure">
-<img src="/images/ios-16/practice-view.webp" />
+<figure class="dark-light-figure">
+  <picture>
+    <source srcset="/images/ios-16/practice-view.webp" media="(prefers-color-scheme: light)" />
+    <source srcset="/images/ios-16/practice-view-dark.webp" media="(prefers-color-scheme: dark)" />
+    <img src="/images/ios-16/practice-view.webp" />
+  </picture>
 <figcaption>In this view, the users will be able to make record of their daily repetitions.</figcaption>
 </figure>
