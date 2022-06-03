@@ -3,7 +3,6 @@ title: "Learning iOS and Swift. Day 16: Side project update"
 date: 2022-06-03
 slug: learning-ios-and-swift-day-sixteen
 lang: en-US
-draft: true
 
 summary: |
   Today I spent the whole evening working on my pet project, Ngöndro Counter.
