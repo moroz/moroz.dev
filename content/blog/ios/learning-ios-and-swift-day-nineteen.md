@@ -3,7 +3,6 @@ title: "Learning iOS and Swift. Day 19: Adding custom amounts in Ngöndro Tracke
 date: 2022-06-06
 slug: learning-ios-and-swift-day-nineteen
 lang: en-US
-draft: true
 
 summary: |
   I implemented adding custom amounts of mantras or repetitions of practices to the Ngöndro Tracker using a wrapper for `UIAlertController`.
