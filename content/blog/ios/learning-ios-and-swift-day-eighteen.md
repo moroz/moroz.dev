@@ -134,9 +134,9 @@ struct Landmark: Hashable, Codable, Identifiable {
 }
 ```
 
-## Project update: Ngöndro Counter
+## Project update: Ngöndro Tracker
 
-I have applied the lessons learned from the tutorial to my side project, Ngöndro Counter.
+I have applied the lessons learned from the tutorial to my side project, Ngöndro Tracker.
 As a reminder to readers unfamiliar with Tibetan Buddhism, _ngöndro_ (Tibetan: སྔོན་འགྲོ།, Chinese: 四不共加行) is a set of four meditation practices performed by practicioners of Tibetan Buddhism.
 Each of the practices contains a certain mantra or exercise that is repeated multiple times during each meditation session.
 In order to complete the four practices, the practitioner must accumulate 111,111 repetitions of each practice.
@@ -150,7 +150,7 @@ As of now, the application's main view looks like this:
     <source srcset="/images/ios-18/index-view-dark.webp" media="(prefers-color-scheme: dark)" />
     <img src="/images/ios-18/index-view.webp" />
   </picture>
-  <figcaption>List of meditation practices in the current iteration of Ngöndro Counter.</figcaption>
+  <figcaption>List of meditation practices in the current iteration of Ngöndro Tracker.</figcaption>
 </figure>
 
 There is also a single practice view, which presents the current amount of repetitions and allows the user to add more to that count. Right now, the user can only add the default amount (108) each time. There is no way to customize the default amount, reset the starting amount, or add a custom amount on a per-practice basis.
@@ -161,7 +161,7 @@ There is also a single practice view, which presents the current amount of repet
     <source srcset="/images/ios-18/practice-view-dark.webp" media="(prefers-color-scheme: dark)" />
     <img src="/images/ios-18/practice-view.webp" />
   </picture>
-  <figcaption>Single practice view, with the **+108** button now persisting numbers.</figcaption>
+  <figcaption>Single practice view, with the <strong>+108</strong> button now persisting numbers.</figcaption>
 </figure>
 
 All practice data is persisted in a SQLite database, which is accessed through [SQLite.swift](https://github.com/stephencelis/SQLite.swift), without a full-featured ORM.
