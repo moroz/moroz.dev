@@ -1,31 +1,28 @@
 import { GetStaticProps } from "next";
-import BlogEntry from "../components/BlogEntry";
+import React from "react";
+import BlogPage from "../components/blog/BlogPage";
 import { Post } from "../interfaces";
-import Layout from "../layout/Layout";
-import { getSortedPostData } from "../lib/api/blog";
+import { getSortedPostData, POSTS_PER_PAGE } from "../lib/api/blog";
 
 interface Props {
   posts: Post[];
+  pageCount: number;
+  currentPage: number;
 }
 
-const Blog = ({ posts }: Props) => {
-  return (
-    <Layout>
-      <div className="container">
-        <h1 className="page-title">Blog</h1>
-        {posts.map((post, index) => {
-          return <BlogEntry post={post} key={index} />;
-        })}
-      </div>
-    </Layout>
-  );
+const Blog: React.FC<Props> = (props) => {
+  return <BlogPage {...props} />;
 };
 
 export const getStaticProps: GetStaticProps = async () => {
-  const posts = await getSortedPostData();
+  const allPosts = await getSortedPostData();
+  const pageCount = Math.ceil(allPosts.length / POSTS_PER_PAGE);
+  const posts = allPosts.slice(0, POSTS_PER_PAGE);
   return {
     props: {
-      posts
+      posts,
+      pageCount,
+      currentPage: 1
     }
   };
 };

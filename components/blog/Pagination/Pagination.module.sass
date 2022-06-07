@@ -1,0 +1,22 @@
+.pagination
+  list-style-type: none
+  display: flex
+  justify-content: center
+  gap: .5em
+
+.page
+  width: 45px
+  height: 45px
+
+.newer, .older
+  padding: 0 .75em
+
+.page, .newer, .older
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  border-radius: 5px
+  background: var(--surface-bg)
+
+  &:not(.current):hover
+    background: var(--surface-hover-bg)

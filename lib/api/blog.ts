@@ -11,6 +11,8 @@ const isDev = process.env.NODE_ENV !== "production";
 const postsDirectory = join(process.cwd(), "content/blog");
 const videosDirectory = join(process.cwd(), "content/videos");
 
+export const POSTS_PER_PAGE = 20;
+
 interface BlogEntry {
   slug: string;
   filename: string;
