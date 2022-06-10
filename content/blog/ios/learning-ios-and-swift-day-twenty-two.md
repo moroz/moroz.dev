@@ -6,35 +6,60 @@ lang: en-US
 draft: true
 
 summary: |
-  Today I implemented persisting practice history each time the user adds some repetitions of a practice.
-  I also implemented a simple view for presenting those records.
-  I found out how to implement custom keys for `Decodable` data structures.
+  I spent the whole evening going through tutorials and working on my side project, Ngöndro Tracker, leaving little time to post updates to the blog.
+  Among others, I implemented a text field component with label, a helper to initialize colors from CSS hex strings, and began work on the view to edit practice settings.
 
 ---
+
+## Creating `Color`s from hex strings
+
+Let's first start with colors. In the Swift ecosystem, if you wish to use a custom color, you cannot just throw a color string, as you would do on the web, saying `salmon`, `black`, or `#fa8072`. Instead, each custom color must be initialized using floating-point values representing the decimal part of each of the RGB values divided by 255.0. So, for instance:
+
+```
+// #fa8072
+
+0xFA == 250
+0x80 == 128
+0x72 == 114
+
+// to instantiate a color
+Color(red: 250.0 / 255, green: 128.0 / 255, blue: 114.0 / 255)
+```
+
+Being a lazy Web developer, I can't be bothered to do that much work each time I need a color literal, therefore I wrote a helper to convert strings like `#fff` or `#003366` to `Color`s. Below is a sample implementation:
 
 ```swift
 import Foundation
 import SwiftUI
 
+private let regex = try! NSRegularExpression(pattern: "[^A-Fa-f0-9]")
+
 private func normalizeHex(_ hex: String) -> String? {
-  guard hex.count == 6 || hex.count == 7 else {
-    return nil
+  // First, remove irrelevant characters from the string
+  let range = NSRange(location: 0, length: hex.length)
+  let replaced = regex.stringByReplacingMatches(in: hex, range: range, withTemplate: "")
+
+  // duplicate digits, if needed
+  if replaced.count == 3 {
+    return replaced.map { char in String(repeating: char, count: 2) }.joined()
   }
 
-  if hex.starts(with: "#") {
-    let start = hex.index(hex.startIndex, offsetBy: 1)
-    return String(hex[start...])
+  if replaced.count == 6 {
+    return replaced
   }
 
-  return hex
+  return nil
 }
 
 extension Color {
   init(fromHex hex: String) {
+    // normalize the string and parse as hex integer
     guard let normalized = normalizeHex(hex), let int = Int(normalized, radix: 16) else {
       fatalError("Invalid hex string: \(hex)")
     }
     
+    // mask the third byte from the left and move it two bytes to the right
+    // then convert it to `Double` and divide by 255.0
     let red = Double((int & 0xFF0000) >> 16) / 255.0
     let green = Double((int & 0xFF00) >> 8) / 255.0
     let blue = Double(int & 0xFF) / 255.0
@@ -43,6 +68,8 @@ extension Color {
   }
 }
 ```
+
+As it turns out, I may not be using this helper a whole lot, because all colors in iOS applications need to take dark mode into account, so I might end up setting custom colors through Xcode's palette.
 
 ```swift
 import SwiftUI
