@@ -36,7 +36,7 @@ private let regex = try! NSRegularExpression(pattern: "[^A-Fa-f0-9]")
 
 private func normalizeHex(_ hex: String) -> String? {
   // First, remove irrelevant characters from the string
-  let range = NSRange(location: 0, length: hex.length)
+  let range = NSRange(location: 0, length: hex.count)
   let replaced = regex.stringByReplacingMatches(in: hex, range: range, withTemplate: "")
 
   // duplicate digits, if needed
@@ -70,6 +70,25 @@ extension Color {
 ```
 
 As it turns out, I may not be using this helper a whole lot, because all colors in iOS applications need to take dark mode into account, so I might end up setting custom colors through Xcode's palette.
+
+## Custom input field with styling
+
+I built a custom text field component with a label and a text field on a greyish background.
+I tried to color the background of the input field as `Color(fromHex: "#f3f4f5")`, only to realize that it was unusable in dark mode.
+I picked a gray color from the [Color - specifications](https://developer.apple.com/design/human-interface-guidelines/foundations/color/#specifications) page of Apple's Human Interface Guidelines.
+
+<figure>
+<a href="/images/ios-22/grey-palette.webp" target="_blank">
+  <picture>
+    <source srcset="/images/ios-22/grey-palette.webp" media="(prefers-color-scheme: light)" />
+    <source srcset="/images/ios-22/grey-palette-dark.webp" media="(prefers-color-scheme: dark)" />
+    <img src="/images/ios-22/grey-palette.webp" alt="Screenshot of the documentation page presenting different shades of grey." />
+  </picture>
+</a>
+<figcaption>A rounded hexagon displayed with SwiftUI (click to enlarge).</figcaption>
+</figure>
+
+These colors are not part of SwiftUI's standard palette (such as `Color.red`), but are exposed as `UIColor.systemGray5`, so in order to convert the color to the desired type, I had to call it as `Color(UIColor.systemGray5)`.
 
 ```swift
 import SwiftUI
