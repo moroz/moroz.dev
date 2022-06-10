@@ -3,7 +3,6 @@ title: "Learning iOS and Swift. Day 22: Generic input field, toolbar"
 date: 2022-06-09
 slug: learning-ios-and-swift-day-twenty-two
 lang: en-US
-draft: true
 
 summary: |
   I spent the whole evening going through tutorials and working on my side project, Ngöndro Tracker, leaving little time to post updates to the blog.
@@ -75,9 +74,8 @@ As it turns out, I may not be using this helper a whole lot, because all colors 
 
 I built a custom text field component with a label and a text field on a greyish background.
 I tried to color the background of the input field as `Color(fromHex: "#f3f4f5")`, only to realize that it was unusable in dark mode.
-I picked a gray color from the [Color - specifications](https://developer.apple.com/design/human-interface-guidelines/foundations/color/#specifications) page of Apple's Human Interface Guidelines.
+I ended up picking a gray color from the [Color - specifications](https://developer.apple.com/design/human-interface-guidelines/foundations/color/#specifications) page of Apple's Human Interface Guidelines.
 
-<figure>
 <a href="/images/ios-22/grey-palette.webp" target="_blank">
   <picture>
     <source srcset="/images/ios-22/grey-palette.webp" media="(prefers-color-scheme: light)" />
@@ -85,10 +83,11 @@ I picked a gray color from the [Color - specifications](https://developer.apple.
     <img src="/images/ios-22/grey-palette.webp" alt="Screenshot of the documentation page presenting different shades of grey." />
   </picture>
 </a>
-<figcaption>A rounded hexagon displayed with SwiftUI (click to enlarge).</figcaption>
-</figure>
 
-These colors are not part of SwiftUI's standard palette (such as `Color.red`), but are exposed as `UIColor.systemGray5`, so in order to convert the color to the desired type, I had to call it as `Color(UIColor.systemGray5)`.
+These colors are not part of SwiftUI's standard palette (such as `Color.red`), but are exposed in the format of `UIColor.systemGray5`, so in order to convert the color to the desired type, I had to call it as `Color(UIColor.systemGray5)`.
+
+Another major issue I have encountered while working on this component was that the binding I was passing was of type `Binding<String>`, but many of the values that I needed to edit were actually `Int`s, so I had to rewrite the component as a generic.
+Below is the implementation:
 
 ```swift
 import SwiftUI
@@ -130,6 +129,17 @@ struct LabeledTextField<V>: View {
 }
 ```
 
+Using this component, I built an edit view, looking like this:
+
+<figure class="dark-light-figure">
+  <picture>
+    <source srcset="/images/ios-22/edit-practice.webp" media="(prefers-color-scheme: light)" />
+    <source srcset="/images/ios-22/edit-practice-dark.webp" media="(prefers-color-scheme: dark)" />
+    <img src="/images/ios-22/edit-practice.webp" />
+  </picture>
+  <figcaption>A view for practice settings.</figcaption>
+</figure>
+
 ```swift
 import SwiftUI
 
@@ -158,3 +168,16 @@ struct EditPractice: View {
   }
 }
 ```
+
+I also found out that inside a `NavigationView`, while the left side of the screen is always the back button, the right side of the screen can host a button, and that this part of the view is called "toolbar."
+
+Back in the practice view, I added a link pointing to the edit screen:
+
+<figure class="dark-light-figure">
+  <picture>
+    <source srcset="/images/ios-22/practice-view.webp" media="(prefers-color-scheme: light)" />
+    <source srcset="/images/ios-22/practice-view-dark.webp" media="(prefers-color-scheme: dark)" />
+    <img src="/images/ios-22/practice-view.webp" />
+  </picture>
+  <figcaption>Practice view with the new link added.</figcaption>
+</figure>
