@@ -1,4 +1,5 @@
 import React from "react";
+import styles from "./Header.module.sass";
 
 interface Props {
   open: boolean;
@@ -7,7 +8,7 @@ interface Props {
 
 const Hamburger = ({ onToggle }: Props) => {
   return (
-    <div className="hamburger" id="hamburgerToggle" onClick={onToggle}>
+    <div className={styles.hamburger} id="hamburgerToggle" onClick={onToggle}>
       <div className="hamburger__inner">
         <span></span>
         <span></span>

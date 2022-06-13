@@ -1,0 +1,168 @@
+@import ../css/_variables.sass
+@import ../css/_palette.scss
+
+.header
+  position: fixed
+  top: 0
+  z-index: 10
+  left: 0
+  right: 0
+  justify-content: space-between
+  height: $mobile-menu-unit
+  line-height: $mobile-menu-unit
+
+  h1
+    margin: 0
+
+  +gt-mobile
+    display: flex
+    height: $header-height
+    line-height: $header-height
+
+  +gt-mobile
+    transition: box-shadow .2s ease-in-out, background .2s ease-in-out
+    &.isOpaque
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1)
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05)
+
+  &.isOpaque
+    background: var(--surface-bg)
+    +dark
+      box-shadow: none
+
+  a
+    color: inherit
+    transition: none
+    text-decoration: none
+
+  &.isWhite
+    &:not(.isOpaque)
+      border-bottom: none
+      box-shadow: none
+      background: transparent
+      color: white
+
+.content
+  top: 0
+  padding: 0 2rem
+  box-sizing: border-box
+  transition: background .2s ease-in-out, opacity .2s ease-in-out
+  display: flex
+  width: 100%
+  height: $header-height
+  line-height: $header-height
+  +mobile
+    z-index: 15
+    padding: 0 20px
+    position: fixed
+    height: $mobile-menu-unit
+    line-height: $mobile-menu-unit
+    border-bottom: 1px solid currentColor
+
+.branding
+  font-size: 2em
+  z-index: 11
+
+.navlink, .cta
+  transition: .2s ease-in-out
+  padding: 0 1em
+  +default-font
+
+  +mobile
+    padding: $mobile-content-padding
+    height: $mobile-menu-unit
+    line-height: $mobile-menu-unit
+
+.cta
+  height: 50px
+  line-height: 50px
+  +gt-mobile
+    align-self: center
+
+.menu
+  display: flex
+  align-items: center
+  +gt-mobile
+    padding-right: 2rem
+    justify-content: flex-end
+    z-index: 17
+
+  +mobile
+    text-align: right
+    flex-direction: column
+    position: fixed
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    z-index: 10
+    align-items: stretch
+    text-align: center
+    padding: $mobile-content-padding
+    padding-top: $mobile-menu-unit
+    font-size: 1.2rem
+    opacity: 0
+    pointer-events: none
+    transition: .2s ease-in-out
+
+  +gt-mobile
+    &:hover
+      a:not(:hover)
+        opacity: .5
+
++mobile
+  .menu
+    background: var(--body-bg)
+    color: var(--body-fg)
+
+.isOpen
+  color: var(--body-fg) !important
+  .menu
+    opacity: 1
+    pointer-events: auto
+
+.hamburger
+  width: $hamburger-width
+  height: $hamburger-width
+  display: flex
+  +gt-mobile
+    display: none
+  align-items: center
+  justify-content: center
+  flex-direction: column
+  cursor: pointer
+  position: fixed
+  top: 0
+  right: 0
+  z-index: 16
+  
+  span
+    width: 33px
+    display: block
+    height: 4px
+    border-radius: 2px
+    background: currentColor
+    margin: 5px 0
+    transform-origin: 4px 0px
+    transition: transform 0.3s cubic-bezier(0.77,0.2,0.05,1.0), background 0.3s cubic-bezier(0.77,0.2,0.05,1.0), opacity 0.35s ease
+
+  span:first-child
+    transform-origin: 0% 0%
+
+  span:nth-of-type(3)
+    transform-origin: 0% 100%
+
+.isOpen .hamburger
+  span
+    opacity: 1
+    transform: translate(2px, 0px) rotate(45deg) translate(-2px, -2px)
+
+  span:nth-of-type(2)
+    opacity: 0
+    transform: rotate(0deg) scale(0.2, 0.2)
+
+  span:nth-of-type(3)
+    transform: translate(2px, 2px) rotate(-45deg) translate(0, -1px)
+
+
+

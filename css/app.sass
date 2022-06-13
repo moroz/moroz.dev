@@ -4,8 +4,14 @@
 
 @import base
 @import button
-@import header
 @import hamburger
-@import footer
 @import blog
 @import videos
+
+html
+  @each $name, $color in $light
+    --#{$name}: #{$color}
+
+  @media (prefers-color-scheme: dark)
+    @each $name, $color in $dark
+      --#{$name}: #{$color}

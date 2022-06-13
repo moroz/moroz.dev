@@ -1,6 +1,8 @@
+import clsx from "clsx";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import Hamburger from "./Hamburger";
+import styles from "./Header.module.sass";
 
 const SCROLL_THRESHOLD = 40;
 
@@ -12,12 +14,16 @@ interface NavLinkProps {
 const NavLink = ({ href, children }: NavLinkProps) => {
   return (
     <Link href={href}>
-      <a className="header__navlink">{children}</a>
+      <a className={styles.navlink}>{children}</a>
     </Link>
   );
 };
 
-const Header = () => {
+interface Props {
+  white?: boolean;
+}
+
+const Header: React.FC<Props> = ({ white }) => {
   const [hamburgerOpen, setHamburgerOpen] = useState(false);
   const [opaque, setOpaque] = useState(false);
 
@@ -34,25 +40,27 @@ const Header = () => {
 
   return (
     <header
-      className={`header ${hamburgerOpen ? "header--menu-open" : ""} ${
-        opaque ? "header--opaque" : ""
-      }`}
+      className={clsx(
+        styles.header,
+        hamburgerOpen && styles.isOpen,
+        opaque && styles.isOpaque,
+        white && styles.isWhite
+      )}
     >
-      <div className="header__content">
-        <h1 className="header__branding">
+      <div className={styles.content}>
+        <h1 className={styles.branding}>
           <Link href="/">
-            <a className="header__branding__logo">moroz.dev</a>
+            <a>moroz.dev</a>
           </Link>
         </h1>
       </div>
-      <nav className="header__menu">
+      <nav className={styles.menu}>
         <NavLink href="/">Home</NavLink>
-        {/* <NavLink href="/projects">Projects</NavLink> */}
         <NavLink href="/blog">Blog</NavLink>
         <NavLink href="/videos">Videos</NavLink>
         <NavLink href="/contact">Contact</NavLink>
         <Link href="/resume.pdf">
-          <a className="header__cta button" target="_blank">
+          <a className={clsx(styles.cta, "button")} target="_blank">
             R&eacute;sum&eacute;
           </a>
         </Link>

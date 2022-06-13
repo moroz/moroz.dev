@@ -4,7 +4,7 @@ import Layout from "../layout/Layout";
 import styles from "./Landing.module.sass";
 
 const IndexPage = () => (
-  <Layout title="home" className="layout--white-header">
+  <Layout title="home" whiteHeader>
     <div className={styles.landing}>
       <div className={styles.hero}>
         <p>Hello world. My name is</p>

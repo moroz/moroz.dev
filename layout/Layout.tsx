@@ -9,11 +9,12 @@ type Props = {
   children?: ReactNode;
   title?: string;
   className?: string;
+  whiteHeader?: boolean;
 };
 
 const description = `Learn Web development with Karol Moroz. Programming tips & tricks, Elixir, React, Svelte, TypeScript learning resources, blog, videos, and more.`;
 
-const Layout = ({ children, title, className }: Props) => {
+const Layout = ({ children, title, className, whiteHeader }: Props) => {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -37,7 +38,7 @@ const Layout = ({ children, title, className }: Props) => {
         <link rel="icon" href="/favicon.svg" />
         <meta name="theme-color" content="#131723" />
       </Head>
-      <Header />
+      <Header white={whiteHeader} />
       <main role="main" id="main">
         {children}
       </main>

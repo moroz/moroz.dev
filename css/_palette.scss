@@ -76,17 +76,6 @@ $dark: (
   "code-fg": #ffb000
 );
 
-html {
-  @each $name, $color in $light {
-    --#{$name}: #{$color};
-  }
-  @media (prefers-color-scheme: dark) {
-    @each $name, $color in $dark {
-      --#{$name}: #{$color};
-    }
-  }
-}
-
 @mixin dark {
   @media (prefers-color-scheme: dark) {
     @content;
