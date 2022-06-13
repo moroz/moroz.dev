@@ -3,6 +3,7 @@ title: "Learning iOS and Swift. Day 25: Apollo Client, MVVM architecture, keycha
 date: 2022-06-13
 slug: learning-ios-and-swift-day-twenty-six
 lang: en-US
+draft: true
 
 summary: |
   Exploring integration with Apollo Client for iOS. Discovering MVVM architecture and singleton classes.
