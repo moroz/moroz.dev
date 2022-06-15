@@ -1,6 +1,6 @@
 ---
 title: "Learning iOS and Swift. Day 27: Login view"
-date: 2022-06-13
+date: 2022-06-14
 slug: learning-ios-and-swift-day-twenty-seven
 lang: en-US
 
