@@ -13,8 +13,8 @@ interface NavLinkProps {
 
 const NavLink = ({ href, children }: NavLinkProps) => {
   return (
-    <Link href={href}>
-      <a className={styles.navlink}>{children}</a>
+    <Link href={href} className={styles.navlink}>
+      {children}
     </Link>
   );
 };
@@ -49,9 +49,7 @@ const Header: React.FC<Props> = ({ white }) => {
     >
       <div className={styles.content}>
         <h1 className={styles.branding}>
-          <Link href="/">
-            <a>moroz.dev</a>
-          </Link>
+          <Link href="/">moroz.dev</Link>
         </h1>
       </div>
       <nav className={styles.menu}>
@@ -59,10 +57,12 @@ const Header: React.FC<Props> = ({ white }) => {
         <NavLink href="/blog">Blog</NavLink>
         <NavLink href="/videos">Videos</NavLink>
         <NavLink href="/contact">Contact</NavLink>
-        <Link href="/resume.pdf">
-          <a className={clsx(styles.cta, "button")} target="_blank">
-            R&eacute;sum&eacute;
-          </a>
+        <Link
+          href="/resume.pdf"
+          className={clsx(styles.cta, "button")}
+          target="_blank"
+        >
+          R&eacute;sum&eacute;
         </Link>
       </nav>
       <Hamburger

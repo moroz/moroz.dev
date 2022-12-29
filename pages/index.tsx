@@ -13,8 +13,8 @@ const IndexPage = () => (
         <div className={styles.description}>
           <p>I am a software developer based in Poznań, Poland.</p>
         </div>
-        <Link href="/contact">
-          <a className={clsx(styles.cta, "button")}>Get in touch</a>
+        <Link href="/contact" className={clsx(styles.cta, "button")}>
+          Get in touch
         </Link>
       </div>
       <picture>
