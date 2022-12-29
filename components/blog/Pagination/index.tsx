@@ -20,10 +20,12 @@ const Pagination: React.FC<Props> = ({ pageCount, currentPage }) => {
     <div className="container">
       <ul className={styles.pagination}>
         {currentPage > 1 ? (
-          <Link href={hrefForPage(currentPage - 1)}>
-            <a className={styles.newer} title="Newer posts">
-              Newer
-            </a>
+          <Link
+            href={hrefForPage(currentPage - 1)}
+            className={styles.newer}
+            title="Newer posts"
+          >
+            Newer
           </Link>
         ) : null}
         {new Array(pageCount).fill(null).map((_, i) => {
@@ -37,18 +39,23 @@ const Pagination: React.FC<Props> = ({ pageCount, currentPage }) => {
           }
 
           return (
-            <Link href={href} key={i}>
-              <a className={styles.page} title={`Go to page ${i + 1}`}>
-                {i + 1}
-              </a>
+            <Link
+              href={href}
+              key={i}
+              className={styles.page}
+              title={`Go to page ${i + 1}`}
+            >
+              {i + 1}
             </Link>
           );
         })}
         {currentPage < pageCount ? (
-          <Link href={hrefForPage(currentPage + 1)}>
-            <a className={styles.older} title="Older posts">
-              Older
-            </a>
+          <Link
+            href={hrefForPage(currentPage + 1)}
+            className={styles.older}
+            title="Older posts"
+          >
+            Older
           </Link>
         ) : null}
       </ul>

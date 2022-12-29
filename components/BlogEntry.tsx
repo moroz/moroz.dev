@@ -15,10 +15,8 @@ const BlogEntry = ({ post }: Props) => {
       <p className="blog_feed__entry__meta">
         <span className="blog_feed__entry__date">{datePretty}</span>
       </p>
-      <Link href={path}>
-        <a className="blog_feed__entry__title">
-          <h3>{title}</h3>
-        </a>
+      <Link href={path} className="blog_feed__entry__title">
+        <h3>{title}</h3>
       </Link>
       {summary ? (
         <div
@@ -27,9 +25,7 @@ const BlogEntry = ({ post }: Props) => {
         />
       ) : null}
       <p className="blog_feed__entry__actions">
-        <Link href={path}>
-          <a>Read article</a>
-        </Link>
+        <Link href={path}>Read article</Link>
       </p>
     </article>
   );

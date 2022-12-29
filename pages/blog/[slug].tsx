@@ -42,9 +42,7 @@ const BlogPostPage = (props: Props) => {
         <main role="main" className="blog__content">
           <MDXRemote {...html} />
         </main>
-        <Link href="/blog">
-          <a>&lt;&lt; Back to blog</a>
-        </Link>
+        <Link href="/blog">&lt;&lt; Back to blog</Link>
       </article>
       <CommentSection url={url} />
     </Layout>
