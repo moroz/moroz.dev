@@ -11,7 +11,7 @@ const IndexPage = () => (
         <h1>Karol Moroz.</h1>
         <h2>I build modern Web applications.</h2>
         <div className={styles.description}>
-          <p>I am a software developer based in Warsaw, Poland.</p>
+          <p>I am a software developer based in Poznań, Poland.</p>
         </div>
         <Link href="/contact">
           <a className={clsx(styles.cta, "button")}>Get in touch</a>
