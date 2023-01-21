@@ -3,12 +3,8 @@ import type { AppProps } from "next/app";
 import "../css/app.sass";
 import * as gtag from "../lib/gtag";
 import { useRouter } from "next/router";
-import { ApolloProvider } from "@apollo/client";
-import { useApollo } from "../lib/apolloClient";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const client = useApollo(pageProps);
-
   const router = useRouter();
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -20,11 +16,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     };
   }, [router.events]);
 
-  return (
-    <ApolloProvider client={client}>
-      <Component {...pageProps} />
-    </ApolloProvider>
-  );
+  return <Component {...pageProps} />;
 }
 
 export default MyApp;
