@@ -2,6 +2,9 @@
   command = "yarn build"
   publish = "out"
 
+[context.production]
+  environment = { NETLIFY_NEXT_PLUGIN_SKIP = true }
+
 [[redirects]]
   from = "https://makeprogramming.fun/*"
   to = "https://moroz.dev/:splat"
