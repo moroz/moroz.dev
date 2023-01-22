@@ -1,3 +1,7 @@
+[build]
+  command = "yarn build"
+  publish = "out"
+
 [[redirects]]
   from = "https://makeprogramming.fun/*"
   to = "https://moroz.dev/:splat"
@@ -9,3 +13,6 @@
   to = "https://moroz.dev/:splat"
   status = 301
   force = true
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
