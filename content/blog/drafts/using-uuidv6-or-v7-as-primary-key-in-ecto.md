@@ -2,14 +2,13 @@
 title: Using UUIDv6 or v7 as primary key in Ecto
 author: Karol Moroz
 date: 2023-01-22
-draft: true
 slug: using-uuidv6-or-v7-as-primary-key-in-ecto
 
 summary: |
-  UUIDs are a great choice for primary keys in Postgres.
+  UUIDs are a great choice for primary keys in PostgreSQL.
   However, not all UUIDs were created equal.
-  This post discusses the pros and cons of different versions and explains
-  how to use newer variants in Ecto for Elixir.
+  This post discusses the pros and cons of different UUID formats and explains
+  how to use newer formats in Ecto for Elixir.
 ---
 
 Yesterday I read a post on the Supabase blog called [Choosing a Postgres Primary Key](https://supabase.com/blog/choosing-a-postgres-primary-key).
@@ -32,21 +31,22 @@ We can still get the last record inserted into a table by ordering by creation t
 ## New UUID formats
 
 There are two proposed UUID formats designed to be sortable by generation time: UUIDv6 and UUIDv7.
-UUIDv6 contains 48 bits of random data and is desgined to be backwards compatible with UUIDv1.
+UUIDv6 contains 48 bits of random data and is designed to be backward compatible with UUIDv1.
 UUIDv7 contains 74 random bits and is significantly more secure than v7.
 The [IETF memo on New UUID Formats](https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-04.html#name-uuid-version-7) recommends using UUIDv7 over v6 whenever possible.
-In my projects, I will be using v7 only.
+In my projects, I will only use v7.
 
 While PostgreSQL supports UUID identifiers out of the box, there is no way to automatically generate v7 UUIDs with the standard PostgreSQL distribution.
-The [uuid-ossp](https://www.postgresql.org/docs/current/uuid-ossp.html) package in the standard PostgreSQL distribution can only generate UUID v1, v3, v4, and v5.
-We can, however, generate those v6 and v7 on the application level.
+The [uuid-ossp](https://www.postgresql.org/docs/current/uuid-ossp.html) package in the standard PostgreSQL distribution can only generate UUID v1, v3, v4, and v5, but we can generate those at the application level.
 
 ## Using UUID primary keys in Ecto
 
-In order to use UUID primary keys for all Ecto schemas in our Elixir application, we can define a base schema, as recommended in the [schema attributes section](https://hexdocs.pm/ecto/3.9.4/Ecto.Schema.html#module-schema-attributes) in Ecto docs.
+In order to use UUID primary keys for all Ecto schemas in our Elixir application, we can define a base schema, as recommended in the [Schema Attributes](https://hexdocs.pm/ecto/3.9.4/Ecto.Schema.html#module-schema-attributes) section of the Ecto documentation.
+When using Ecto with PostgreSQL, UUID columns can be defined in the schema either using the `:binary_id` basic type, or using a dedicated type module, such as `Ecto.UUID`.
 
-In order to use v7 UUIDs, we need to find a library capable of generating new UUID formats.
-As of this writing, there are two libraries in the [Hex.pm registry](https://hex.pm/packages?search=uuid&sort=total_downloads) that can generate v6 and v7 UUIDs: [uniq](https://hex.pm/packages/uniq) and [uuid_utils](https://hex.pm/packages/uuid_utils). I have chosen `uniq` because it is slightly newer and has more overall downloads than `uuid_utils`.
+In order to use v7 UUIDs, we need to find a library that can generate new UUID formats.
+As of this writing, there are two libraries in the [Hex.pm registry](https://hex.pm/packages?search=uuid&sort=total_downloads) that can generate v6 and v7 UUIDs: [uniq](https://hex.pm/packages/uniq) and [uuid_utils](https://hex.pm/packages/uuid_utils).
+I chose `uniq` because it is slightly newer and has total downloads than `uuid_utils`.
 
 The function [Uniq.UUID.uuid7/1](https://hexdocs.pm/uniq/Uniq.UUID.html#uuid7/1) generates version 7 UUIDs:
 
@@ -76,6 +76,8 @@ defmodule MyApp.Schema do
   end
 end
 ```
+
+If you need to use UUIDv6, simply replace `:uuid7` with `:uuid6`.
 
 Update all Ecto schemas in the application to `use` this module instead of `Ecto.Schema`:
 
