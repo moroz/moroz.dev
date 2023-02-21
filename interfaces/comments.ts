@@ -3,13 +3,12 @@ import { ID } from "./common";
 export interface Comment {
   body: string;
   id: ID;
-  insertedAt: string;
+  insertedAt: number;
   remoteIp: string;
   signature: string;
   updatedAt: string;
   url: string;
   website: string;
-  iAmARobot: boolean;
 }
 
 export interface CommentInput {
@@ -18,4 +17,5 @@ export interface CommentInput {
   url: string;
   website: string;
   email: string;
+  iAmARobot: boolean;
 }

@@ -2,7 +2,7 @@ import { ChangeEvent } from "react";
 import clsx from "clsx";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
-import { useCreateCommentMutation } from "../../../gql/commentMutations";
+// import { useCreateCommentMutation } from "../../../gql/commentMutations";
 import { CommentInput } from "../../../interfaces/comments";
 import InputField from "../InputField";
 import classes from "./NewCommentForm.module.sass";
@@ -23,29 +23,30 @@ const NewCommentForm = () => {
   const {
     register,
     handleSubmit,
-    reset,
+    // reset,
     setError,
     clearErrors,
     formState: { errors },
     setValue
   } = useForm<CommentInput>();
   const url = router.asPath;
-  const [mutate, { loading: mutating }] = useCreateCommentMutation();
+  // const [mutate, { loading: mutating }] = useCreateCommentMutation();
 
   const onSubmit = async (partial: CommentInput) => {
     const input = { ...partial, url };
-    const result = await mutate({ variables: { input } });
-    if (result.data?.createComment?.success) {
-      reset();
-    } else {
-      clearErrors();
-      const errors = result.data?.createComment.errors ?? {};
-      Object.keys(errors).forEach((key: any) => {
-        (errors as any)[key]?.forEach((error: string) => {
-          setError(key, { message: error, type: "validate" });
-        });
-      });
-    }
+    console.log(input);
+    // const result = await mutate({ variables: { input } });
+    // if (result.data?.createComment?.success) {
+    //   reset();
+    // } else {
+    //   clearErrors();
+    //   const errors = result.data?.createComment.errors ?? {};
+    //   Object.keys(errors).forEach((key: any) => {
+    //     (errors as any)[key]?.forEach((error: string) => {
+    //       setError(key, { message: error, type: "validate" });
+    //     });
+    //   });
+    // }
   };
 
   const validateWebsite = (e: ChangeEvent<HTMLInputElement>) => {
@@ -105,7 +106,6 @@ const NewCommentForm = () => {
           label="Email:"
           register={register}
           errors={errors}
-          required
         />
         <InputField
           name="website"
@@ -125,7 +125,7 @@ const NewCommentForm = () => {
           tabIndex={-1}
         />
       </div>
-      <button type="submit" disabled={mutating}>
+      <button type="submit" disabled={false}>
         Submit comment
       </button>
     </form>

@@ -6,6 +6,8 @@ import { mdToReact } from "../../lib/api/markdown";
 import Link from "next/link";
 import Head from "next/head";
 import { MDXRemote } from "next-mdx-remote";
+import CommentSection from "../../components/comments/CommentSection";
+import { useRouter } from "next/router";
 
 interface Props {
   post: Post;
@@ -15,6 +17,7 @@ interface Props {
 const BlogPostPage = (props: Props) => {
   const { post, html } = props;
   const { summary, summaryPlain, title, datePretty, lang = "en" } = post;
+  const router = useRouter();
   return (
     <Layout title={title}>
       {summaryPlain ? (
@@ -38,6 +41,7 @@ const BlogPostPage = (props: Props) => {
         </main>
         <Link href="/blog">&lt;&lt; Back to blog</Link>
       </article>
+      <CommentSection url={router.asPath} />
     </Layout>
   );
 };

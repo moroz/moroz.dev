@@ -13,7 +13,7 @@ const CommentItem = ({ comment }: Props) => {
         <span className={classes.signature}>{comment.signature}</span>
         <span className={classes.ts}>
           {" "}
-          on {formatDateTime(comment.insertedAt)}
+          on {formatDateTime(comment.insertedAt * 1000)}
         </span>
 
         {comment.website ? (
