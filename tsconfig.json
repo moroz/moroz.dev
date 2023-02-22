@@ -19,8 +19,10 @@
     "target": "esnext",
     "incremental": true,
     "paths": {
+      "@interfaces": ["./interfaces"],
       "@interfaces/*": ["./interfaces/*"],
-      "@interfaces": ["./interfaces"]
+      "@lib/*": ["./lib/*"],
+      "@components/*": ["./components/*"]
     }
   },
   "exclude": ["node_modules"],

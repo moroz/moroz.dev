@@ -1,17 +1,19 @@
 import { GetStaticPaths, GetStaticProps } from "next";
-import { Post } from "../../interfaces";
+import { Comment, Post } from "@interfaces";
 import Layout from "../../layout/Layout";
 import { getAllPostSlugs, getPostDataBySlug } from "../../lib/api/blog";
-import { mdToReact } from "../../lib/api/markdown";
+import { mdToReact } from "@lib/api/markdown";
 import Link from "next/link";
 import Head from "next/head";
 import { MDXRemote } from "next-mdx-remote";
-import CommentSection from "../../components/comments/CommentSection";
+import { CommentSection } from "@components/comments";
 import { useRouter } from "next/router";
+import { fetchPostComments } from "@lib/api/comments";
 
 interface Props {
   post: Post;
   html: any;
+  comments: Comment[];
 }
 
 const BlogPostPage = (props: Props) => {
@@ -41,20 +43,23 @@ const BlogPostPage = (props: Props) => {
         </main>
         <Link href="/blog">&lt;&lt; Back to blog</Link>
       </article>
-      <CommentSection url={router.asPath} />
+      <CommentSection url={router.asPath} comments={props.comments} />
     </Layout>
   );
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const slug = params!.slug as string;
+  const commentsPromise = fetchPostComments(`/blog/${slug}`);
   const post = await getPostDataBySlug(slug);
   const html = await mdToReact(post.content);
+  const { comments } = await commentsPromise;
 
   return {
     props: {
       post,
-      html
+      html,
+      comments
     }
   };
 };
