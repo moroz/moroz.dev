@@ -1,8 +1,11 @@
 ---
-title: Go 入門：包、變數、函數
+title: Go 入門：軟體包、宣告變數
 date: 2023-11-04
 slug: go-rumen-bao-bianshu-hanshu
 lang: zh-Hant
+
+summary: |
+  此篇為編程的初學者介紹了 Go 程式語言的基本概念，初始化專案的方法，以及宣告變數的兩種語法。
 ---
 
 ## 先備知識
@@ -23,7 +26,7 @@ Linux 或 macOS作業系統的使用者可以用 [rtx](https://github.com/jdx/rt
 接下來請打開終端機。在 Windows 環境，可用 Git Bash（安裝 Windows 版 Git 就會自動安裝 Git Bash）。
 在 macOS 環境，可用 [iTerm2](https://iterm2.com/) 或 macOS 內建的 Terminal.app。
 
-終於機預設打開的資料夾為你的「家目錄」，又名「主目錄」（英：_home directory_），如果在終端機看到波浪符號（`~`）或 `$HOME` 的寫法，那就是家目錄的意思。
+終端機預設打開的資料夾為你的「家目錄」，又名「主目錄」（英：_home directory_），如果在終端機看到波浪符號（`~`）或 `$HOME` 的寫法，那就是家目錄的意思。
 
 在家目錄，請用 `mkdir` 指令建立 `projects` 資料夾（`mkdir` 為 _make directory_ 的縮寫）：
 
@@ -105,12 +108,12 @@ code .
 打開專案後請建立新的檔案 `main.go` 並輸入以下內容：
 
 ```go
-package main # 宣稱 main 軟體包
+package main // 宣稱 main 軟體包
 
-import "fmt" # 導入 fmt 包
+import "fmt" // 導入 fmt 包
 
-func main() { # 宣稱 main 函數，無返回值
-    # 列印「你好，世界！」、換行
+func main() { // 宣稱 main 函數，無返回值
+    // 列印「你好，世界！」、換行
     fmt.Println("你好，世界！")
 }
 ```
@@ -144,7 +147,7 @@ func main() {
 讓我們分析一下以上程式碼宣告變數的意思。
 
 ```go
-var name string = "王不明"
+var name string = "王小明"
 ```
 
 宣告一個名為 `name` 的變數，它的類型為 `string`（字串，也就是說文字資料）。與宣告同時，我們為 `name` 賦值 `"王小明"` 這一段文字資料。
@@ -187,4 +190,35 @@ func main() {
 $ go run .
 我叫 王小明
 x = 42
+```
+
+注意，簡化宣告運算子 `:=` 一定要用來宣告新的變數，如要為現存變數賦值，就一定要用 `=`。以下程式將無法編譯：
+
+```go
+func main() {
+	name := "王小明"
+	name := "張西西"
+	fmt.Println(name)
+}
+```
+
+```shell
+$ go run .                                                                                                         1
+# github.com/moroz/hello-world
+./main.go:7:7: no new variables on left side of :=
+```
+
+若看到 `no new variables on left side of :=` 這樣的錯誤訊息，通常就代表在應該用 `=` 的地方錯用 `:=`。
+
+```go
+func main() {
+	name := "王小明"
+	name = "張西西" // `:=` 改為 `=`
+	fmt.Println(name)
+}
+```
+
+```shell
+$ go run .                                                                                                         1
+張西西
 ```
