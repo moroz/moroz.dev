@@ -62,4 +62,23 @@ $ go mod init github.com/moroz/hello-world
 go: creating new go.mod: module github.com/moroz/hello-world
 ```
 
+在裏面，我們可以初始化一個 Git 版本庫（英：_Git repository_）：
 
+```shell
+$ git init
+提示：如果要設定所有新版本庫要使用的初始分支名稱，
+提示：請呼叫（會隱藏這個警告）：
+提示：
+提示：  git config --global init.defaultBranch <name>
+提示：
+提示：除了 “master” 外，常用的分支名稱有 “main”, “trunk” 以及
+提示：“development”。剛建立的分支可以用這個命令重新命名：
+提示：
+提示：  git branch -m <name>
+已初始化空的 Git 版本庫於 /Users/karol/projects/hello-world/.git/
+$ git add .
+$ git commit -m "Initial commit"
+[master (根提交) 76fbede] Initial commit
+ 1 file changed, 3 insertions(+)
+ create mode 100644 go.mod
+```
