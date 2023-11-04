@@ -54,6 +54,9 @@
       &::before
         content: "Fig. " counter(figure) ": "
 
+        [lang|=zh] &
+          content: "圖案" counter(figure, cjk-ideographic) "："
+
     figure.bordered-figure
       img
         border: 1px solid #aaa

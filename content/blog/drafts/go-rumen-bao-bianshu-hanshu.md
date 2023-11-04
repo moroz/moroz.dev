@@ -14,9 +14,9 @@ Linux 或 macOS作業系統的使用者可以用 [rtx](https://github.com/jdx/rt
 使用Windows作業系統的同學請另外安裝 [Git 版本控制系統](https://git-scm.com/download/win)。
 如果你還沒有[註冊 GitHub](https://github.com/signup)，請先註冊並[設定 SSH 金鑰](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)。
 
-你會需要一個程式碼編輯器。我本身偏好 [Neovim](https://neovim.io/)，但對於初學者而言，[Visual Studio Code](https://code.visualstudio.com/) 是還不錯的選擇。
+你會需要一個程式碼編輯器。我本身偏好 [Neovim](https://neovim.io/)，但對於初學者而言，[Visual Studio Code](https://code.visualstudio.com/) （以下簡稱 VS&nbsp;Code）是還不錯的選擇。
 
-如使用 Visual Studio Code，請安裝 [Rich Go language support for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=golang.Go) 的擴充包。
+如使用 VS&nbsp;Code，請安裝 [Rich Go language support for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=golang.Go) 的擴充包。
 
 ## 建立專案資料夾
 
@@ -57,7 +57,7 @@ mkdir ~/projects/hello-world
 cd ~/projects/hello-world
 ```
 
-用 `go mod init` 初始化 Go 軟體包。此處的名稱為 `github.com/<你的GitHub用戶名>/hello-world`。我的用戶名為 [moroz](https://github.com/moroz)，所以我會打：
+用 `go mod init` 初始化 Go 軟體包（英：_package_）。此處的名稱為 `github.com/<你的GitHub用戶名>/hello-world`。我的用戶名為 [moroz](https://github.com/moroz)，所以我會打：
 
 ```shell
 $ go mod init github.com/moroz/hello-world
@@ -87,8 +87,104 @@ $ git commit -m "Initial commit"
 
 ## 第一段 Go 程式
 
-接下來，請用程式碼編輯器打開這個專案。如使用 Visual Studio Code，可以用以下指令開啟：
+接下來，請用程式碼編輯器打開這個專案。如使用 VS&nbsp;Code，可以用以下指令開啟：
 
 ```shell
 code .
+```
+
+若在 macOS 環境中第一次使用此指令，可能遇到 _command not found_ 的錯誤訊息。
+這種情況下，請先使用 Finder 或 Spotlight 開啟 VS&nbsp;Code，然後按 Cmd-Shift-P，並輸入 `code`。
+輸入框中應該出現 _Install 'code' command in PATH_ 的選項（如圖），請用箭頭選擇此指令並按 Enter。
+
+<figure>
+<img src="/images/go-1/install-code-in-path.webp" />
+<figcaption><em>Install 'code' command in PATH</em> 的截圖</figcaption>
+</figure>
+
+打開專案後請建立新的檔案 `main.go` 並輸入以下內容：
+
+```go
+package main # 宣稱 main 軟體包
+
+import "fmt" # 導入 fmt 包
+
+func main() { # 宣稱 main 函數，無返回值
+    # 列印「你好，世界！」、換行
+    fmt.Println("你好，世界！")
+}
+```
+
+接下來，我們可以在終端機中用 `go run` 指令執行這段程式：
+
+```shell
+$ go run .
+你好，世界！
+```
+
+## 宣告變數
+
+接下來，我們來研究宣告變數的兩種方法。第一種方法是用 `var` 關鍵字，語法為：
+
+```go
+var [變數名稱] [資料類型] = [初始值]
+```
+
+例如：
+
+```go
+func main() {
+    var name string = "王小明"
+    var x int = 42
+    fmt.Println("我叫", name)
+    fmt.Println("x =", x)
+}
+```
+
+讓我們分析一下以上程式碼宣告變數的意思。
+
+```go
+var name string = "王不明"
+```
+
+宣告一個名為 `name` 的變數，它的類型為 `string`（字串，也就是說文字資料）。與宣告同時，我們為 `name` 賦值 `"王小明"` 這一段文字資料。
+
+```go
+var x int = 42
+```
+
+宣告一個名為 `x` 的變數，它的類型為 `int`（整數）。與宣告同時，我們為 `x` 賦值 `42` 的整數。
+
+執行以上程式碼會看到以下結果：
+
+```shell
+$ go run .
+我叫 王小明
+x = 42
+```
+
+Go 的變數定義也有一種簡化的寫法：
+
+```go
+[變數名稱] := [初始值]
+```
+
+注意看，這邊的賦值運算子變成 `:=` （冒號、等於）而非 `=`（等於）。
+
+```go
+func main() {
+    name := "王小明"
+    x := 42
+    fmt.Println("我叫", name)
+    fmt.Println("x =", x)
+}
+```
+
+若使用簡化的變數定義語法，Go 編譯器將在編譯過程中檢測類型，不必宣告。
+以上程式碼結果與上一段完全一致：
+
+```shell
+$ go run .
+我叫 王小明
+x = 42
 ```

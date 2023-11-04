@@ -11,6 +11,7 @@ import yaml from "highlight.js/lib/languages/yaml";
 import shell from "highlight.js/lib/languages/shell";
 import javascript from "highlight.js/lib/languages/javascript";
 import xml from "highlight.js/lib/languages/xml";
+import go from "highlight.js/lib/languages/go";
 import smartypants from "remark-smartypants";
 
 export async function mdToReact(md: string) {
@@ -31,7 +32,8 @@ export async function mdToReact(md: string) {
               gql,
               yaml,
               shell,
-              xml
+              xml,
+              go
             }
           }
         ]
