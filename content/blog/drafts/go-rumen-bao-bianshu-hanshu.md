@@ -12,9 +12,9 @@ summary: |
 
 為了參與這堂課，請各位同學預先安裝最新的 Go。寫本文的時候最新的版本為 1.21.3。
 使用 MS&nbsp;Windows 作業系統的同學可以至 [Go 官方網站](https://go.dev/dl/)下載安裝器。
-Linux 或 macOS作業系統的使用者可以用 [rtx](https://github.com/jdx/rtx) 或 [Homebrew](https://brew.sh/) 安裝。
+Linux 或 macOS 作業系統的使用者可以用 [rtx](https://github.com/jdx/rtx) 或 [Homebrew](https://brew.sh/) 安裝。
 
-使用Windows作業系統的同學請另外安裝 [Git 版本控制系統](https://git-scm.com/download/win)。
+使用 Windows 作業系統的同學請另外安裝 [Git 版本控制系統](https://git-scm.com/download/win)。
 如果你還沒有[註冊 GitHub](https://github.com/signup)，請先註冊並[設定 SSH 金鑰](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)。
 
 你會需要一個程式碼編輯器。我本身偏好 [Neovim](https://neovim.io/)，但對於初學者而言，[Visual Studio Code](https://code.visualstudio.com/) （以下簡稱 VS&nbsp;Code）是還不錯的選擇。
@@ -196,9 +196,9 @@ x = 42
 
 ```go
 func main() {
-	name := "王小明"
-	name := "張西西"
-	fmt.Println(name)
+    name := "王小明"
+    name := "張西西"
+    fmt.Println(name)
 }
 ```
 
@@ -212,9 +212,9 @@ $ go run .                                                                      
 
 ```go
 func main() {
-	name := "王小明"
-	name = "張西西" // `:=` 改為 `=`
-	fmt.Println(name)
+    name := "王小明"
+    name = "張西西" // `:=` 改為 `=`
+    fmt.Println(name)
 }
 ```
 
