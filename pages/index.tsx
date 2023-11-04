@@ -11,7 +11,10 @@ const IndexPage = () => (
         <h1>Karol Moroz.</h1>
         <h2>I build modern Web applications.</h2>
         <div className={styles.description}>
-          <p>I am a software developer based in Poznań, Poland.</p>
+          <p>I am a software developer based in Bay Area, Kaohsiung, TW.</p>
+          <p className={styles.ps}>
+            (Who said only Californians can have a Bay Area?)
+          </p>
         </div>
         <Link href="/contact" className={clsx(styles.cta, "button")}>
           Get in touch
