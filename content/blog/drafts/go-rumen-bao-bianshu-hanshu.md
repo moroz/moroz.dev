@@ -16,6 +16,8 @@ Linux 或 macOS作業系統的使用者可以用 [rtx](https://github.com/jdx/rt
 
 你會需要一個程式碼編輯器。我本身偏好 [Neovim](https://neovim.io/)，但對於初學者而言，[Visual Studio Code](https://code.visualstudio.com/) 是還不錯的選擇。
 
+如使用 Visual Studio Code，請安裝 [Rich Go language support for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=golang.Go) 的擴充包。
+
 ## 建立專案資料夾
 
 接下來請打開終端機。在 Windows 環境，可用 Git Bash（安裝 Windows 版 Git 就會自動安裝 Git Bash）。
@@ -47,7 +49,7 @@ cd
 mkdir ~/projects/hello-world
 ```
 
-## 初始化 Go 軟體包
+## 初始化 Go 專案
 
 切換至 `~/projects/hello-world` 資料夾：
 
@@ -81,4 +83,12 @@ $ git commit -m "Initial commit"
 [master (根提交) 76fbede] Initial commit
  1 file changed, 3 insertions(+)
  create mode 100644 go.mod
+```
+
+## 第一段 Go 程式
+
+接下來，請用程式碼編輯器打開這個專案。如使用 Visual Studio Code，可以用以下指令開啟：
+
+```shell
+code .
 ```
