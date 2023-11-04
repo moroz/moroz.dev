@@ -32,7 +32,7 @@ const Pagination: React.FC<Props> = ({ pageCount, currentPage }) => {
           const href = i === 0 ? "/blog" : `/blog/page/${i + 1}`;
           if (i + 1 === currentPage) {
             return (
-              <li className={clsx(styles.page, styles.current)}>
+              <li className={clsx(styles.page, styles.current)} key={i}>
                 {currentPage}
               </li>
             );
