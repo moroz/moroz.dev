@@ -96,4 +96,4 @@ Therefore, I scrapped my "Hello, World!" project built with UIKit along the book
 After some time spent juggling billing addresses and credit cards for tax optimization purposes (sales tax is much lower if your billing address is in a tax haven like Taiwan, just saying), I ended up subscribing to RayWenderlich.com to access the book called [SwiftUI Apprentice](https://www.raywenderlich.com/books/swiftui-apprentice).
 This book is very practice-oriented, so I should have new SwiftUI-based code to show off by tomorrow's post.
 
-<!-- https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/color/#system-colors -->
+{/* <!-- https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/color/#system-colors --> */}

@@ -278,7 +278,7 @@ archive. Below is a screenshot of a release running and receiving connections:
 <img width="100%" src="/images/windows-release-running.webp" alt="JSON API running from an Elixir release" />
 </a>
 
-<!--
+{/* !--
 8. Clone the repository onto the build machine.
 9. `cd naps`
 10. `scripts/build-release.sh`. This script will discard all changes to your working tree. Make sure your tree is clean.
@@ -287,4 +287,4 @@ archive. Below is a screenshot of a release running and receiving connections:
 13. The windows executable for the release lives inside `bin/naps.bat`.
 14. Database migrations run automatically every time you start the release.
 
--->
+--*/}

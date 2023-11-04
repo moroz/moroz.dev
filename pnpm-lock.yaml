@@ -23,9 +23,6 @@ dependencies:
   gray-matter:
     specifier: ^4.0.3
     version: 4.0.3
-  highlight-pug:
-    specifier: ^0.0.2
-    version: 0.0.2(highlight.js@11.9.0)
   highlight.js:
     specifier: ^11.9.0
     version: 11.9.0
@@ -1226,14 +1223,6 @@ packages:
       hast-util-parse-selector: 4.0.0
       property-information: 6.4.0
       space-separated-tokens: 2.0.2
-    dev: false
-
-  /highlight-pug@0.0.2(highlight.js@11.9.0):
-    resolution: {integrity: sha512-Yri05asY4vNfaaF6/3I/5EPD/U1yvXns5PNZ2Cr8zao3vLfWUaY1PRHqW9YNUImiJWGL6KqdbQPl+Yxq7iyjrg==}
-    peerDependencies:
-      highlight.js: ^9.15.6
-    dependencies:
-      highlight.js: 11.9.0
     dev: false
 
   /highlight.js@11.9.0:

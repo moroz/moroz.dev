@@ -5,31 +5,26 @@ date: "2015-03-28 17:22:51"
 language: "pl"
 slug: "co-sie-wydarzylo-w-klubie-na-gorze"
 ---
-<!-- Podróże Małe i Duże. 188,5. Co się wydarzyło w Klubie Na Górze? -->
+{/* <!-- Podróże Małe i Duże. 188,5. Co się wydarzyło w Klubie Na Górze? --> */}
 <strong>Chengdu, 2015-03-28 17:22:51 +0800<br />
 Dzień 31 (224) w Chinach</strong><br />
 
 <p><span class="strsm">189. Co się wydarzyło w Klubie Na Górze?<br />
 Wywiad Osoby Pierwszej z Osobą Drugą</span></p>
 
-<p class="person1">
-<span class="strsm">Osoba Pierwsza:</span> Powiedz mi, co się wczoraj działo.</p>
+<p class="person1"><span class="strsm">Osoba Pierwsza:</span> Powiedz mi, co się wczoraj działo.</p>
 
-<p class="person2">
-<span class="strsm">Osoba Druga:</span> Powinieneś raczej spytać, co się <em>nie</em> działo. Najpierw <span style={{ letterSpacing: '0.16em' }}>poszłem</span> do „1855”. Było to gdzieś o jedenastej.</p>
+<p class="person2"><span class="strsm">Osoba Druga:</span> Powinieneś raczej spytać, co się <em>nie</em> działo. Najpierw <span style={{ letterSpacing: '0.16em' }}>poszłem</span> do „1855”. Było to gdzieś o jedenastej.</p>
 
-<p class="person1">
-<span class="strsm">Osoba Pierwsza:</span> Czy były jakieś fajne dziunie?</p>
+<p class="person1"><span class="strsm">Osoba Pierwsza:</span> Czy były jakieś fajne dziunie?</p>
 
-<p class="person2">
-<span class="strsm">Osoba Druga:</span> Mhm. Były tam nasze przyjaciółki, Cycata (Piękny Nefryt Wen), która nadal jest cycata, i Zielonowłosa (Szlachetny Klejnot Liu), która już nie jest zielonowłosa, i nie tańczy już w czarnym, wełnianym płaszczu, tak jak owego pamiętnego (?&hellip;) wieczoru, kiedyśmy je poznali.</p>
+<p class="person2"><span class="strsm">Osoba Druga:</span> Mhm. Były tam nasze przyjaciółki, Cycata (Piękny Nefryt Wen), która nadal jest cycata, i Zielonowłosa (Szlachetny Klejnot Liu), która już nie jest zielonowłosa, i nie tańczy już w czarnym, wełnianym płaszczu, tak jak owego pamiętnego (?&hellip;) wieczoru, kiedyśmy je poznali.</p>
 
 <p class="person1">„Myślę, że to, że zapisujesz nazwiska Chińczyków na drugim miejscu odzwierciedla twój europocentryczny obraz świata, który nie przystoi sinologowi.”</p>
 
 <p><em>Didaskalium: TU MUSIMY PIERDOLNĄĆ JAKIŚ FRAZES</em></p>
 
-<p class="person1">
-<span class="strsm">Osoba Pierwsza:</span> W Chinach <em>fazhan</em> następuje bardzo szybko. Stare chłopskie chaty z dnia na dzień zrównuje się tu z ziemią, by równie szybko wyrosły na ich miejscu apartamentowce i drapacze chmur. Stylówy dziewcząt również podążają za tym samym <span style={{ letterSpacing: '0.16em' }}>trądem</span>.</p>
+<p class="person1"><span class="strsm">Osoba Pierwsza:</span> W Chinach <em>fazhan</em> następuje bardzo szybko. Stare chłopskie chaty z dnia na dzień zrównuje się tu z ziemią, by równie szybko wyrosły na ich miejscu apartamentowce i drapacze chmur. Stylówy dziewcząt również podążają za tym samym <span style={{ letterSpacing: '0.16em' }}>trądem</span>.</p>
 
 <p class="person2"><span class="strsm">Osoba Druga:</span> Spotkałem tam też Caystal, tę uroczą dziewczynę, którą zawsze można znaleźć w „1855”.</p>
 

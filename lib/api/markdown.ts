@@ -9,9 +9,7 @@ import erb from "highlight.js/lib/languages/erb";
 import vim from "highlight.js/lib/languages/vim";
 import gql from "highlight.js/lib/languages/graphql";
 import smartypants from "remark-smartypants";
-const pug = require("highlight-pug/pug");
 
-lowlight.registerLanguage("pug", pug);
 lowlight.registerLanguage("sass", sass);
 lowlight.registerLanguage("elixir", elixir);
 lowlight.registerLanguage("erb", erb);
@@ -23,7 +21,7 @@ lowlight.registerLanguage("graphql", gql);
 export async function mdToReact(md: string) {
   return serialize(md, {
     mdxOptions: {
-      rehypePlugins: [rehypeHighlight],
+      rehypePlugins: [rehypeHighlight as any],
       remarkPlugins: [smartypants]
     }
   });

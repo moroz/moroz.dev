@@ -4,7 +4,7 @@ date: 2020-10-13
 slug: programming-exercises-for-xiao-haibao-fizz-buzz
 ---
 
-Write a program that accepts one command-line argument _n_ (2 >= n <= 100,000) and prints to standard
+Write a program that accepts one command-line argument _n_ (2 &gt;= n &lt;= 100,000) and prints to standard
 output all natural numbers from 1 to _n_,
 but for numbers that are multiplies of 3, it should print "Fizz" instead of the number
 and for the multiplies of 5 it should print "Buzz" instead of the number.

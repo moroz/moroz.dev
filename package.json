@@ -14,7 +14,6 @@
     "deepmerge": "^4.3.1",
     "glob": "^8.1.0",
     "gray-matter": "^4.0.3",
-    "highlight-pug": "^0.0.2",
     "highlight.js": "^11.9.0",
     "lodash": "^4.17.21",
     "marked": "^9.1.5",

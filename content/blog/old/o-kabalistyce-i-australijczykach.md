@@ -6,12 +6,11 @@ language: "pl"
 slug: "o-kabalistyce-i-australijczykach"
 ---
 
-<!-- Podróże Małe i Duże. 181. China day 106. O kabalistyce i Australijczykach -->
+{/* <!-- Podróże Małe i Duże. 181. China day 106. O kabalistyce i Australijczykach --> */}
 
-<p>
 <strong>Chengdu, 2014-12-08 03:43:28 +0100
 Dzień 106 w Chinach</strong><br />
-Moja Macocha wyznała ostatnio w prywatnej korespondencji, że stęskniła się za moją publicystyką w Języku Ojczystym. Przez ostatnie trzy lata z hakiem wszystkie nocie pisałem bowiem w języku Jankesów, nie licząc kilku razy, kiedy zdecydowałem się wypacać swe zbereźności w języku chińskim &mdash; tych jednak było zdecydowanie najmniej. Od momentu, kiedy przestawiłem się z książek analogowych na e-booki, niemal wszystko, co czytałem, było po angielsku; dlatego też zwykle nazywałem go „językiem normalnym”. Nic więc dziwnego, że ostatnimi czasy niemałą trudność sprawia mi wypowiedzenie się w Języku Ojczystym o czymkolwiek bardziej wyrafinowanym, niż Pieniądze bądź Dupa Maryni. Co się tyczy tego ostatniego, to jest to raczej w sensie przenośnym, gdyż w Państwie Środka kobiety o tym imieniu występują stosunkowo rzadko. Kojarzę tylko jedną długonogą blondynę z Ukrainy o imieniu Darina, aczkolwiek jej poślady jakoś nigdy przesadnie mnie nie zajmowały.</p>
+<p>Moja Macocha wyznała ostatnio w prywatnej korespondencji, że stęskniła się za moją publicystyką w Języku Ojczystym. Przez ostatnie trzy lata z hakiem wszystkie nocie pisałem bowiem w języku Jankesów, nie licząc kilku razy, kiedy zdecydowałem się wypacać swe zbereźności w języku chińskim &mdash; tych jednak było zdecydowanie najmniej. Od momentu, kiedy przestawiłem się z książek analogowych na e-booki, niemal wszystko, co czytałem, było po angielsku; dlatego też zwykle nazywałem go „językiem normalnym”. Nic więc dziwnego, że ostatnimi czasy niemałą trudność sprawia mi wypowiedzenie się w Języku Ojczystym o czymkolwiek bardziej wyrafinowanym, niż Pieniądze bądź Dupa Maryni. Co się tyczy tego ostatniego, to jest to raczej w sensie przenośnym, gdyż w Państwie Środka kobiety o tym imieniu występują stosunkowo rzadko. Kojarzę tylko jedną długonogą blondynę z Ukrainy o imieniu Darina, aczkolwiek jej poślady jakoś nigdy przesadnie mnie nie zajmowały.</p>
 
 Dawno również nie pisałem nic odręcznie, a jeżeli już, to w celach naukowych, po chińsku albo koreańsku. Nawet jednak po koreańsku ostatnio pisałem głównie na komputerze &mdash; po pierwsze primo, bo jest szybciej, a po wtóre, bo nie trzeba się przy tym martwić ostrością ołówka, gramaturą papieru, kątem nachylenia łokcia i całą resztą czynników, które onegdaj spędzały sen z powiek domorosłym gryzipiórkom. Kiedy ja sam byłem młodocianym publicystą, dane mi było żyć w zgoła innym otoczeniu, niż to, w którym bytuję obecnie. Bo życie w Chinach to nie przelewki. Siedzenie w Chinach i pisanie blogaska, w nie mniejszym stopniu niż poważne studia w Poznaniu, może wywierać silny wpływ na psychikę, a nierzadko również powodować trwały uszczerbek na zdrowiu. Oba miejsca obfitują bowiem w obcokrajowców, kluby oraz suto zakrapiane alkoholem, papierosami oraz twardymi prochami studenckie imprezy, choć muszę przyznać, że pod tym względem chińskie wyobrażenie o dobrej zabawie znacząco odbiega od polskiego. W całych Chinach największym jednak zagrożeniem są ci Przedziwni Jegomoście z różnych stron świata, którzy raczej prędzej niż później wciągają cię w nielekką kabałę.
 
@@ -51,6 +50,7 @@ Moje życie codzienne w Chengdu nie jest szczególnie urozmaicone. Zwykle wychod
 I to górskie powietrze po prawie czterech miesiącach w wielomilionowych metropoliach! I tylko zaawansowane <em>delirium tremens</em> nie pozwalało mi w pełni cieszyć się tymi, jakże wspaniałymi, okolicznościami przyrodniczymi. Miałem zamiar pójść do apteki i dotruć się lekami bez recepty, aż w końcu wpadłem na pomysł wzięcia <em>Natrium sulphuricum</em> i wszystko przeszło. Moje dotychczasowe poglądy na leczenie kaca legły w gruzach.
 
 Minęliśmy Wenchuan. To tu 12 maja 2008 roku zatrzęsła się ziemia. W Syczuanie trzęsień ziemi jest całe mnóstwo, ale najwyraźniej wszystkie przespałem. I dobrze.
-<!--
+
+{/* <!--
 武侯大道 Wielka Droga Markiza Wu
-半衰期 ban4shua1qi1 酒精的半衰期很短 -->
+半衰期 ban4shua1qi1 酒精的半衰期很短 --> */}
