@@ -7,6 +7,10 @@ import swift from "highlight.js/lib/languages/swift";
 import erb from "highlight.js/lib/languages/erb";
 import vim from "highlight.js/lib/languages/vim";
 import gql from "highlight.js/lib/languages/graphql";
+import yaml from "highlight.js/lib/languages/yaml";
+import shell from "highlight.js/lib/languages/shell";
+import javascript from "highlight.js/lib/languages/javascript";
+import xml from "highlight.js/lib/languages/xml";
 import smartypants from "remark-smartypants";
 
 export async function mdToReact(md: string) {
@@ -15,7 +19,21 @@ export async function mdToReact(md: string) {
       rehypePlugins: [
         [
           rehypeHighlight as any,
-          { languages: { sass, elixir, swift, erb, vim, gql } }
+          {
+            detect: true,
+            languages: {
+              javascript,
+              sass,
+              elixir,
+              swift,
+              erb,
+              vim,
+              gql,
+              yaml,
+              shell,
+              xml
+            }
+          }
         ]
       ],
       remarkPlugins: [smartypants]

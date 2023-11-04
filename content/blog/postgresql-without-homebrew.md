@@ -107,7 +107,7 @@ export PGPASSWORD=postgres
 You can teach your shell to automatically set these variables for each session by putting these lines in your shell configuration file (`~/.bashrc` if you're using bash, `~/.zshrc` if you are using zsh), or using a tool like [direnv](https://direnv.net/).
 Once you source this file, you can connect to PostgreSQL without any additional parameters:
 
-```
+```plain
 karols-mbp:~$ psql
 psql (14.4)
 Type "help" for help.
