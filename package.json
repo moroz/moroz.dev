@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next",
-    "build": "next build && next-sitemap && next export",
+    "build": "next build && next-sitemap",
     "start": "next",
     "type-check": "tsc"
   },
