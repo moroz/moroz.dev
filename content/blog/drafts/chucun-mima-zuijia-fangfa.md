@@ -31,13 +31,21 @@ slug: chucun-mima-zuijia-fangfa
 密碼雜湊函數保證，接受同樣的輸入資料，都會返回一樣的輸出資料。
 這種加密法是單向的，也就是說，密碼一旦寫入資料庫，我們無法解密原本的密碼，只能判斷使用者所輸入的密碼是否正確。
 
+常見的密碼雜湊函數主要為 <a href="https://zh.wikipedia.org/zh-tw/MD5" target="_blank" rel="noopener noreferrer">MD5</a> 與 <a href="https://zh.wikipedia.org/wiki/SHA%E5%AE%B6%E6%97%8F" target="_blank" rel="noopener noreferrer">SHA 家庭</a>的函數（<a href="https://zh.wikipedia.org/wiki/SHA-1" target="_blank" rel="noopener noreferrer">SHA-1</a>、<a href="https://zh.wikipedia.org/wiki/SHA-2" target="_blank" rel="noopener noreferrer">SHA-256</a>等）。
+我在臺灣一個上線的專案裡看到有人直接使用 MD5，用一臺筆電在幾分鐘內解密了系統裡七成的密碼。
+
 如果直接使用密碼雜湊函數，所有使用同一個不好的密碼的使用者在資料庫裡也都看得到同樣的密碼雜湊函數結果。
-另外，這種函數可以計算得很快，大多數的常用密碼也可以直接對[彩虹表](https://zh.wikipedia.org/zh-tw/%E5%BD%A9%E8%99%B9%E8%A1%A8)（英：*rainbow table*）。
+另外，這種函數可以計算得很快，大多數的常用密碼也可以直接對<a href="https://zh.wikipedia.org/zh-tw/%E5%BD%A9%E8%99%B9%E8%A1%A8" target="_blank" rel="noopener noreferrer">彩虹表</a>（英：*rainbow table*）。
 這樣的方法僅比直接儲存純文本好一點點，請不要使用。
 
-## 不那麼單純的方法一：密碼雜湊函數加鹽（hash+salt）
+## 不那麼單純的方法：密碼雜湊函數加鹽（hash+salt）
 
+黑客們都討厭這個簡單的技巧：加鹽其實是一個非常簡單的概念。
+「鹽」是一個隨機值，這個值可以直接儲存在資料庫裏面。
+每次套用密碼雜湊函數的時候都是將「鹽」跟密碼一起輸入。
+這樣，即使密碼重複了，只要對應的「鹽」不同，加密後的結果會不一樣。
 
+以上的方法我也在臺灣一個上線的專案裡看過。這個方法安全性沒有跟前兩個方法一樣糕，但還是請你不要使用，有更簡單的作法：使用專用加密密碼的函數。
 
 <h2 id="answer">TL;DR 請用 bcrypt</h2>
 
