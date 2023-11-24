@@ -16,7 +16,7 @@ summary: |
 ## 安全考量
 
 觀察一般使用者的密碼習慣，或許會發現，其實很多人使用的密碼都不怎麼好，而且
-根據<a href="https://docs.google.com/presentation/d/16lVP0KxbUZqup9c2NAKivKj7Im7TsBUpRoBq_CzDInw/edit#slide=id.gd394e02ceb_0_3227" target="_blank" rel="noopener noreferrer">Bitwarden 2021 的密碼習慣調查結果</a>，85% 的接受調查者會在多個網站與多個地方重複使用同樣的密碼。
+根據 <a href="https://docs.google.com/presentation/d/16lVP0KxbUZqup9c2NAKivKj7Im7TsBUpRoBq_CzDInw/edit#slide=id.gd394e02ceb_0_3227" target="_blank" rel="noopener noreferrer">Bitwarden 2021 的密碼習慣調查結果</a>，85% 的接受調查者會在多個網站與多個地方重複使用同樣的密碼。
 不僅這樣，很多人所使用的密碼<a href="https://www.cnbc.com/2023/11/16/most-common-passwords-70percent-can-be-cracked-in-less-than-a-second.html" target="_blank" rel="noopener noreferrer">非常簡單，很容易被黑客猜對</a>。
 如果你的組織經營一個較大的網站，你的正式資料庫裡很高機率儲存著非常多很好猜的密碼。
 而萬一資料庫泄漏了，黑客就會拿到使用者清單加上密碼，可以直接一一去嘗試其他常用的網站。
