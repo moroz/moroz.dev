@@ -2,6 +2,7 @@
 title: Go 入門：函數定義
 date: 2023-11-06
 slug: go-rumen-hanshu-dingyi
+draft: true
 ---
 
 開發軟體像做蛋糕一樣。
