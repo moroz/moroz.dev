@@ -2,6 +2,11 @@
 title: 儲存密碼最佳方法：如果用 Go 儲存密碼
 date: 2023-11-25
 slug: chucun-mima-zuijia-fangfa
+
+summary: |
+    各位讀者如果想要學習網頁開發，遲早會遇到儲存密碼的問題。
+    究竟如何儲存密碼才最好？
+    如何才不會讓「密碼在網路上裸奔」？
 ---
 
 各位讀者如果想要學習網頁開發，遲早會遇到儲存密碼的問題。
@@ -49,4 +54,6 @@ slug: chucun-mima-zuijia-fangfa
 
 <h2 id="answer">TL;DR 請用 bcrypt</h2>
 
-Bcrypt 原則上也是一種密碼雜湊函數，
+Bcrypt 原則上也是一種密碼雜湊函數，但它與 MD5 或 SHA 家族的密碼雜湊函數的不同點就是，bcrypt 是專門拿來儲存密碼的。
+
+我在 <a href="https://github.com/moroz/bcrypt-demo" target="_blank" rel="noopener noreferrer">github.com/moroz/bcrypt-demo</a> 上傳了一個小專案，裡面雖然沒有用到網頁的部分，但仍提供了一個簡單的使用 bcrypt 加密密碼的範例。
