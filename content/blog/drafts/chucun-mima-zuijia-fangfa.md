@@ -49,4 +49,4 @@ slug: chucun-mima-zuijia-fangfa
 
 <h2 id="answer">TL;DR 請用 bcrypt</h2>
 
-
+Bcrypt 原則上也是一種密碼雜湊函數，
