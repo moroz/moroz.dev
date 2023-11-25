@@ -56,14 +56,56 @@ create extension if not exists "citext" with schema "public";
 
 -- 以下為 users 資料表的定義
 create table users (
-  id uuid primary key, -- 主鍵用 UUIDv7
+  id uuid primary key, -- 主鍵為 UUID 類型，在應用程式層產生 UUIDv7
   email citext not null unique, -- 信箱不可重複且不分大小寫
   password_hash text, -- 加密後的密碼
-  inserted_at timestamp(0) not null default (now() at time zone 'utc'),
-  updated_at timestamp(0) not null default (now() at time zone 'utc')
+  inserted_at timestamp(0) not null default (now() at time zone 'utc'), -- 紀錄新增時間
+  updated_at timestamp(0) not null default (now() at time zone 'utc') -- 最後一次更新時間
 );
 ```
 
-第一個小程式為 `register`，
+以下為使用者的 model。本專案沒有用 ORM，只有用 <a href="https://github.com/jmoiron/sqlx" target="_blank" rel="noopener noreferrer">jmoiron/sqlx</a> 將資料庫中的資料讀取為 struct：
+
+```go
+type User struct {
+    ID           uuidv7.UUID `db:"id"`
+    Email        string      `db:"email"`
+    PasswordHash string      `db:"password_hash"`
+    InsertedAt   time.Time   `db:"inserted_at"`
+    UpdatedAt    time.Time   `db:"updated_at"`
+}
+```
+
+新增使用者的時候做一些簡單的資料驗證，如果資料都符合需求（信箱與密碼不能為空、密碼確認必須與密碼相符），則可以將密碼轉換為 Argon2id 的 hash 並且產生一個 UUIDv7：
+
+```go
+func CreateUser(db *sqlx.DB, email, password, passwordConfirmation string) (*User, error) {
+    email = strings.TrimSpace(email)
+    if email == "" {
+    	return nil, errors.New("Email cannot be blank!")
+    }
+    if password == "" {
+    	return nil, errors.New("Password cannot be blank!")
+    }
+    if password != passwordConfirmation {
+    	return nil, errors.New("Passwords do not match!")
+    }
+    digest, err := argon2id.CreateHash(password, &ARGON2_PARAMS)
+    if err != nil {
+    	return nil, err
+    }
+
+    result := User{}
+    id := uuidv7.Generate()
+    err = db.Get(
+    	&result,
+    	"insert into users (id, email, password_hash) values ($1, $2, $3) returning "+USER_COLUMNS,
+    	id.String(),
+    	email,
+    	digest,
+    )
+    return &result, err
+}
+```
 
 ## 吐槽：不合理的密碼限制
