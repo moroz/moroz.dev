@@ -31,7 +31,7 @@ cd !$
 mix phx.new nigiyaka
 ```
 
-當Phoenix的代碼生成器問你是否想要安裝依賴的時候（「Fetch and install dependencies?」），我們拒絕，待會在手動安裝依賴。原因是，Phoenix默認採用的Node包管理器為NPM，而本文裏面將會使用另外一款套件管理系統，名叫Yarn。進入新建立的應用程式的資料夾並手動安裝依賴，然後建立 Git repo：
+當Phoenix的代碼生成器問你是否想要安裝依賴的時候（「Fetch and install dependencies?」），我們拒絕，待會在手動安裝依賴。原因是，Phoenix默認採用的Node包管理器為NPM，而本文裡面將會使用另外一款套件管理系統，名叫Yarn。進入新建立的應用程式的資料夾並手動安裝依賴，然後建立 Git repo：
 
 ```
 cd ~/working/react_workshop/nigiyaka
@@ -891,7 +891,7 @@ SELECT i0."id", i0."done_at", i0."title", i0."inserted_at", i0."updated_at" FROM
 [info] Sent 200 in 1ms
 ```
 
-目前資料庫裏面沒有待辦事項，讓我們打開`iex -S mix`來試試新增幾個任務：
+目前資料庫裡面沒有待辦事項，讓我們打開`iex -S mix`來試試新增幾個任務：
 
 ```elixir
 [~/working/nigiyaka] $ iex -S mix
@@ -1020,7 +1020,7 @@ export default class TodoApp extends React.Component {
 
 #### `PATCH toggle`
 
-我們需要寫的最後一個功能是更新項目的`done_at`。Phoenix已經幫我們生成了一個`Nigiyaka.Todos`模塊，我們可以在裏面添加一個`toggle_item/1`函數。首先建議在`test/nigiyaka/todos_test.exs`寫兩個測項：
+我們需要寫的最後一個功能是更新項目的`done_at`。Phoenix已經幫我們生成了一個`Nigiyaka.Todos`模塊，我們可以在裡面添加一個`toggle_item/1`函數。首先建議在`test/nigiyaka/todos_test.exs`寫兩個測項：
 
 ```elixir
 test "toggle_item/1 sets done_at when done_at is nil" do
@@ -1092,5 +1092,5 @@ toggleItem = async (id) => {
 }
 ```
 
-現在每一個任務完成與否都會寫入資料庫中，刷新後還在呢！謝謝各位讀者的耐心，如果發現有哪一段代碼有錯誤，或者是中文表達方式哪裏有問題請直接用文章下面的表格留下意見回饋。
+現在每一個任務完成與否都會寫入資料庫中，刷新後還在呢！謝謝各位讀者的耐心，如果發現有哪一段代碼有錯誤，或者是中文表達方式哪裡有問題請直接用文章下面的表格留下意見回饋。
 

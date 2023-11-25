@@ -67,7 +67,7 @@ $ go mod init github.com/moroz/hello-world
 go: creating new go.mod: module github.com/moroz/hello-world
 ```
 
-在裏面，我們可以初始化一個 Git 版本庫（英：_Git repository_）：
+在裡面，我們可以初始化一個 Git 版本庫（英：_Git repository_）：
 
 ```shell
 $ git init
