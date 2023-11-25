@@ -38,10 +38,32 @@ summary: |
 
 以上的方法我也在台灣一個上線的專案裡看過。這個方法安全性沒有跟前兩個方法一樣糕，但還是請你不要使用，有更簡單的作法：使用專用加密密碼的函數。
 
-<h2 id="answer">TL;DR 請用 bcrypt</h2>
+<h2 id="answer">TL;DR 請用 Argon2id</h2>
 
-Bcrypt 原則上也是一種密碼雜湊函數，但它與 MD5 或 SHA 家族的密碼雜湊函數的不同點就是，bcrypt 是專門拿來儲存密碼的。
+當我開始寫本文的時候，我以為儲存密碼最好的選擇是 bcrypt 演算法。然而，經過約五分鐘的研究，我得知如今比較好的選擇是 <a href="https://en.wikipedia.org/wiki/Argon2" target="_blank" rel="noopener noreferrer">Argon2id</a>（名字中的 id 代表演算法的不同版本，不是 identifier 的意思）。這個推薦來自於 <a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html" target="_blank" rel="noopener noreferrer">OWASP Password Storage Cheat Sheet</a>。
 
-我在 <a href="https://github.com/moroz/bcrypt-demo" target="_blank" rel="noopener noreferrer">github.com/moroz/bcrypt-demo</a> 上傳了一個小專案，裡面雖然沒有用到網頁的部分，但仍提供了一個簡單的使用 bcrypt 加密密碼的範例。
+現代電腦越來越快，而且密碼雜湊函數可以用 GPU 計算，所以現代的加密密碼的函數主要需求是應該消耗大量的計算資源。Argon2id 不僅可以設定密碼雜湊函數的迭代數，而且還可以設定最少要求多少記憶體。
+
+我在 <a href="https://github.com/moroz/password-demo" target="_blank" rel="noopener noreferrer">github.com/moroz/password-demo</a> 上傳了一個小專案，裡面用一個簡單的 CLI 方式展示了儲存密碼的方式。
+
+首先，用 <a href="https://github.com/golang-migrate/migrate" target="_blank" rel="noopener noreferrer">golang-migrate</a> 建立了一個 migration，用以下 SQL 腳本建立了 `users` 資料表：
+
+```sql
+-- db/migrations/20231124175433_create_users.up.sql
+
+-- 安裝 citext 擴充功能，提供不分大小寫的字串類型 citext
+create extension if not exists "citext" with schema "public";
+
+-- 以下為 users 資料表的定義
+create table users (
+  id uuid primary key, -- 主鍵用 UUIDv7
+  email citext not null unique, -- 信箱不可重複且不分大小寫
+  password_hash text, -- 加密後的密碼
+  inserted_at timestamp(0) not null default (now() at time zone 'utc'),
+  updated_at timestamp(0) not null default (now() at time zone 'utc')
+);
+```
+
+第一個小程式為 `register`，
 
 ## 吐槽：不合理的密碼限制

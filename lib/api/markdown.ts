@@ -12,6 +12,7 @@ import shell from "highlight.js/lib/languages/shell";
 import javascript from "highlight.js/lib/languages/javascript";
 import xml from "highlight.js/lib/languages/xml";
 import go from "highlight.js/lib/languages/go";
+import sql from "highlight.js/lib/languages/sql";
 import smartypants from "remark-smartypants";
 
 export async function mdToReact(md: string) {
@@ -33,7 +34,8 @@ export async function mdToReact(md: string) {
               yaml,
               shell,
               xml,
-              go
+              go,
+              sql
             }
           }
         ]
