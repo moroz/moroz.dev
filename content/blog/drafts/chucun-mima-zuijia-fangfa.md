@@ -28,7 +28,7 @@ summary: |
 
 第二個單純的方法是使用一種密碼雜湊函數（英：*hash function*）。密碼雜湊函數保證，接受同樣的輸入資料，都會返回一樣的輸出資料。這種加密法是單向的，也就是說，密碼一旦寫入資料庫，我們無法解密原本的密碼，只能判斷使用者所輸入的密碼是否正確。
 
-常見的密碼雜湊函數主要為 <a href="https://zh.wikipedia.org/zh-tw/MD5" target="_blank" rel="noopener noreferrer">MD5</a> 與 <a href="https://zh.wikipedia.org/wiki/SHA%E5%AE%B6%E6%97%8F" target="_blank" rel="noopener noreferrer">SHA 家庭</a>的函數（<a href="https://zh.wikipedia.org/wiki/SHA-1" target="_blank" rel="noopener noreferrer">SHA-1</a>、<a href="https://zh.wikipedia.org/wiki/SHA-2" target="_blank" rel="noopener noreferrer">SHA-256</a>等）。我在台灣一個上線的專案裡看到有人直接使用 MD5，用一臺筆電在幾分鐘內解密了系統裡七成的密碼。
+常見的密碼雜湊函數主要為 <a href="https://zh.wikipedia.org/zh-tw/MD5" target="_blank" rel="noopener noreferrer">MD5</a> 與 <a href="https://zh.wikipedia.org/wiki/SHA%E5%AE%B6%E6%97%8F" target="_blank" rel="noopener noreferrer">SHA 家族</a>的函數（<a href="https://zh.wikipedia.org/wiki/SHA-1" target="_blank" rel="noopener noreferrer">SHA-1</a>、<a href="https://zh.wikipedia.org/wiki/SHA-2" target="_blank" rel="noopener noreferrer">SHA-256</a>等）。我在台灣一個上線的專案裡看到有人直接使用 MD5，用一臺筆電在幾分鐘內解密了系統裡七成的密碼。
 
 如果直接使用密碼雜湊函數，所有使用同一個不好的密碼的使用者在資料庫裡也都看得到同樣的密碼雜湊函數結果。另外，這種函數可以計算得很快，大多數的常用密碼也可以直接對<a href="https://zh.wikipedia.org/zh-tw/%E5%BD%A9%E8%99%B9%E8%A1%A8" target="_blank" rel="noopener noreferrer">彩虹表</a>（英：*rainbow table*）。這樣的方法僅比直接儲存純文本好一點點，請不要使用。
 
@@ -45,6 +45,8 @@ summary: |
 現代電腦越來越快，而且密碼雜湊函數可以用 GPU 計算，所以現代的加密密碼的函數主要需求是應該消耗大量的計算資源。Argon2id 不僅可以設定密碼雜湊函數的迭代數，而且還可以設定最少要求多少記憶體。
 
 我在 <a href="https://github.com/moroz/password-demo" target="_blank" rel="noopener noreferrer">github.com/moroz/password-demo</a> 上傳了一個小專案，裡面用一個簡單的 CLI 方式展示了儲存密碼的方式。
+
+### 資料結構
 
 首先，用 <a href="https://github.com/golang-migrate/migrate" target="_blank" rel="noopener noreferrer">golang-migrate</a> 建立了一個 migration，用以下 SQL 腳本建立了 `users` 資料表：
 
@@ -76,7 +78,13 @@ type User struct {
 }
 ```
 
-新增使用者的時候做一些簡單的資料驗證，如果資料都符合需求（信箱與密碼不能為空、密碼確認必須與密碼相符），則可以將密碼轉換為 Argon2id 的 hash 並且產生一個 UUIDv7：
+### 新增使用者
+
+以上結構裡的 `uuidv7.UUID` 為筆者自己開發的軟體包 <a href="https://github.com/moroz/uuidv7-go" target="_blank" rel="noopener noreferrer">moroz/uuidv7-go</a> 所提供的 UUID 類型。UUIDv7 為新一代的 ID 標準，本網頁曾用英文描寫過：[Using UUIDv6 or v7 as primary key in Ecto](/blog/using-uuidv6-or-v7-as-primary-key-in-ecto)。我之所以開發了自己的軟體包，是因為網路上找不到針對 Go 語言的 UUIDv7 的實作。一開始找到的 <a href="https://github.com/GoWebProd/uuid7" target="_blank" rel="noopener noreferrer">GoWebProd/uuid7</a> 邏輯有誤，該使用 big-endian 的地方用了 little-endian，因此所產生的值不是正確的 UUIDv7 值。
+
+Argon2id 的軟體包為 <a href="https://github.com/alexedwards/argon2id" target="_blank" rel="noopener noreferrer">alexedwards/argon2id</a>。雖然 <a href="https://pkg.go.dev/golang.org/x/crypto/argon2" target="_blank" rel="noopener noreferrer">golang.org/x/crypto/argon2</a> 本身提供了 Argon2id 所需函數，但是使用方法不簡單，`alexedwards/argon2id` 稍微好用一些。
+
+新增使用者的時候做一些簡單的資料驗證，如果資料都符合需求（信箱與密碼不能為空、密碼確認必須與密碼相符），就可以將密碼轉換為 argon2id digest：
 
 ```go
 // Argon2 的設定：46 MiB 記憶體，一個迭代
@@ -113,17 +121,210 @@ func CreateUser(db *sqlx.DB, email, password, passwordConfirmation string) (*Use
     }
 
     result := User{}
+
+    // 產生 UUIDv7
     id := uuidv7.Generate()
+
+    // SQL INSERT 插入資料，用 RETURNING 即可與插入同時取得新的一筆資料
     err = db.Get(
         &result,
         `insert into users (id, email, password_hash)
         values ($1, $2, $3) returning `+USER_COLUMNS,
-        id.String(),
-        email,
-        digest,
+        // SQL 語法中三個佔位符 $1, $2, $3 需提供三個參數
+        id.String(), email, digest,
     )
     return &result, err
 }
+```
+
+使用以上一段程式碼寫了一個簡單的應用程式，可以新增使用者：
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "strings"
+
+    "github.com/jmoiron/sqlx"
+    _ "github.com/lib/pq"
+    "github.com/moroz/password-demo/config"
+    "github.com/moroz/password-demo/models"
+)
+
+func main() {
+    db := sqlx.MustConnect("postgres", config.DATABASE_URL)
+
+    var email, password, passwordConfirmation string
+    fmt.Print("Email: ")
+    fmt.Scanln(&email)
+    fmt.Print("Password: ")
+    fmt.Scanln(&password)
+    fmt.Print("Confirm password: ")
+    fmt.Scanln(&passwordConfirmation)
+
+    user, err := models.CreateUser(db, strings.TrimSpace(email), password, passwordConfirmation)
+    if err != nil {
+        log.Println(err)
+    } else {
+        log.Printf("Created user with ID: %s\n", user.ID.String())
+    }
+}
+```
+
+新增使用者結果：
+
+```shell
+$ go run .
+Email: user@example.com
+Password: foobar
+Confirm password: foobar
+2023/11/26 22:56:45 Created user with ID: 018c0c22-04e0-7900-92f2-25c57662e998
+```
+
+讓我們瞧瞧密碼被轉換為 argon2id 會長什麼樣：
+
+```shell
+$ psql password_demo_dev
+psql (16.0, server 15.2)
+Type "help" for help.
+
+password_demo_dev=# \x
+Expanded display is on.
+password_demo_dev=# select id, email, password_hash hash from users;
+-[ RECORD 1 ]-----------------------------------------------------------------------
+id    | 018c0c22-04e0-7900-92f2-25c57662e998
+email | user@example.com
+hash  | $argon2id$v=19$m=47104,t=1,p=1$e3rOL2Zvj2mqzwe7o2pycQ$7H5h7CbMq/uDzBpXzbvtMw
+```
+
+`$argon2id$...` 這一段鎖定了本密碼所使用的設定：46 MiB 記憶體（46 * 1024 KiB），`t=1` （iterations，一個迭代），`p=1`（parallelism，不並行處理）。這個字串的格式詳見 <a href="https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md" target="_blank" rel="noopener noreferrer">PHC string format spec</a>。
+
+### 使用者登入
+
+以下函數可以使用電子信箱與密碼找出使用者並判斷所輸入的密碼正確與否：
+
+```go
+func AuthenticateUserByEmailPassword(db *sqlx.DB, email, password string) (*User, error) {
+    result := User{}
+    err := db.Get(
+        &result,
+        // 搜尋有設定密碼，對應所輸入電子信箱之使用者
+        "select "+USER_COLUMNS+" from users where password_hash is not null and email=$1",
+        // 為 SQL 語法中的佔位符 $1 提供值：信箱
+        email,
+    )
+    // 若查詢時發生錯誤，如：使用者不存在，連接失敗等，則放棄登入
+    if err != nil {
+        return nil, err
+    }
+
+    // 檢查密碼是否與當初所輸入的相符
+    match, err := argon2id.ComparePasswordAndHash(password, result.PasswordHash)
+    // 若檢查時發生錯誤，如：資料庫裡面儲存的密碼字串格式不正確等，則放棄登入
+    if err != nil {
+        return nil, err
+    }
+
+    // 成功檢查密碼，結果為不相符：拒絕登入
+    if !match {
+        return nil, errors.New("Invalid password")
+    }
+
+    // 成功登入：返回使用者資料
+    return &result, nil
+}
+```
+
+以下為簡單的應用程式，使用電子信箱與密碼驗證使用者：
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    "github.com/jmoiron/sqlx"
+    _ "github.com/lib/pq"
+    "github.com/moroz/password-demo/config"
+    "github.com/moroz/password-demo/models"
+)
+
+func main() {
+    db := sqlx.MustConnect("postgres", config.DATABASE_URL)
+
+    var email, password string
+    fmt.Print("Email: ")
+    fmt.Scanln(&email)
+    fmt.Print("Password: ")
+    fmt.Scanln(&password)
+
+    user, err := models.AuthenticateUserByEmailPassword(db, email, password)
+    if err != nil {
+        log.Println(err)
+    } else {
+        log.Printf("Signed in user with ID: %s\n", user.ID.String())
+    }
+}
+```
+
+稍早新增的使用者現在可以登入了：
+
+```shell
+$ go run .
+Email: user@example.com
+Password: foobar
+2023/11/26 23:16:37 Signed in user with ID: 018c0c22-04e0-7900-92f2-25c57662e998
+```
+
+若使用不正確信箱或密碼：
+
+```shell
+$ go run .
+Email: user@example.com
+Password: invalid
+2023/11/26 23:29:20 Invalid password
+```
+
+```shell
+$ go run .
+Email: invalid@example.com
+Password: foobar
+2023/11/26 23:29:31 sql: no rows in result set
+```
+
+### 重複密碼的處理
+
+假設今天來了一個新的使用者，跟 `user@example.com` 那一位用了同樣的密碼：
+
+```shell
+$ go run .
+Email: other@example.com
+Password: foobar
+Confirm password: foobar
+2023/11/26 23:31:56 Created user with ID: 018c0c42-3b63-77b2-91cc-37d91d13a273
+```
+
+可見資料庫裡儲存的密碼字串跟第一個使用者不一樣：
+
+```shell
+$ psql password_demo_dev
+psql (16.0, server 15.2)
+Type "help" for help.
+
+password_demo_dev=# \x
+Expanded display is on.
+password_demo_dev=# select id, email, password_hash hash from users;
+-[ RECORD 1 ]-----------------------------------------------------------------------
+id    | 018c0c22-04e0-7900-92f2-25c57662e998
+email | user@example.com
+hash  | $argon2id$v=19$m=47104,t=1,p=1$e3rOL2Zvj2mqzwe7o2pycQ$7H5h7CbMq/uDzBpXzbvtMw
+-[ RECORD 2 ]-----------------------------------------------------------------------
+id    | 018c0c42-3b63-77b2-91cc-37d91d13a273
+email | other@example.com
+hash  | $argon2id$v=19$m=47104,t=1,p=1$Jlieaj0Ne2Bk/WR02a3RuA$rR1lFhvTw9HnQ/jX73wg2g
 ```
 
 ## 吐槽：不合理的密碼限制
