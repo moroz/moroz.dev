@@ -343,7 +343,7 @@ hash  | $argon2id$v=19$m=47104,t=1,p=1$Jlieaj0Ne2Bk/WR02a3RuA$rR1lFhvTw9HnQ/jX73
 </figure>
 
 <figure class="bordered-figure">
-<img src="/images/passwords/shopee.webp" alt="" />
+<img src="/images/passwords/pchome.webp" alt="" />
 <figcaption>PCHome 24h：只能用拉丁字母、數字與底線，長度限16位</figcaption>
 </figure>
 
