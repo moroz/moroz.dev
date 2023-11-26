@@ -79,30 +79,48 @@ type User struct {
 新增使用者的時候做一些簡單的資料驗證，如果資料都符合需求（信箱與密碼不能為空、密碼確認必須與密碼相符），則可以將密碼轉換為 Argon2id 的 hash 並且產生一個 UUIDv7：
 
 ```go
+// Argon2 的設定：46 MiB 記憶體，一個迭代
+var ARGON2_PARAMS = argon2id.Params{
+    Memory:      46 * 1024, // 46 MiB
+    Iterations:  1,
+    Parallelism: 1,
+    SaltLength:  16,
+    KeyLength:   16,
+}
+
+const USER_COLUMNS = "id, email, password_hash, inserted_at, updated_at"
+
 func CreateUser(db *sqlx.DB, email, password, passwordConfirmation string) (*User, error) {
-    email = strings.TrimSpace(email)
+    // 信箱不能為空
     if email == "" {
-    	return nil, errors.New("Email cannot be blank!")
+        return nil, errors.New("Email cannot be blank!")
     }
+
+    // 密碼不能為空
     if password == "" {
-    	return nil, errors.New("Password cannot be blank!")
+        return nil, errors.New("Password cannot be blank!")
     }
+
+    // 密碼確認必須與密碼相符
     if password != passwordConfirmation {
-    	return nil, errors.New("Passwords do not match!")
+        return nil, errors.New("Passwords do not match!")
     }
+
+    // 套用 argon2id 密碼雜湊函數
     digest, err := argon2id.CreateHash(password, &ARGON2_PARAMS)
     if err != nil {
-    	return nil, err
+        return nil, err
     }
 
     result := User{}
     id := uuidv7.Generate()
     err = db.Get(
-    	&result,
-    	"insert into users (id, email, password_hash) values ($1, $2, $3) returning "+USER_COLUMNS,
-    	id.String(),
-    	email,
-    	digest,
+        &result,
+        `insert into users (id, email, password_hash)
+        values ($1, $2, $3) returning `+USER_COLUMNS,
+        id.String(),
+        email,
+        digest,
     )
     return &result, err
 }
