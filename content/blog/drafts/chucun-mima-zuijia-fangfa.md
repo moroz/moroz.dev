@@ -1,5 +1,5 @@
 ---
-title: 儲存密碼最佳方法：如果使用 Go 儲存密碼
+title: 儲存密碼最佳方法：如何使用 Go 儲存密碼
 date: 2023-11-25
 slug: chucun-mima-zuijia-fangfa
 lang: zh-Hant-TW
