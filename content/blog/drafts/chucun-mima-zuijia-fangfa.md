@@ -40,7 +40,7 @@ summary: |
 
 當我開始寫本文的時候，我以為儲存密碼最好的選擇是 bcrypt 演算法。然而，經過約五分鐘的研究，我得知如今比較好的選擇是 <a href="https://en.wikipedia.org/wiki/Argon2" target="_blank" rel="noopener noreferrer">Argon2id</a>（名字中的 id 代表演算法的不同版本，不是 identifier 的意思）。這個推薦來自於 <a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html" target="_blank" rel="noopener noreferrer">OWASP Password Storage Cheat Sheet</a>。
 
-現代電腦越來越快，而且密碼雜湊函數可以用 GPU 計算，所以現代的加密密碼的函數主要需求是應該消耗大量的計算資源。Argon2id 不僅可以設定密碼雜湊函數的迭代數，而且還可以設定最少要求多少記憶體。
+現代電腦越來越快，而且密碼雜湊函數可以用 GPU 計算，所以現代的加密密碼的函數主要需求是要消耗大量的計算資源。Argon2id 不僅可以設定密碼雜湊函數的迭代數，而且還可以設定最少要求多少記憶體。
 
 我在 <a href="https://github.com/moroz/password-demo" target="_blank" rel="noopener noreferrer">github.com/moroz/password-demo</a> 上傳了一個小專案，裡面用一個簡單的 CLI 方式展示了儲存密碼的方式。
 
@@ -329,3 +329,24 @@ hash  | $argon2id$v=19$m=47104,t=1,p=1$Jlieaj0Ne2Bk/WR02a3RuA$rR1lFhvTw9HnQ/jX73
 ```
 
 ## 吐槽：不合理的密碼限制
+
+生活在台灣的我，在日常生活中經常遇到對於密碼內容與長短要求不理想的網站。以下為幾個常見的範例：
+
+<figure class="bordered-figure">
+<img src="/images/passwords/cathay.webp" alt="" />
+<figcaption>國泰世華銀行：只能用拉丁字母與數字，長度限16位</figcaption>
+</figure>
+
+<figure class="bordered-figure">
+<img src="/images/passwords/shopee.webp" alt="" />
+<figcaption>蝦皮：只能用拉丁字母、數字與「常用的標點符號」，長度限16位</figcaption>
+</figure>
+
+<figure class="bordered-figure">
+<img src="/images/passwords/shopee.webp" alt="" />
+<figcaption>PCHome 24h：只能用拉丁字母、數字與底線，長度限16位</figcaption>
+</figure>
+
+總之，非常多常用的網站不讓使用者使用特殊符號，而且還限制密碼長度不能超過16個字符。希望看到這邊的讀者可以牢記，設定這種限制沒有理由。密碼雜湊函數可以接受任何長度的輸入資料，而且可以輸入任何二進制資料。限制密碼內容與長度恐會顯著降低安全性，請不要這麼做。
+
+另一方面，密碼長度不能完全沒有限制，如果允許無限長度的密碼，那麼黑客可以送出非常長的密碼，導致伺服器忙著執行密碼雜湊函數，記憶體滿了，就會當機。合理的長度限制大概為8&ndash;256字符。
