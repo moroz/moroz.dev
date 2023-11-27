@@ -211,7 +211,7 @@ func AuthenticateUserByEmailPassword(db *sqlx.DB, email, password string) (*User
     result := User{}
     err := db.Get(
         &result,
-        // 搜尋有設定密碼，對應所輸入電子信箱之使用者
+        // 搜尋已設定密碼且符合輸入電子信箱之使用者
         "select "+USER_COLUMNS+" from users where password_hash is not null and email=$1",
         // 為 SQL 語法中的佔位符 $1 提供值：信箱
         email,
