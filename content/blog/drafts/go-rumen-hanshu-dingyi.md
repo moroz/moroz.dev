@@ -1,6 +1,6 @@
 ---
 title: Go 入門：函數定義
-date: 2023-11-06
+date: 2023-11-27
 slug: go-rumen-hanshu-dingyi
 draft: true
 ---
