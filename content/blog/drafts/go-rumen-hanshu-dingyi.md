@@ -2,7 +2,6 @@
 title: Go 入門：函數定義
 date: 2023-11-27
 slug: go-rumen-hanshu-dingyi
-draft: true
 lang: zh-Hant-TW
 
 summary: 函數與做蛋糕有什麼關係？如何定義一些簡單的函數？寫布林函數的時候要注意什麼？
