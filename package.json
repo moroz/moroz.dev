@@ -17,7 +17,7 @@
     "highlight.js": "^11.9.0",
     "lodash": "^4.17.21",
     "marked": "^9.1.5",
-    "next": "^14.0.1",
+    "next": "^13.5.6",
     "next-mdx-remote": "^4.4.1",
     "next-sitemap": "^1.9.12",
     "react": "^18.2.0",
@@ -32,6 +32,8 @@
     "sass": "^1.69.5"
   },
   "devDependencies": {
+    "@swc/cli": "^0.1.63",
+    "@swc/core": "^1.3.102",
     "@types/glob": "^7.2.0",
     "@types/lodash": "^4.14.200",
     "@types/node": "^12.20.55",
