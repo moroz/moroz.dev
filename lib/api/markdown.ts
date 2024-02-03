@@ -14,6 +14,7 @@ import xml from "highlight.js/lib/languages/xml";
 import go from "highlight.js/lib/languages/go";
 import sql from "highlight.js/lib/languages/sql";
 import smartypants from "remark-smartypants";
+import rehypeExternalLinks from "rehype-external-links";
 
 export async function mdToReact(md: string) {
   return serialize(md, {
@@ -38,9 +39,10 @@ export async function mdToReact(md: string) {
               sql
             }
           }
-        ]
+        ],
+        [rehypeExternalLinks, { rel: 'noopener noreferrer', target: '_blank' }]
       ],
-      remarkPlugins: [smartypants]
+      remarkPlugins: [smartypants],
     }
   });
 }
