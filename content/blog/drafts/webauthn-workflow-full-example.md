@@ -20,16 +20,12 @@ All of these can effectively prevent unauthorized access when a user's account i
 In this article, I would like to provide a general description of what you need to do in order to implement a TOTP-based MFA workflow in a Web application.
 While the code samples shown in the article will be in Go, the overall workflow is generic enough to implement with any technological stack.
 
-<!-- 
-
-* Migration / changes to database structure
+{/* Migration / changes to database structure
 * Column-level encryption
 * Generate backup codes / hash as password
 * Generating QR code
 * Registration: one code and current password
-* Authentication: check TOTP code or any of backup codes
-
--->
+* Authentication: check TOTP code or any of backup codes */}
 
 According to the [OWASP Multi-Factor Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html), the three most common ways of authenticating a user on a Web application are:
 
