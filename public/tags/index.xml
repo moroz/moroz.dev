@@ -6,6 +6,140 @@
     <description>Recent content in Tags on moroz.dev</description>
     <generator>Hugo</generator>
     <language>en-us</language>
+    <lastBuildDate>Fri, 02 Sep 2022 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Elixir</title>
+      <link>http://localhost:1313/tags/elixir/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/elixir/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>GraphQL</title>
+      <link>http://localhost:1313/tags/graphql/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/graphql/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Macros</title>
+      <link>http://localhost:1313/tags/macros/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/macros/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Docker</title>
+      <link>http://localhost:1313/tags/docker/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/docker/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>MacOS</title>
+      <link>http://localhost:1313/tags/macos/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/macos/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>PostgreSQL</title>
+      <link>http://localhost:1313/tags/postgresql/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/postgresql/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ecto</title>
+      <link>http://localhost:1313/tags/ecto/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/ecto/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Metaprogramming</title>
+      <link>http://localhost:1313/tags/metaprogramming/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/metaprogramming/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>MySQL/MariaDB</title>
+      <link>http://localhost:1313/tags/mysql/mariadb/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/mysql/mariadb/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Phoenix</title>
+      <link>http://localhost:1313/tags/phoenix/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/phoenix/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Deployment</title>
+      <link>http://localhost:1313/tags/deployment/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/deployment/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Inner Join</title>
+      <link>http://localhost:1313/tags/inner-join/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/inner-join/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>SQL</title>
+      <link>http://localhost:1313/tags/sql/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/sql/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>中文</title>
+      <link>http://localhost:1313/tags/%E4%B8%AD%E6%96%87/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/%E4%B8%AD%E6%96%87/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>作文</title>
+      <link>http://localhost:1313/tags/%E4%BD%9C%E6%96%87/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/%E4%BD%9C%E6%96%87/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>宿題</title>
+      <link>http://localhost:1313/tags/%E5%AE%BF%E9%A1%8C/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/%E5%AE%BF%E9%A1%8C/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>日本語</title>
+      <link>http://localhost:1313/tags/%E6%97%A5%E6%9C%AC%E8%AA%9E/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/%E6%97%A5%E6%9C%AC%E8%AA%9E/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Functional Programming</title>
+      <link>http://localhost:1313/tags/functional-programming/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/functional-programming/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Philosophy</title>
+      <link>http://localhost:1313/tags/philosophy/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/philosophy/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>

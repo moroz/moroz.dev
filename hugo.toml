@@ -2,3 +2,6 @@ baseURL = 'https://moroz.dev/'
 languageCode = 'en-us'
 title = 'moroz.dev'
 theme = 'moroz'
+
+[markup.goldmark.renderer]
+unsafe= true
