@@ -10,6 +10,11 @@
 
 /* Other */
 /* Error */
+.chroma .err {
+  color: #a61717;
+  background-color: #e3d2d2;
+}
+
 /* CodeLine */
 /* LineLink */
 .chroma .lnlinks {
@@ -66,48 +71,55 @@
 
 /* Keyword */
 .chroma .k {
-  color: #00f;
+  color: #000080;
+  font-weight: bold;
 }
 
 /* KeywordConstant */
 .chroma .kc {
-  color: #00f;
+  color: #000080;
+  font-weight: bold;
 }
 
 /* KeywordDeclaration */
 .chroma .kd {
-  color: #00f;
+  color: #000080;
+  font-weight: bold;
 }
 
 /* KeywordNamespace */
 .chroma .kn {
-  color: #00f;
+  color: #000080;
+  font-weight: bold;
 }
 
 /* KeywordPseudo */
 .chroma .kp {
-  color: #00f;
+  color: #000080;
+  font-weight: bold;
 }
 
 /* KeywordReserved */
 .chroma .kr {
-  color: #00f;
+  color: #000080;
+  font-weight: bold;
 }
 
 /* KeywordType */
 .chroma .kt {
-  color: #2b91af;
+  color: #000080;
+  font-weight: bold;
 }
 
 /* Name */
 /* NameAttribute */
+.chroma .na {
+  color: #f00;
+}
+
 /* NameBuiltin */
 /* NameBuiltinPseudo */
 /* NameClass */
-.chroma .nc {
-  color: #2b91af;
-}
-
 /* NameConstant */
 /* NameDecorator */
 /* NameEntity */
@@ -119,6 +131,11 @@
 /* NameOther */
 /* NameProperty */
 /* NameTag */
+.chroma .nt {
+  color: #000080;
+  font-weight: bold;
+}
+
 /* NameVariable */
 /* NameVariableClass */
 /* NameVariableGlobal */
@@ -128,141 +145,192 @@
 /* LiteralDate */
 /* LiteralString */
 .chroma .s {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringAffix */
 .chroma .sa {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringBacktick */
 .chroma .sb {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringChar */
 .chroma .sc {
-  color: #a31515;
+  color: #800080;
 }
 
 /* LiteralStringDelimiter */
 .chroma .dl {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringDoc */
 .chroma .sd {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringDouble */
 .chroma .s2 {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringEscape */
 .chroma .se {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringHeredoc */
 .chroma .sh {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringInterpol */
 .chroma .si {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringOther */
 .chroma .sx {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringRegex */
 .chroma .sr {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringSingle */
 .chroma .s1 {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralStringSymbol */
 .chroma .ss {
-  color: #a31515;
+  color: #00f;
 }
 
 /* LiteralNumber */
+.chroma .m {
+  color: #00f;
+}
+
 /* LiteralNumberBin */
+.chroma .mb {
+  color: #00f;
+}
+
 /* LiteralNumberFloat */
+.chroma .mf {
+  color: #00f;
+}
+
 /* LiteralNumberHex */
+.chroma .mh {
+  color: #00f;
+}
+
 /* LiteralNumberInteger */
+.chroma .mi {
+  color: #00f;
+}
+
 /* LiteralNumberIntegerLong */
+.chroma .il {
+  color: #00f;
+}
+
 /* LiteralNumberOct */
+.chroma .mo {
+  color: #00f;
+}
+
 /* Operator */
 /* OperatorWord */
 .chroma .ow {
-  color: #00f;
+  font-weight: bold;
 }
 
 /* Punctuation */
 /* Comment */
 .chroma .c {
-  color: #008000;
+  color: #080;
+  font-style: italic;
 }
 
 /* CommentHashbang */
 .chroma .ch {
-  color: #008000;
+  color: #080;
+  font-style: italic;
 }
 
 /* CommentMultiline */
 .chroma .cm {
-  color: #008000;
+  color: #080;
+  font-style: italic;
 }
 
 /* CommentSingle */
 .chroma .c1 {
-  color: #008000;
+  color: #080;
+  font-style: italic;
 }
 
 /* CommentSpecial */
 .chroma .cs {
-  color: #008000;
+  color: #080;
+  font-weight: bold;
 }
 
 /* CommentPreproc */
 .chroma .cp {
-  color: #00f;
+  color: #008080;
 }
 
 /* CommentPreprocFile */
 .chroma .cpf {
-  color: #00f;
+  color: #008080;
 }
 
 /* Generic */
 /* GenericDeleted */
+.chroma .gd {
+  color: #000;
+  background-color: #fdd;
+}
+
 /* GenericEmph */
 .chroma .ge {
   font-style: italic;
 }
 
 /* GenericError */
+.chroma .gr {
+  color: #a00;
+}
+
 /* GenericHeading */
 .chroma .gh {
-  font-weight: bold;
+  color: #999;
 }
 
 /* GenericInserted */
+.chroma .gi {
+  color: #000;
+  background-color: #dfd;
+}
+
 /* GenericOutput */
+.chroma .go {
+  color: #888;
+}
+
 /* GenericPrompt */
 .chroma .gp {
-  font-weight: bold;
+  color: #555;
 }
 
 /* GenericStrong */
@@ -272,12 +340,24 @@
 
 /* GenericSubheading */
 .chroma .gu {
-  font-weight: bold;
+  color: #aaa;
 }
 
 /* GenericTraceback */
+.chroma .gt {
+  color: #a00;
+}
+
 /* GenericUnderline */
+.chroma .gl {
+  text-decoration: underline;
+}
+
 /* TextWhitespace */
+.chroma .w {
+  color: #bbb;
+}
+
 html,
 body {
   font-size: 16px;
