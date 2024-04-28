@@ -1,5 +1,5 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'" />
 <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ printf "%s | %s" .Title site.Title }}{{ end }}</title>
 {{ partialCached "head/css.html" . }}
-{{ partialCached "head/js.html" . }}
