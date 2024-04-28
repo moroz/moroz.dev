@@ -1,17 +1,11 @@
 @use "./syntax.css";
 
 $family-sans: system-ui,
-  -apple-system,
-  BlinkMacSystemFont,
   Roboto,
   Helvetica Neue,
   Arial,
   Noto Sans,
   sans-serif,
-  Apple Color Emoji,
-  Segoe UI Emoji,
-  Segoe UI Symbol,
-  Noto Color Emoji,
   PingFang TC,
   Hiragino Sans GB W3,
   Noto Sans CJK TC,
@@ -34,10 +28,12 @@ $font-monospace: Consolas,
   liberation mono,
   courier new,
   monospace;
+$header-height: 70px;
 
 html,
 body {
   font-size: 16px;
+  margin: 0;
 }
 
 pre,
@@ -49,16 +45,56 @@ body {
   color: $font-color;
   font-family: $family-sans;
   line-height: 1.5;
-  margin: 0 auto;
-  padding: 0 16px;
-  max-width: $container-width;
   overflow-x: hidden;
-  font-size: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main[role="main"] {
+  margin: 0 auto;
+  max-width: $container-width;
+  flex: 1;
+}
+
+main[role="main"],
+header,
+footer {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 header {
   border-bottom: 1px solid #222;
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  min-height: $header-height;
+  line-height: $header-height;
+
+  h1 {
+    margin: 0;
+  }
+
+  nav {
+    ul {
+      display: flex;
+      margin: 0;
+    }
+
+    margin-left: auto;
+
+    li,
+    li a {
+      display: block;
+    }
+
+    li a {
+      padding: 0 0.5em;
+      height: $header-height;
+    }
+  }
 }
 
 footer {
@@ -69,10 +105,6 @@ footer {
   p {
     margin: 0;
   }
-}
-
-nav li {
-  margin: 0.5em;
 }
 
 a {
