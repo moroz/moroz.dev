@@ -1,18 +1,53 @@
 @use "./syntax.css";
 
-$family-sans: system-ui, Verdana, sans-serif;
+$family-sans: system-ui,
+  -apple-system,
+  BlinkMacSystemFont,
+  Roboto,
+  Helvetica Neue,
+  Arial,
+  Noto Sans,
+  sans-serif,
+  Apple Color Emoji,
+  Segoe UI Emoji,
+  Segoe UI Symbol,
+  Noto Color Emoji,
+  PingFang TC,
+  Hiragino Sans GB W3,
+  Noto Sans CJK TC,
+  Source Han Sans TW,
+  Source Han Sans SC,
+  Droid Sans Fallback,
+  Microsoft Yahei,
+  Microsoft JhengHei,
+  \\5fae\8f6f\96c5\9ed1,
+  Noto Sans TC,
+  STXihei,
+  \\534e\6587\7ec6\9ed1;
 $primary: #33c;
 $font-color: #333;
 $container-width: 900px;
+$font-monospace: Consolas,
+  SFMono-Regular,
+  Menlo,
+  Monaco,
+  liberation mono,
+  courier new,
+  monospace;
 
 html,
 body {
   font-size: 16px;
 }
 
+pre,
+code {
+  font-family: $font-monospace;
+}
+
 body {
   color: $font-color;
-  font-family: sans-serif;
+  font-family: $family-sans;
   line-height: 1.5;
   margin: 0 auto;
   padding: 0 16px;
