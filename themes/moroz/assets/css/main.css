@@ -3,7 +3,9 @@ body {
   font-family: sans-serif;
   line-height: 1.5;
   margin: 0 auto;
+  padding: 0 16px;
   max-width: 900px;
+  overflow-x: hidden;
 }
 
 header {
@@ -19,6 +21,17 @@ footer {
 a {
   color: #00e;
   text-decoration: none;
+}
+
+.blog article {
+  margin-bottom: 24px;
+}
+.blog h2 {
+  margin: 0;
+}
+
+img {
+  max-width: 810px;
 }
 
 /*# sourceMappingURL=main.css.map */
