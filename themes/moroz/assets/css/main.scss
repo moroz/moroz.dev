@@ -82,7 +82,7 @@ a {
 
 .blog {
   article {
-    margin-bottom: 24px;
+    margin-bottom: 2rem;
   }
 
   time {
@@ -101,6 +101,10 @@ a {
 
   main {
     margin: 2rem 0;
+
+    h2 {
+      margin-top: 2rem;
+    }
   }
 }
 

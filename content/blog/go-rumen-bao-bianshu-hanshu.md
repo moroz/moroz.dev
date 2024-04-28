@@ -202,7 +202,7 @@ func main() {
 ```
 
 ```shell
-$ go run .                                                                                                         1
+$ go run .
 # github.com/moroz/hello-world
 ./main.go:7:7: no new variables on left side of :=
 ```
@@ -218,6 +218,6 @@ func main() {
 ```
 
 ```shell
-$ go run .                                                                                                         1
+$ go run .
 張西西
 ```
