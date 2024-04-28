@@ -1,22 +1,17 @@
 @use "./syntax.css";
 
-$family-sans: system-ui,
-  Roboto,
+$family-sans: Roboto,
   Helvetica Neue,
   Arial,
   Noto Sans,
   sans-serif,
+  system-ui,
   PingFang TC,
   Hiragino Sans GB W3,
   Noto Sans CJK TC,
-  Source Han Sans TW,
-  Source Han Sans SC,
   Droid Sans Fallback,
   Microsoft Yahei,
   Microsoft JhengHei,
-  \\5fae\8f6f\96c5\9ed1,
-  Noto Sans TC,
-  STXihei,
   \\534e\6587\7ec6\9ed1;
 $primary: #33c;
 $font-color: #333;
@@ -178,6 +173,7 @@ figure {
 .highlight {
   width: 100%;
   overflow-x: auto;
+  -webkit-text-size-adjust: 100%;
 }
 
 .pagination {
