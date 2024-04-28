@@ -1,11 +1,17 @@
+html,
 body {
-  color: #222;
+  font-size: 16px;
+}
+
+body {
+  color: #333;
   font-family: sans-serif;
   line-height: 1.5;
   margin: 0 auto;
   padding: 0 16px;
   max-width: 900px;
   overflow-x: hidden;
+  font-size: 20px;
 }
 
 header {
@@ -15,23 +21,52 @@ header {
 
 footer {
   border-top: 1px solid #222;
-  margin-top: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+footer p {
+  margin: 0;
+}
+
+nav li {
+  margin: 0.5em;
 }
 
 a {
-  color: #00e;
+  color: #33c;
   text-decoration: none;
 }
 
 .blog article {
   margin-bottom: 24px;
 }
+.blog time {
+  color: #555;
+}
 .blog h2 {
-  margin: 0;
+  margin: 4px 0 8px;
+  line-height: 1.3;
 }
 
 img {
   max-width: 810px;
+}
+
+figure {
+  text-align: center;
+}
+figure img {
+  max-height: 80vh;
+}
+
+.bordered-figure img {
+  border: 1px solid #999;
+}
+
+pre {
+  font-size: 16px;
+  overflow-x: auto;
+  padding: 1em;
 }
 
 /*# sourceMappingURL=main.css.map */

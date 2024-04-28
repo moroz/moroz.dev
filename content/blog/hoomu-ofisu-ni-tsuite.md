@@ -2,6 +2,7 @@
 title: ホームオフィスについて
 slug: hoomu-ofisu-ni-tsuite
 date: 2020-05-17
+summary: " "
 tags:
   - 日本語
   - 宿題
