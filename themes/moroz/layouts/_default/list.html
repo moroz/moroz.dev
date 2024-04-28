@@ -4,7 +4,7 @@
   <section class="blog">
     {{ range .Pages }}
       <article>
-      {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
+      {{ $dateMachine := .Date | time.Format "2006-01-02" }}
       {{ $dateHuman := .Date | time.Format ":date_long" }}
       <time datetime="{{ $dateMachine }}">{{ $dateHuman }}</time>
       <h2><a href="{{ .RelPermalink | strings.TrimSuffix "/" }}">{{ .LinkTitle }}</a></h2>

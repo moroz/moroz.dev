@@ -1,0 +1,10 @@
+{{ define "main" }}
+  {{ $paginator := .Paginate (where .Pages "Type" "blog") }}
+  <section class="blog">
+  <h1>{{ .Title }}</h1>
+  {{ range .Paginator.Pages }}
+    {{ template "partials/blog_item.html" . }}
+  {{ end }}
+  {{ template "_internal/pagination.html" . }}
+  </section>
+{{ end }}
