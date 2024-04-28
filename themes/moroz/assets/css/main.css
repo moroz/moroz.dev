@@ -2,8 +2,8 @@ body {
   color: #222;
   font-family: sans-serif;
   line-height: 1.5;
-  margin: 1rem;
-  max-width: 768px;
+  margin: 0 auto;
+  max-width: 900px;
 }
 
 header {
@@ -20,3 +20,5 @@ a {
   color: #00e;
   text-decoration: none;
 }
+
+/*# sourceMappingURL=main.css.map */
