@@ -149,6 +149,6 @@ defmodule PokemonWeb.Api.PokemonTypes do
 end
 ```
 
-If you use a library like <a href="https://hex.pm/packages/scrivener_ecto" target="_blank" rel="noopener noreferrer">scrivener_ecto</a> to paginate resources, you can also write a middleware module to format `%Scrivener.Page{}` structs as responses compatible with this structure.
-To that end, I have written a module that you can find among my <a href="https://gist.github.com/moroz/ed91f2ba5900c46bfa9c525ae8017408" target="_blank" rel="noopener noreferrer">Github Gists</a>.
+If you use a library like [scrivener_ecto](https://hex.pm/packages/scrivener_ecto) to paginate resources, you can also write a middleware module to format `%Scrivener.Page{}` structs as responses compatible with this structure.
+To that end, I have written a module that you can find among my [Github Gists](https://gist.github.com/moroz/ed91f2ba5900c46bfa9c525ae8017408).
 There are more gists on that page that I frequently use and that I can hopefully describe in more detail in the future.

@@ -8,7 +8,7 @@ summary: |
 
 This article describes the process of integrating a new [Phoenix 1.6](https://www.phoenixframework.org/) application with [Vite.js](https://vitejs.dev/) for development and deployment purposes.
 We are going to configure assets bundling for a barebones React.js/TypeScript application and style it with [Bulma](https://bulma.io/) and [SASS](https://sass-lang.com/).
-This article was originally released as a <a href="https://vite-ppt.moroz.dev/" target="_blank" rel="noopener noreferer">Reveal.js presentation</a> for internal use at my current company.
+This article was originally released as a [Reveal.js presentation](https://vite-ppt.moroz.dev/) for internal use at my current company.
 This version aims to expand and elucidate on the original content.
 
 ### Why do we need to worry about JS bundling?
