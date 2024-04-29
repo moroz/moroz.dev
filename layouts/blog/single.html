@@ -2,10 +2,16 @@
 <section class="blog">
   <a href="/blog/">&lt;&lt; Back to index</a>
   <h2 class="post-title">{{ .Title }}</h2>
-
   {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
   {{ $dateHuman := .Date | time.Format ":date_long" }}
   <time datetime="{{ $dateMachine }}">{{ $dateHuman }}</time>
+
+  {{ if not .Truncated }}
+  <section class="summary">
+    <h3>Abstract</h3>
+    <p>{{ .Summary }}</p>
+  </section>
+  {{ end }}
 
   <main>{{ .Content }}</main>
 </section>

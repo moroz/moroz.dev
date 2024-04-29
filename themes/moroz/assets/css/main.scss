@@ -201,3 +201,12 @@ figure {
   border-color: $primary;
   color: white;
 }
+
+.summary {
+  margin-top: 1rem;
+
+  h3,
+  p {
+    margin: 0;
+  }
+}
