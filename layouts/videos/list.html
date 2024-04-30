@@ -5,8 +5,13 @@
     <article>
       {{ $dateMachine := .Date | time.Format "2006-01-02" }}
       {{ $dateHuman := .Date | time.Format ":date_long" }}
+      {{ $url := printf "https://www.youtube.com/watch?v=%s" .Params.youtube }}
+      <a href={{ $url }} target="_blank" rel="noopener noreferrer" class="thumbnail">
+      <img src="https://img.youtube.com/vi/{{ .Params.youtube }}/sddefault.jpg" />
+      </a>
       <time datetime="{{ $dateMachine }}">{{ $dateHuman }}</time>
-      <h2><a href="https://www.youtube.com/watch?v={{ .Params.youtube }}" target="_blank" rel="noopener noreferrer">{{ .LinkTitle }}</a></h2>
+      <h2><a href="{{ $url }}" target="_blank" rel="noopener noreferrer">{{ .LinkTitle }}</a></h2>
+      {{ .Summary }}
     </article>
   {{ end }}
   </section>

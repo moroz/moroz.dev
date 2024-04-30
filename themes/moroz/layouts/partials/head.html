@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self';script-src 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self';script-src 'none';img-src 'self' https://img.youtube.com" />
 <link rel="icon" href="/favicon.svg"/>
 <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ printf "%s | %s" .Title site.Title }}{{ end }}</title>
 {{ partialCached "head/css.html" . }}

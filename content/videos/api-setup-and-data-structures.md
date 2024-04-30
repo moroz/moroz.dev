@@ -3,7 +3,9 @@ title: "Full Stack Elixir Part 1: API setup and data structures"
 date: 2020-04-12
 slug: api-setup-and-data-structures
 youtube: 8MCmTiB3g6c
-description: First video in my Full Stack Elixir tutorial with Phoenix, React, and Apollo Client. Setting up Phoenix with GraphQL.
+summary: First video in my Full Stack Elixir tutorial with Phoenix, React, and Apollo Client. Setting up Phoenix with GraphQL.
+sitemap:
+    disable: true
 tags:
   - Full Stack
   - Phoenix

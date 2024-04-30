@@ -64,21 +64,20 @@ body {
   flex-direction: column;
 }
 
-main[role="main"] {
-  margin: 0 auto;
-  max-width: $container-width;
+body > main {
   flex: 1;
+}
+
+.container {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin: 0 auto;
+  width: $container-width;
 
   @media (max-width: #{$container-width}) {
     max-width: 100%;
     width: 100%;
   }
-}
-
-main[role="main"],
-header {
-  padding-left: 1rem;
-  padding-right: 1rem;
 }
 
 header,
@@ -89,16 +88,19 @@ footer {
 header {
   border-bottom: 1px solid #222;
   margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  min-height: $header-height;
-  line-height: $header-height;
 
-  @include mobile {
-    flex-direction: column;
-    line-height: 0.8 * $header-height;
-    padding: 0;
+  .container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    min-height: $header-height;
+    line-height: $header-height;
+
+    @include mobile {
+      flex-direction: column;
+      line-height: 0.8 * $header-height;
+      padding: 0;
+    }
   }
 
   h1 {
@@ -199,6 +201,25 @@ figure {
   img {
     border: 1px solid #999;
   }
+}
+
+.thumbnail {
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 1280/720;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    object-fit: cover;
+    width: 100%;
+  }
+}
+
+.videos article {
+  margin-bottom: 3.5rem;
+  color: inherit;
 }
 
 .highlight {
