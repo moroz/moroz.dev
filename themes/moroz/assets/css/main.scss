@@ -98,6 +98,7 @@ header {
   @include mobile {
     flex-direction: column;
     line-height: 0.8 * $header-height;
+    padding: 0;
   }
 
   h1 {
@@ -116,10 +117,6 @@ header {
     @include mobile {
       margin-left: 0;
       width: 100%;
-
-      ul {
-        justify-content: space-between;
-      }
 
       li {
         flex: 1;
@@ -157,7 +154,8 @@ a {
   text-decoration: none;
 }
 
-.blog {
+.blog,
+.videos {
   article {
     margin-bottom: 2rem;
   }
