@@ -5,6 +5,8 @@ theme = 'moroz'
 enableRobotsTXT = true
 paginate = 20
 
+disableKinds = ["taxonomy", "term"]
+
 [markup.goldmark.renderer]
 unsafe = true
 
