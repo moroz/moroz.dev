@@ -1,6 +1,6 @@
 {{ define "main" }}
   <section class="videos">
-  <h1>{{ .Title }}</h1>
+  <h2>{{ .Title }}</h2>
   {{ range .Pages }}
     <article>
       {{ $dateMachine := .Date | time.Format "2006-01-02" }}

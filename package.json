@@ -1,0 +1,16 @@
+{
+  "name": "moroz.dev-hugo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "sass:watch": "sass --no-source-map -s compressed --watch themes/moroz/assets/css/main.scss themes/moroz/assets/css/main.css"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "sass": "^1.80.4",
+    "tailwind-colors-scss": "^1.0.1"
+  }
+}

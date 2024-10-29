@@ -1,39 +1,5 @@
-@use "./syntax.css";
-
-$breakpoint-mobile: 420px;
-
-@mixin mobile {
-  @media (max-width: #{$breakpoint-mobile}) {
-    @content;
-  }
-}
-
-$family-sans:
-  Roboto,
-  Helvetica Neue,
-  Arial,
-  Noto Sans,
-  sans-serif,
-  system-ui,
-  PingFang TC,
-  Hiragino Sans GB W3,
-  Noto Sans CJK TC,
-  Droid Sans Fallback,
-  Microsoft Yahei,
-  Microsoft JhengHei,
-  \\534e\6587\7ec6\9ed1;
-$primary: #33c;
-$font-color: #333;
-$container-width: 900px;
-$font-monospace:
-  Consolas,
-  SFMono-Regular,
-  Menlo,
-  Monaco,
-  liberation mono,
-  courier new,
-  monospace;
-$header-height: 70px;
+@import "./vars";
+@import "./mixins";
 
 *,
 *::before,
@@ -47,6 +13,7 @@ body {
   margin: 0;
   width: 100%;
   overflow-x: hidden;
+  scrollbar-gutter: stable both-edges;
 }
 
 pre,
@@ -54,8 +21,31 @@ code {
   font-family: $font-monospace;
 }
 
+pre {
+  border: 1px solid var(--primary);
+  padding: 0.5em 0.75em;
+  font-size: 0.875em;
+}
+
+:root {
+  --base-fg: #333;
+  --base-bg: #fff;
+  --primary: #{$tw-rose-600};
+  --text-dimmed: #555;
+}
+
+@include dark {
+  :root {
+    --base-fg: #fff;
+    --base-bg: #{$tw-gray-800};
+    --primary: #{$tw-rose-500};
+    --text-dimmed: #{$tw-slate-400};
+  }
+}
+
 body {
-  color: $font-color;
+  color: var(--base-fg);
+  background: var(--base-bg);
   font-family: $family-sans;
   line-height: 1.5;
   overflow-x: hidden;
@@ -69,9 +59,7 @@ body > main {
 }
 
 .container {
-  padding-left: 1rem;
-  padding-right: 1rem;
-  margin: 0 auto;
+  margin-inline: auto;
   width: $container-width;
 
   @media (max-width: #{$container-width}) {
@@ -80,27 +68,20 @@ body > main {
   }
 }
 
-header,
-footer {
-  text-align: center;
-}
-
 header {
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid var(--primary);
   margin-bottom: 1rem;
 
-  .container {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    min-height: $header-height;
-    line-height: $header-height;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  min-height: $header-height;
+  line-height: $header-height;
 
-    @include mobile {
-      flex-direction: column;
-      line-height: 0.8 * $header-height;
-      padding: 0;
-    }
+  @include mobile {
+    flex-direction: column;
+    line-height: 0.8 * $header-height;
+    padding: 0;
   }
 
   h1 {
@@ -142,9 +123,8 @@ header {
 }
 
 footer {
-  border-top: 1px solid #222;
-  padding: 2rem;
-  text-align: center;
+  border-top: 1px solid var(--primary);
+  padding-block: 1.5rem;
 
   p {
     margin: 0;
@@ -152,7 +132,7 @@ footer {
 }
 
 a {
-  color: $primary;
+  color: var(--primary);
   text-decoration: none;
 }
 
@@ -163,14 +143,14 @@ a {
   }
 
   time {
-    color: #555;
+    color: var(--text-dimmed);
   }
 
   time + h2 {
     margin-top: 4px;
   }
 
-  h2 {
+  article h2 {
     margin: 8px 0;
     line-height: 1.3;
   }
@@ -249,8 +229,8 @@ figure {
 }
 
 .page-item.active a {
-  background: $primary;
-  border-color: $primary;
+  background: var(--primary);
+  border-color: var(--primary);
   color: white;
 }
 

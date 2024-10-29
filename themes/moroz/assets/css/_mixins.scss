@@ -1,0 +1,17 @@
+@mixin mobile {
+  @media (max-width: #{$breakpoint-mobile}) {
+    @content;
+  }
+}
+
+@mixin dark {
+  @media screen and (prefers-color-scheme: dark) {
+    @content;
+  }
+}
+
+@mixin light {
+  @media screen and (prefers-color-scheme: light) {
+    @content;
+  }
+}

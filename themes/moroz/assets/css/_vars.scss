@@ -1,0 +1,27 @@
+@import "../../../../node_modules/tailwind-colors-scss/src/variables.scss";
+
+$family-sans:
+  Roboto,
+  Helvetica Neue,
+  Arial,
+  Noto Sans,
+  sans-serif,
+  system-ui,
+  PingFang TC,
+  Hiragino Sans GB W3,
+  Noto Sans CJK TC,
+  Droid Sans Fallback,
+  Microsoft Yahei,
+  Microsoft JhengHei,
+  \\534e\6587\7ec6\9ed1;
+$container-width: 760px;
+$font-monospace:
+  Consolas,
+  SFMono-Regular,
+  Menlo,
+  Monaco,
+  liberation mono,
+  courier new,
+  monospace;
+$header-height: 70px;
+$breakpoint-mobile: 420px;
