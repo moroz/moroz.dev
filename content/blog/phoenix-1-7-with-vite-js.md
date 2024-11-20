@@ -39,7 +39,7 @@ $ mix local.hex --force
 $ mix archive.install hex phx_new
 ```
 
-Create a new Phoenix project. For the sake of simplicity, I'm using [SQLite3](https://www.sqlite.org/index.html). This is because SQLite3 stores its data in regular files, unlike most other database management systems, such as PostgreSQL or MySQL/MariaDB, which run as servers. This way, I do not need to explain to you how to configure your database server.
+Create a new Phoenix project. For the sake of simplicity, we will be using [SQLite3](https://www.sqlite.org/index.html). This is because SQLite3 stores all of its data in regular files, unlike most other database management systems, such as PostgreSQL or MySQL/MariaDB, which run as servers. This way, I do not need to explain how to configure a database server on your machine.
 
 For a real world project, I highly recommend you use [PostgreSQL](https://www.postgresql.org/) instead.
 
@@ -54,4 +54,15 @@ $ cd my_app
 $ git init
 $ git add -A
 $ git commit -m "Initial commit"
+```
+
+Initialize a database and run any migrations (spoiler: there are none).
+
+```shell
+$ mix ecto.setup
+Generated my_app app
+The database for MyApp.Repo has been created
+
+19:08:38.799 [info] Migrations already up
+[info] Migrations already up
 ```
