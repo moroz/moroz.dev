@@ -1,11 +1,10 @@
 ---
 title: How to Use Phoenix 1.7 with Vite.js
 slug: phoenix-1-7-with-vite-js
-date: 2024-11-20
+date: 2024-11-22
 summary: |
     How to set up a Phoenix 1.7 project with Vite.js in place of the default setup,
     or how to start a Phoenix project if you're not a Tailwind person.
-draft: true
 ---
 
 This article will guide you through the process of integrating a new [Phoenix 1.7](https://www.phoenixframework.org/) application with [Vite.js](https://vite.dev/). I will show you how to use it in development, and how to prepare your application for deployment using Docker.
@@ -66,3 +65,80 @@ The database for MyApp.Repo has been created
 19:08:38.799 [info] Migrations already up
 [info] Migrations already up
 ```
+
+Ensure `pnpm` is installed:
+
+```shell
+which pnpm || npm i -g pnpm
+```
+
+Initialize a Vite project under `assets`:
+
+```shell
+pnpm create vite@latest --template vanilla-ts assets
+cd assets
+pnpm install
+```
+
+Now may be a good time to commit your changes:
+
+```shell
+git add -A
+git commit -m "Generate Vite project"
+```
+
+Create a file at `assets/vite.config.js` with the following contents:
+
+```javascript
+import { defineConfig } from "vite";
+
+export default defineConfig(({ command }) => {
+  const isDev = command !== "build";
+  if (isDev) {
+    // Terminate the watcher when Phoenix quits
+    process.stdin.on("close", () => {
+      process.exit(0);
+    });
+
+    process.stdin.resume();
+  }
+
+  return {
+    publicDir: "static",
+    build: {
+      target: "esnext", // build for recent browsers
+      outDir: "../priv/static", // emit assets to priv/static
+      emptyOutDir: true,
+      sourcemap: isDev, // enable source map in dev build
+      manifest: false, // do not generate manifest.json
+      rollupOptions: {
+        input: {
+          main: "./src/main.ts",
+        },
+        output: {
+          entryFileNames: "assets/[name].js", // remove hash
+          chunkFileNames: "assets/[name].js",
+          assetFileNames: "assets/[name][extname]",
+        },
+      },
+    },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: "modern-compiler",
+        },
+      },
+    },
+  };
+});
+```
+
+Install dependencies:
+
+```shell
+cd assets
+pnpm add -D sass-embedded
+pnpm add phoenix_html
+```
+
+You may want to delete all the assets created by default in the `assets/src` directory, such as the default JS application (counter written in vanilla JS) or `typescript.svg` (the TypeScript logo).
