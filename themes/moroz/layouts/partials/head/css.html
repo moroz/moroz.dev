@@ -7,3 +7,9 @@
     {{- end }}
   {{- end }}
 {{- end }}
+{{- with resources.Get "css/dark.css" | minify | fingerprint }}
+<link rel="stylesheet" href="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}" crossorigin="anonymous" media="(prefers-color-scheme: dark)" />
+{{- end }}
+{{- with resources.Get "css/light.css" | minify | fingerprint }}
+<link rel="stylesheet" href="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}" crossorigin="anonymous" media="(prefers-color-scheme: light)" />
+{{- end }}

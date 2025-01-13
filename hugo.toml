@@ -3,9 +3,11 @@ languageCode = 'en-us'
 title = 'moroz.dev'
 theme = 'moroz'
 enableRobotsTXT = true
-paginate = 20
 
 disableKinds = ["taxonomy", "term"]
+
+[pagination]
+pagerSize = 20
 
 [markup.goldmark.renderer]
 unsafe = true
