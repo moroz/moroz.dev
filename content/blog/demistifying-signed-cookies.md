@@ -53,7 +53,7 @@ for (int i = 1; i <= 42; i++) {
 }
 ```
 
-Not great! What can we do to remedy this?
+Not great! What can we do to remedy this? Easy! We just need to make the cookie _much harder to guess_.
 
 ### Approach 1: Signed Cookies
 
