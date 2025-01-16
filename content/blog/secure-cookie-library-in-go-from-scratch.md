@@ -7,7 +7,7 @@ lang: en
 draft: yes
 ---
 
-### What are cookies and why should I care?
+### Introduction: What are cookies and why should I care?
 
 Cookies are short[^1] strings of letters, digits, and symbols[^2] that a Web server may store in your browser.
 They are used to identify a user of a given Website between requests.
@@ -18,7 +18,9 @@ This is similar to a [fortune cookie &#x1F960;](https://en.wikipedia.org/wiki/Fo
 
 Cookies are an essential part of any Web application, and if you live in Europe, chances are you are going to be reminded about this fact every single day. There is a browser extension to fix that[^4].
 
-But have you ever wondered _what exactly_ is stored in that cookie?
+In this article, I'm going to teach you how to implement a cookie-based session store using the [Go programming language](https://go.dev/) and an [authenticated encryption](https://en.wikipedia.org/wiki/Authenticated_encryption) scheme called [XChaCha20-Poly1305](https://en.wikipedia.org/wiki/ChaCha20-Poly1305).
+
+But first, before we talk about the <em>how</em>s, we need to talk about the <em>why</em>s. Like, have you ever wondered _what exactly_ is stored in that cookie?
 
 ### Naïve Approach: Just Store the Value
 
@@ -75,16 +77,52 @@ The private key is used to sign messages, while the public key can only be used 
 A popular digital signature scheme is [EdDSA](https://en.wikipedia.org/wiki/EdDSA), commonly used in the variant known as **Ed25519**.
 If you have an account on Github, chances are that you are already using EdDSA signatures to upload and download code over [SSH](https://en.wikipedia.org/wiki/Secure_Shell).
 
-### Approach Three: Here Be Dragons
+### Approach Three: Encrypt Your Cookie with AES
 
 Both MACs and digital signature schemes guarantee that a cookie cannot be forged or tampered with, but the actual value stored in the cookie is still stored in plaintext.
 If you also wish to hide the value from nosy users, you need to **encrypt** it first, e. g. using a cipher like [AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard).
-Now, AES is actually a [Block cipher](https://en.wikipedia.org/wiki/Block_cipher)
+
+AES is a [block cipher](https://en.wikipedia.org/wiki/Block_cipher), meaning that in its purest form, it can only encrypt a single block at a time.
+In the case of AES, the block size is 16 bytes or 128 bits.
+If the message you need to encrypt is longer than a single block, you need to figure up an algorithm to let you securely apply the cipher over multiple blocks of data.
+Several such algorithms were designed, and collectively, they are called [modes of operation](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation).
+Two modes of operation have made their way to modern TLS implementations: **Cipher Block Chaining** (CBC) and **Galois Counter Mode** (GCM).
+
+#### AES-CBC (Cipher Block Chaining)
+
+The CBC mode of operation was patented back in 1976[^5]. In this mode of operation, each block of data is combined with another value using [XOR](https://en.wikipedia.org/wiki/Exclusive_or) before passing through the block cipher. For the first block of plaintext, a unique value called an **initialization vector** (IV) is used, and for each subsequent block of data, the previous block of ciphertext is used. The length of the message must be a multiple of the block size, meaning that shorter messages need to be padded with additional data.
+
+The CBC mode only deals with the _encryption_ of data, providing **confidentiality**, which means that the encrypted message cannot be read by anyone without the secret key. It is not concerned with _authentication_, therefore it needs to be used in combination with a MAC to ensure the integrity and authenticity of a message.
+
+The CBC mode, although undeniably clever, is currently considered insecure and its usage in TLS 1.2 has been deprecated. TLS 1.3 does not use the CBC mode of operation at all, and was therefore banned in China[^6].
+
+#### AES-GCM (Galois Counter Mode)
+
+The Galois Counter Mode (GCM) mode of operation is a much later invention than the CBC mode of operation, with the initial paper by McGrew and Viega[^7] published in 2004[^8].
+AES in Galois Counter Mode does not encrypt the data at all. Instead, for each encrypted message, a unique value is used, called a **nonce** (short for _number once_). It is similar to the initialization vector used in CBC mode, in that it must not be reused, but it does not in fact need to be random. In fact, you can even use sequential numbers, as long as you can guarantee that a given value will never be reused. For AES-GCM, the nonce is usually 96 bits (12 bytes).
+
+In GCM mode, you do not encrypt the message, only the nonce and a block counter.
+Let me explain how this works in practice.
+
+Let's say your plaintext is 2137 bytes long. With a block size of 16 bytes, we need to encrypt _2137 / 16 = 133.5625_ blocks of data, and since AES always works on whole blocks, we need to round it up to 134.
+
+Then, pick a nonce, let's say, the number 42. Encoded in 12 bytes, big-endian, it looks like this:
+
+```
+00 00 00 00 00 00 00 00 00 00 00 2A
+```
+
+For each block that we need to encrypt, 
+
+AES in Galois Counter Mode (GCM) is an **authenticated encryption** scheme, meaning that it guarantees not only the privacy of a message, but also its authenticity. An authenticated encryption scheme therefore seems like a perfect choice for use in cookies. AES-GCM also supports adding some extra information about the message (e. g. the HTTP origin of the website or the name of the cookie it is stored in). It is therefore considered an **authenticatied encryption with associated data** (AEAD) scheme.
+
+An important thing to note about AEADs is that for each encrypted message, we need to pick a value called a **nonce** (short for _number once_), and that value cannot be reused---doing so would compromise the confidentiality of the data. 
 
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
-
 [^2]: According to [RFC 6265](https://httpwg.org/specs/rfc6265.html#sane-set-cookie), all the characters permitted within a cookie are: `A`&ndash;`Z`, `a`&ndash;`z`, `0`&ndash;`9`, and the following: <code>!#$%&'()&#x2a;+-./:&lt;=&gt;?@[]^&#x5F;&#x60;{|}~</code>. Note that spaces, double quotes&nbsp;(`"`), and semicolons&nbsp;(`;`) are not permitted.
-
 [^3]: ["Where cookie comes from :: DominoPower"](http://dominopower.com/article/where-cookie-comes-from/). _dominopower.com_ (retrieved 2025-01-14).
-
 [^4]: If you are tired of obnoxious cookie banners, you can hide them using the browser extension _I still don't care about cookies_ (available for [Chrome/Edge](https://chromewebstore.google.com/detail/i-still-dont-care-about-c/edibdbjcniadpccecjdfdjjppcpchdlm) and [Firefox](https://addons.mozilla.org/en-US/firefox/addon/istilldontcareaboutcookies/)).
+[^5]: William F. Ehrsam, Carl H. W. Meyer, John L. Smith, Walter L. Tuchman, _Message verification and transmission error detection by block chaining_, US Patent 4074066, 1976.
+[^6]: [China is now blocking all encrypted HTTPS traffic that uses TLS 1.3 and ESNI](https://www.zdnet.com/article/china-is-now-blocking-all-encrypted-https-traffic-using-tls-1-3-and-esni/). _ZDNet_ (retrieved 2025-01-16).
+[^7]: David A. McGrew, John Viega, [_The Galois/Counter Mode of Operation (GCM)_](https://luca-giuzzi.unibs.it/corsi/Support/papers-cryptography/gcm-spec.pdf) (retrieved 2025-01-17).
+[^8]: Or maybe 2005. I have not found a conclusive source.
