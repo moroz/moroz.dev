@@ -123,7 +123,7 @@ The remaining 32 bits of each block contain the block counter. For the first blo
 ```
 
 In order to encrypt 134 blocks of plaintext, encrypt each of these blocks using the encryption key.
-Since the output of AES encryption for a single block is always 16 bytes long, we can calculate that encrypting 134 blocks will yield <em>134 &times; 16 = 2144</em> bytes of random-looking data, which we could probably call a *mask*[^10] . Then, since the resulting binary is longer than the plaintext, we can discard the last 7 bytes of the mask. Then, combine the plaintext with the mask using XOR.
+Since the output of AES encryption for a single block is always 16 bytes long, we can calculate that encrypting 134 blocks will yield <em>134 &times; 16 = 2144</em> bytes of random-looking data, which we could probably call a *mask*[^10]. Then, since the resulting binary is longer than the plaintext, we can discard the last 7 bytes of the mask. Then, combine the plaintext with the mask using XOR.
 
 Since XOR is a reversible operation, when decrypting a message encrypted with AES-GCM, we perform the exact same operation to generate the mask, and this mask, combined with the ciphertext using XOR, should return the plaintext.
 
