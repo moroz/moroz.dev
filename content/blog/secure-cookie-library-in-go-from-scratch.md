@@ -112,11 +112,49 @@ Then, pick a nonce, let's say, the number 42. Encoded in 12 bytes, big-endian, i
 00 00 00 00 00 00 00 00 00 00 00 2A
 ```
 
-For each block that we need to encrypt, 
+The remaining 32 bits of each block contain the block counter. For the first block of plaintext, we use the number 1, and for the last one, the number 134:
 
-AES in Galois Counter Mode (GCM) is an **authenticated encryption** scheme, meaning that it guarantees not only the privacy of a message, but also its authenticity. An authenticated encryption scheme therefore seems like a perfect choice for use in cookies. AES-GCM also supports adding some extra information about the message (e. g. the HTTP origin of the website or the name of the cookie it is stored in). It is therefore considered an **authenticatied encryption with associated data** (AEAD) scheme.
+```
+# first block (index = 1)
+00 00 00 00 00 00 00 00 00 00 00 2A 00 00 00 01
 
-An important thing to note about AEADs is that for each encrypted message, we need to pick a value called a **nonce** (short for _number once_), and that value cannot be reused---doing so would compromise the confidentiality of the data. 
+# last block (index = 134)
+00 00 00 00 00 00 00 00 00 00 00 2A 00 00 00 89
+```
+
+In order to encrypt 134 blocks of plaintext, encrypt each of these blocks using the encryption key.
+Since the output of AES encryption for a single block is always 16 bytes long, we can calculate that encrypting 134 blocks will yield <em>134 &times; 16 = 2144</em> bytes of random-looking data, which we could probably call a *mask*[^10] . Then, since the resulting binary is longer than the plaintext, we can discard the last 7 bytes of the mask. Then, combine the plaintext with the mask using XOR.
+
+Since XOR is a reversible operation, when decrypting a message encrypted with AES-GCM, we perform the exact same operation to generate the mask, and this mask, combined with the ciphertext using XOR, should return the plaintext.
+
+In contrast with the CBC mode of operation, in which the ciphertext of the previous block is combined with each following block, in GCM mode, there is no dependency between blocks.
+An important implication of this is that for very long messages, the 
+Each of these blocks can be encrypted independently of each other and of the plaintext
+
+Now, you may ask: where did the block with the index 0 go?
+This block is not used in the encryption process, it is only used for authentication.
+If you want to know exactly how this algorithm works, you can read the original proposal by David A. McGrew and John Viega[^7].
+
+AES in Galois Counter Mode (GCM) is an **authenticated encryption** scheme, meaning that it guarantees not only the privacy of a message, but also its authenticity. An authenticated encryption scheme therefore seems like a perfect choice for use in cookies. AES-GCM also supports adding some extra information about the message (e. g. the HTTP origin of the website or the name of the cookie it is stored in). It is therefore considered an **authenticated encryption with associated data** (AEAD) scheme.
+
+### The Random Nonce Problem
+
+As mentioned above, the nonce used in AES-GCM mode is 96 bits long and must not be reused.
+In theory, that gives us 2<sup>96</sup> possible nonces, which should be more than enough for unlimited use by all of humanity and [Santi people](https://baike.baidu.com/item/%E4%B8%89%E4%BD%93%E4%BA%BA/8709210) (sorry, link in Chinese), until the [Universe dies of hypothermia](https://en.wikipedia.org/wiki/Heat_death_of_the_universe).
+Unfortunately, due to a phenomenon called the [birthday problem](https://en.wikipedia.org/wiki/Birthday_problem), if you generate nonces using a random (or pseudo-random) number generator, the risk of a nonce collision increases greatly.
+
+For this reason, the National Institute of Standards and Technology[^9] recommends that:
+
+> The total number of invocations of the authenticated encryption function shall not exceed
+> 2<sup>32</sup>, including all IV lengths and all instances of the authenticated encryption function with
+> the given key.
+
+Now, 2<sup>32</sup> is definitely not a small number, but now the risk of a nonce collision is much higher than the original, naïve estimate of 2<sup>&minus;96</sup>.
+We could choose to simply ignore this issue. After all, who is going to sit around and submit the login form 2<sup>32</sup> times to trigger a nonce collision in our signed cookie implementation?
+
+We could also implement a key rotation scheme, for instance, rotating the key every _n_ days, to ensure that the 96-bit nonces _really_ do not collide. Now, mind you, it may be hard to calculate how _often_, exactly, you would need to rotate the key. If it's just for a side project, the answer is most likely going to be: _never_. However, for some services at scale, the threshold of 2<sup>32</sup> invocations could well be reached within a single day. There ought to be a better way!
+
+### Just Use a Longer Nonce Bro 
 
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
 [^2]: According to [RFC 6265](https://httpwg.org/specs/rfc6265.html#sane-set-cookie), all the characters permitted within a cookie are: `A`&ndash;`Z`, `a`&ndash;`z`, `0`&ndash;`9`, and the following: <code>!#$%&'()&#x2a;+-./:&lt;=&gt;?@[]^&#x5F;&#x60;{|}~</code>. Note that spaces, double quotes&nbsp;(`"`), and semicolons&nbsp;(`;`) are not permitted.
@@ -126,3 +164,5 @@ An important thing to note about AEADs is that for each encrypted message, we ne
 [^6]: [China is now blocking all encrypted HTTPS traffic that uses TLS 1.3 and ESNI](https://www.zdnet.com/article/china-is-now-blocking-all-encrypted-https-traffic-using-tls-1-3-and-esni/). _ZDNet_ (retrieved 2025-01-16).
 [^7]: David A. McGrew, John Viega, [_The Galois/Counter Mode of Operation (GCM)_](https://luca-giuzzi.unibs.it/corsi/Support/papers-cryptography/gcm-spec.pdf) (retrieved 2025-01-17).
 [^8]: Or maybe 2005. I have not found a conclusive source.
+[^9]: Dworkin, M. (2007). *Recommendation for block cipher modes of operation: Galois/Counter Mode (GCM) and GMAC (NIST SP 800-38D)*. National Institute of Standards and Technology. [https://doi.org/10.6028/NIST.SP.800-38D](https://doi.org/10.6028/NIST.SP.800-38D) (retrieved 2025-01-19).
+[^10]: I don't think it's an official cryptographic term, but it seems logical enough to me. Then again, _I'm not a lawyer_.
