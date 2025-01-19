@@ -77,7 +77,7 @@ The private key is used to sign messages, while the public key can only be used 
 A popular digital signature scheme is [EdDSA](https://en.wikipedia.org/wiki/EdDSA), commonly used in the variant known as **Ed25519**.
 If you have an account on Github, chances are that you are already using EdDSA signatures to upload and download code over [SSH](https://en.wikipedia.org/wiki/Secure_Shell).
 
-### Approach Three: Encrypt Your Cookie with AES
+### Approach Three: Encrypt Your Cookies, Then Sign Them
 
 Both MACs and digital signature schemes guarantee that a cookie cannot be forged or tampered with, but the actual value stored in the cookie is still stored in plaintext.
 If you also wish to hide the value from nosy users, you need to **encrypt** it first, e. g. using a cipher like [AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard).
@@ -94,19 +94,25 @@ The CBC mode of operation was patented back in 1976[^5]. In this mode of operati
 
 The CBC mode only deals with the _encryption_ of data, providing **confidentiality**, which means that the encrypted message cannot be read by anyone without the secret key. It is not concerned with _authentication_, therefore it needs to be used in combination with a MAC to ensure the integrity and authenticity of a message.
 
-The CBC mode, although undeniably clever, is currently considered insecure and its usage in TLS 1.2 has been deprecated. TLS 1.3 does not use the CBC mode of operation at all, and was therefore banned in China[^6].
+The CBC mode, although undeniably clever, is currently considered insecure and its usage in TLS 1.2 has been deprecated. The most recent revision of TLS, version 1.3, does not use the CBC mode of operation at all. This solves a whole lot of vulnerabilities in the protocol, making it much harder to eavesdrop on TLS-encrypted traffic. TLS 1.3 is therefore banned in China[^6].
 
 #### AES-GCM (Galois Counter Mode)
 
 The Galois Counter Mode (GCM) mode of operation is a much later invention than the CBC mode of operation, with the initial paper by McGrew and Viega[^7] published in 2004[^8].
-AES in Galois Counter Mode does not encrypt the data at all. Instead, for each encrypted message, a unique value is used, called a **nonce** (short for _number once_). It is similar to the initialization vector used in CBC mode, in that it must not be reused, but it does not in fact need to be random. In fact, you can even use sequential numbers, as long as you can guarantee that a given value will never be reused. For AES-GCM, the nonce is usually 96 bits (12 bytes).
+AES in Galois Counter Mode does not encrypt the data at all.
+Instead, for each encrypted message, a unique value is used. The GCM spec calls it an _initialization vector_, just like CBC, but they are also colloquially referred to as **nonces** (short for _number once_).
+The IV in GCM does not need to be random. In fact, you can even use sequential numbers, as long as you can guarantee that a given value will never be reused (easier said than done). For AES-GCM, the nonce is _usually_ 96 bits (12 bytes).
 
-In GCM mode, you do not encrypt the message, only the nonce and a block counter.
+GCM is an **authenticated encryption** scheme, meaning that it guarantees not only the privacy of a message, but also its authenticity.
+An authenticated encryption scheme therefore seems like a perfect choice for use in cookies.
+AES-GCM also supports adding some extra information about the message (e. g. the HTTP origin of the website or the name of the cookie it is stored in).
+It is therefore called an **authenticated encryption with associated data** (AEAD) scheme.
+
+GCM differs from CBC in that in GCM mode, you do not encrypt the message, you only encrypt the IV and a counter.
 Let me explain how this works in practice.
 
-Let's say your plaintext is 2137 bytes long. With a block size of 16 bytes, we need to encrypt _2137 / 16 = 133.5625_ blocks of data, and since AES always works on whole blocks, we need to round it up to 134.
-
-Then, pick a nonce, let's say, the number 42. Encoded in 12 bytes, big-endian, it looks like this:
+Let's say your plaintext is 2137 bytes long. With a block size of 16 bytes, we need to encrypt _2137 / 16 = 133.5625 ≈ 134_ blocks of data.
+Then, pick a nonce, let's say, the number 42. Encoded in 96 bits, big-endian, it looks like this:
 
 ```
 00 00 00 00 00 00 00 00 00 00 00 2A
@@ -128,14 +134,11 @@ Since the output of AES encryption for a single block is always 16 bytes long, w
 Since XOR is a reversible operation, when decrypting a message encrypted with AES-GCM, we perform the exact same operation to generate the mask, and this mask, combined with the ciphertext using XOR, should return the plaintext.
 
 In contrast with the CBC mode of operation, in which the ciphertext of the previous block is combined with each following block, in GCM mode, there is no dependency between blocks.
-An important implication of this is that for very long messages, the 
-Each of these blocks can be encrypted independently of each other and of the plaintext
+This implies that you can compute these in parallel and in any order you want, allowing for all sorts of optimizations.
 
 Now, you may ask: where did the block with the index 0 go?
 This block is not used in the encryption process, it is only used for authentication.
 If you want to know exactly how this algorithm works, you can read the original proposal by David A. McGrew and John Viega[^7].
-
-AES in Galois Counter Mode (GCM) is an **authenticated encryption** scheme, meaning that it guarantees not only the privacy of a message, but also its authenticity. An authenticated encryption scheme therefore seems like a perfect choice for use in cookies. AES-GCM also supports adding some extra information about the message (e. g. the HTTP origin of the website or the name of the cookie it is stored in). It is therefore considered an **authenticated encryption with associated data** (AEAD) scheme.
 
 ### The Random Nonce Problem
 
@@ -152,17 +155,20 @@ For this reason, the National Institute of Standards and Technology[^9] recommen
 Now, 2<sup>32</sup> is definitely not a small number, but now the risk of a nonce collision is much higher than the original, naïve estimate of 2<sup>&minus;96</sup>.
 We could choose to simply ignore this issue. After all, who is going to sit around and submit the login form 2<sup>32</sup> times to trigger a nonce collision in our signed cookie implementation?
 
-We could also implement a key rotation scheme, for instance, rotating the key every _n_ days, to ensure that the 96-bit nonces _really_ do not collide. Now, mind you, it may be hard to calculate how _often_, exactly, you would need to rotate the key. If it's just for a side project, the answer is most likely going to be: _never_. However, for some services at scale, the threshold of 2<sup>32</sup> invocations could well be reached within a single day. There ought to be a better way!
+We could also implement a key rotation scheme, for instance, rotating the key every _n_ days, to ensure that the 96-bit nonces _really_ do not collide. Now, securely rotating encryption keys is a great challenge in and of itself. Mind you, it may be hard to calculate how _often_, exactly, you would need to rotate the key. If it's just for a side project, the answer is most likely going to be: _never_. However, for some services at scale, the threshold of 2<sup>32</sup> invocations could well be reached within a single day. There ought to be a better way!
 
 ### Just Use a Longer Nonce Bro 
 
+Could we just use a longer nonce? The GCM spec does not exactly _force_ us to use 96-bit 
+
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
 [^2]: According to [RFC 6265](https://httpwg.org/specs/rfc6265.html#sane-set-cookie), all the characters permitted within a cookie are: `A`&ndash;`Z`, `a`&ndash;`z`, `0`&ndash;`9`, and the following: <code>!#$%&'()&#x2a;+-./:&lt;=&gt;?@[]^&#x5F;&#x60;{|}~</code>. Note that spaces, double quotes&nbsp;(`"`), and semicolons&nbsp;(`;`) are not permitted.
-[^3]: ["Where cookie comes from :: DominoPower"](http://dominopower.com/article/where-cookie-comes-from/). _dominopower.com_ (retrieved 2025-01-14).
+[^3]: Stuart, A. (2002). *Where cookie comes from.* Retrieved January 14, 2025, from [http://dominopower.com/article/where-cookie-comes-from/](http://dominopower.com/article/where-cookie-comes-from/).
 [^4]: If you are tired of obnoxious cookie banners, you can hide them using the browser extension _I still don't care about cookies_ (available for [Chrome/Edge](https://chromewebstore.google.com/detail/i-still-dont-care-about-c/edibdbjcniadpccecjdfdjjppcpchdlm) and [Firefox](https://addons.mozilla.org/en-US/firefox/addon/istilldontcareaboutcookies/)).
-[^5]: William F. Ehrsam, Carl H. W. Meyer, John L. Smith, Walter L. Tuchman, _Message verification and transmission error detection by block chaining_, US Patent 4074066, 1976.
-[^6]: [China is now blocking all encrypted HTTPS traffic that uses TLS 1.3 and ESNI](https://www.zdnet.com/article/china-is-now-blocking-all-encrypted-https-traffic-using-tls-1-3-and-esni/). _ZDNet_ (retrieved 2025-01-16).
-[^7]: David A. McGrew, John Viega, [_The Galois/Counter Mode of Operation (GCM)_](https://luca-giuzzi.unibs.it/corsi/Support/papers-cryptography/gcm-spec.pdf) (retrieved 2025-01-17).
+[^5]: Ehrsam, W. F., Meyer, C. H. W., Smith, J. L., & Tuchman, W. L. (1976). *Message verification and transmission error detection by block chaining.* US Patent 4074066.
+[^6]: Cimpanu, C. (2020). *China is now blocking all encrypted HTTPS traffic that uses TLS 1.3 and ESNI.* ZDNet. Retrieved January 16, 2025, from [https://www.zdnet.com/article/china-is-now-blocking-all-encrypted-https-traffic-using-tls-1-3-and-esni/](https://www.zdnet.com/article/china-is-now-blocking-all-encrypted-https-traffic-using-tls-1-3-and-esni/).
+[^7]: McGrew, D. A., & Viega, J. (n.d.). *The Galois/Counter Mode of Operation (GCM).* Retrieved January 17, 2025, from [https://luca-giuzzi.unibs.it/corsi/Support/papers-cryptography/gcm-spec.pdf](https://luca-giuzzi.unibs.it/corsi/Support/papers-cryptography/gcm-spec.pdf).
 [^8]: Or maybe 2005. I have not found a conclusive source.
-[^9]: Dworkin, M. (2007). *Recommendation for block cipher modes of operation: Galois/Counter Mode (GCM) and GMAC (NIST SP 800-38D)*. National Institute of Standards and Technology. [https://doi.org/10.6028/NIST.SP.800-38D](https://doi.org/10.6028/NIST.SP.800-38D) (retrieved 2025-01-19).
+[^9]: Dworkin, M. (2007). *Recommendation for block cipher modes of operation: Galois/Counter Mode (GCM) and GMAC (NIST SP 800-38D).* National Institute of Standards and Technology. Retrieved January 19, 2025, from [https://doi.org/10.6028/NIST.SP.800-38D](https://doi.org/10.6028/NIST.SP.800-38D).
 [^10]: I don't think it's an official cryptographic term, but it seems logical enough to me. Then again, _I'm not a lawyer_.
+[^11]: Internet Engineering Task Force (IETF). (2015). *RFC 7539: ChaCha20 and Poly1305 for IETF protocols.* Retrieved from [https://www.rfc-editor.org/rfc/rfc7539](https://www.rfc-editor.org/rfc/rfc7539)
