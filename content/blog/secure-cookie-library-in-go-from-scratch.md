@@ -129,7 +129,7 @@ The remaining 32 bits of each block contain the block counter. For the first blo
 ```
 
 In order to encrypt 134 blocks of plaintext, encrypt each of these blocks using the encryption key.
-Since the output of AES encryption for a single block is always 16 bytes long, we can calculate that encrypting 134 blocks will yield <em>134 &times; 16 = 2144</em> bytes of random-looking data, which we could probably call a *mask*[^10]. Then, since the resulting binary is longer than the plaintext, we can discard the last 7 bytes of the mask. Then, combine the plaintext with the mask using XOR.
+Since the output of AES encryption for a single block is always 16 bytes long, we can calculate that encrypting 134 blocks will yield <em>134 &times; 16 = 2144</em> bytes of random-looking data, which we could probably call a *keystream*[^13]. Then, since the resulting binary is longer than the plaintext, we can discard the last 7 bytes of the mask. Then, combine the plaintext with the mask using XOR.
 
 Since XOR is a reversible operation, when decrypting a message encrypted with AES-GCM, we perform the exact same operation to generate the mask, and this mask, combined with the ciphertext using XOR, should return the plaintext.
 
@@ -157,9 +157,26 @@ We could choose to simply ignore this issue. After all, who is going to sit arou
 
 We could also implement a key rotation scheme, for instance, rotating the key every _n_ days, to ensure that the 96-bit nonces _really_ do not collide. Now, securely rotating encryption keys is a great challenge in and of itself. Mind you, it may be hard to calculate how _often_, exactly, you would need to rotate the key. If it's just for a side project, the answer is most likely going to be: _never_. However, for some services at scale, the threshold of 2<sup>32</sup> invocations could well be reached within a single day. There ought to be a better way!
 
-### Just Use a Longer Nonce Bro 
+### Introducing XChaCha20-Poly1305
 
-Could we just use a longer nonce? The GCM spec does not exactly _force_ us to use 96-bit 
+The XChaCha-Poly1305 AEAD was designed with the specific goal of being resistant to nonce reuse in mind. XChaCha20 uses 192-bit nonces, which can safely be generated randomly.
+
+### Implementing our `securecookie` library
+
+Create a directory for the project. I called the library `securecookie`, inspired by [gorilla/securecookie](https://github.com/gorilla/securecookie), but you may pick a different name[^14]. However, you may want to make sure the package name does not collide with packages from the standard library, as that would be rather inconvenient for the end user.
+
+```shell
+mkdir securecookie
+```
+
+Initialize a new Go project. You may want to replace `moroz` with your username.
+
+```shell
+cd securecookie
+go mod init github.com/moroz/securecookie
+```
+
+
 
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
 [^2]: According to [RFC 6265](https://httpwg.org/specs/rfc6265.html#sane-set-cookie), all the characters permitted within a cookie are: `A`&ndash;`Z`, `a`&ndash;`z`, `0`&ndash;`9`, and the following: <code>!#$%&'()&#x2a;+-./:&lt;=&gt;?@[]^&#x5F;&#x60;{|}~</code>. Note that spaces, double quotes&nbsp;(`"`), and semicolons&nbsp;(`;`) are not permitted.
@@ -171,4 +188,7 @@ Could we just use a longer nonce? The GCM spec does not exactly _force_ us to us
 [^8]: Or maybe 2005. I have not found a conclusive source.
 [^9]: Dworkin, M. (2007). *Recommendation for block cipher modes of operation: Galois/Counter Mode (GCM) and GMAC (NIST SP 800-38D).* National Institute of Standards and Technology. Retrieved January 19, 2025, from [https://doi.org/10.6028/NIST.SP.800-38D](https://doi.org/10.6028/NIST.SP.800-38D).
 [^10]: I don't think it's an official cryptographic term, but it seems logical enough to me. Then again, _I'm not a lawyer_.
-[^11]: Internet Engineering Task Force (IETF). (2015). *RFC 7539: ChaCha20 and Poly1305 for IETF protocols.* Retrieved from [https://www.rfc-editor.org/rfc/rfc7539](https://www.rfc-editor.org/rfc/rfc7539)
+[^11]: Internet Engineering Task Force (IETF). (2015). *RFC 7539: ChaCha20 and Poly1305 for IETF protocols.* Retrieved January 20, 2025, from [https://www.rfc-editor.org/rfc/rfc7539](https://www.rfc-editor.org/rfc/rfc7539)
+[^12]: It does state that a 96-bit nonce is the most efficient due to the way CPUs process data (they operate on 32-bit words).
+[^13]: In a similar context, the ChaCha20 spec calls it a _keystream_. ChaCha20 is a stream cipher, unlike AES, so I'm not sure if the wording can be used interchangeably.
+[^14]: For instance, you may pick `securebiscuit` if you are from the UK.
