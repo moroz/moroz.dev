@@ -159,7 +159,11 @@ We could also implement a key rotation scheme, for instance, rotating the key ev
 
 ### Introducing XChaCha20-Poly1305
 
-The XChaCha-Poly1305 AEAD was designed with the specific goal of being resistant to nonce reuse in mind. XChaCha20 uses 192-bit nonces, which can safely be generated randomly.
+There are ways to deal with the nonce reuse problem in AES-GCM, the most notable of them being [AES-GCM-SIV](https://en.wikipedia.org/wiki/AES-GCM-SIV).
+AES-GCM-SIV achieves this property by deriving an initialization vector for the AEAD based on the provided nonce, the additional authenticated data, and the entirety of the plaintext. This, however, requires going over the whole plaintext twice: Once to derive an IV, and once to encrypt the plaintext.
+
+The XChaCha-Poly1305 AEAD was built as an alternative solution. Unlike AES-GCM, which is based on the block cipher AES, it is based on a stream cipher called ChaCha20.
+designed with the specific goal of being resistant to nonce reuse in mind. XChaCha20 uses 192-bit nonces, which can safely be generated randomly.
 
 ### Implementing our `securecookie` library
 
@@ -176,7 +180,25 @@ cd securecookie
 go mod init github.com/moroz/securecookie
 ```
 
+Install the [golang.org/x/crypto/chacha20poly1305](https://pkg.go.dev/golang.org/x/crypto@v0.32.0/chacha20poly1305) library. It contains the cryptographic primitives that we will use to encrypt, decrypt, and authenticate messages.
 
+Create a new file called `securecookie.go`. In this file, let's start by defining a few constants, which we will use when implementing the hard part (the part with actual cryptography):
+
+```go
+package securecookie
+
+import (
+	"golang.org/x/crypto/chacha20poly1305"
+)
+
+const (
+	KeySize   = chacha20poly1305.KeySize
+	NonceSize = chacha20poly1305.NonceSizeX
+	Overhead  = chacha20poly1305.Overhead
+)
+```
+
+The names of the `KeySize` and `NonceSize` constants are self-explanatory. The constant called `Overhead` represents the total number of bytes that the encryption scheme is going to use on top of the ciphertext. In the case of XChaCha20-Poly1305, just like for regular ChaCha20-Poly1305
 
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
 [^2]: According to [RFC 6265](https://httpwg.org/specs/rfc6265.html#sane-set-cookie), all the characters permitted within a cookie are: `A`&ndash;`Z`, `a`&ndash;`z`, `0`&ndash;`9`, and the following: <code>!#$%&'()&#x2a;+-./:&lt;=&gt;?@[]^&#x5F;&#x60;{|}~</code>. Note that spaces, double quotes&nbsp;(`"`), and semicolons&nbsp;(`;`) are not permitted.
