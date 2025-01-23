@@ -167,7 +167,7 @@ designed with the specific goal of being resistant to nonce reuse in mind. XChaC
 
 ### Implementing our `securecookie` library
 
-Create a directory for the project. I called the library `securecookie`, inspired by [gorilla/securecookie](https://github.com/gorilla/securecookie), but you may pick a different name[^14]. However, you may want to make sure the package name does not collide with packages from the standard library, as that would be rather inconvenient for the end user.
+Create a directory for the project. I called my library `securecookie`, inspired by [gorilla/securecookie](https://github.com/gorilla/securecookie), but you may pick a different name[^14]. However, you may want to make sure the package name does not collide with popular packages from the standard library, such as `http` or `context`, as that would be very inconvenient for the end user.
 
 ```shell
 mkdir securecookie
@@ -182,14 +182,16 @@ go mod init github.com/moroz/securecookie
 
 Install the [golang.org/x/crypto/chacha20poly1305](https://pkg.go.dev/golang.org/x/crypto@v0.32.0/chacha20poly1305) library. It contains the cryptographic primitives that we will use to encrypt, decrypt, and authenticate messages.
 
+```shell
+go get -u golang.org/x/crypto/chacha20poly1305
+```
+
 Create a new file called `securecookie.go`. In this file, let's start by defining a few constants, which we will use when implementing the hard part (the part with actual cryptography):
 
 ```go
 package securecookie
 
-import (
-	"golang.org/x/crypto/chacha20poly1305"
-)
+import "golang.org/x/crypto/chacha20poly1305"
 
 const (
 	KeySize   = chacha20poly1305.KeySize
@@ -198,7 +200,12 @@ const (
 )
 ```
 
-The names of the `KeySize` and `NonceSize` constants are self-explanatory. The constant called `Overhead` represents the total number of bytes that the encryption scheme is going to use on top of the ciphertext. In the case of XChaCha20-Poly1305, just like for regular ChaCha20-Poly1305
+The names of the `KeySize` and `NonceSize` constants are rather self-explanatory. Note that the nonce size is equal to a constant called `NonceSizeX`, with an `X` at the end. The `X` at the end indicates that this is the size of a nonce in XChaCha20-Poly1305, which is 192 bits or 24 bytes, unlike regular ChaCha20-Poly1305, whose nonce is 96 bits long.
+The constant called `Overhead` corresponds to the size of the authentication tag, or the checksum that will be appended at the end of the authenticated ciphertext.
+
+Now, let us step back for a moment and think about the actual functionality that we want to implement.
+
+In the case of XChaCha20-Poly1305, just like for regular ChaCha20-Poly1305
 
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
 [^2]: According to [RFC 6265](https://httpwg.org/specs/rfc6265.html#sane-set-cookie), all the characters permitted within a cookie are: `A`&ndash;`Z`, `a`&ndash;`z`, `0`&ndash;`9`, and the following: <code>!#$%&'()&#x2a;+-./:&lt;=&gt;?@[]^&#x5F;&#x60;{|}~</code>. Note that spaces, double quotes&nbsp;(`"`), and semicolons&nbsp;(`;`) are not permitted.
