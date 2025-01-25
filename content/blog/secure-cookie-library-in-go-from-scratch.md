@@ -257,6 +257,8 @@ At this point, this code is not terribly helpful. We can't event test it, becaus
 Let us start with the encryption part.
 
 ```go
+// import "crypto/rand"
+
 func (s *store) Encrypt(plaintext []byte) ([]byte, error) {
 	// Allocate buffer with the initial size just big enough to generate a random nonce,
 	// but with capacity for the whole payload (nonce + ciphertext + authentication tag)
@@ -266,16 +268,23 @@ func (s *store) Encrypt(plaintext []byte) ([]byte, error) {
     // within the initial size of the slice
 	rand.Read(nonce)
 
+    // Initialize an XChaCha20-Poly1305 AEAD with the secret key
 	aead, err := chacha20poly1305.NewX(s.key)
 	if err != nil {
 		return nil, fmt.Errorf("Encrypt: %w", err)
 	}
 
-	// Encrypt and authenticate the message, then append it to the nonce
+	// Encrypt and authenticate the message
 	msg := aead.Seal(nonce, nonce, plaintext, nil)
+
+    // The return value is nonce + ciphertext + authentication tag in one byte slice
 	return msg, nil
 }
 ```
+
+This is, hopefully, not too difficult to understand. First, we allocate a buffer big enough to accommodate the whole authenticated message. Then, we generate a random nonce using [`rand.Read`](https://pkg.go.dev/crypto/rand#Read). Under the hood, `rand.Read` uses [`io.ReadFull`](https://pkg.go.dev/io#ReadFull) to copy random data from [`rand.Reader`](https://pkg.go.dev/crypto/rand#Reader). According to the documentation, the `io.ReadFull` function "&hellip;reads exactly `len(buf)` bytes&hellip;", which guarantees that the generated random data will be exactly the desired size of `NonceSize`.
+
+The `chacha20poly1305.NewX` function's first return value is an interface type called [`cipher.AEAD`](https://pkg.go.dev/crypto/cipher#AEAD).
 
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
 [^2]: According to [RFC 6265](https://httpwg.org/specs/rfc6265.html#sane-set-cookie), all the characters permitted within a cookie are: `A`&ndash;`Z`, `a`&ndash;`z`, `0`&ndash;`9`, and the following: <code>!#$%&'()&#x2a;+-./:&lt;=&gt;?@[]^&#x5F;&#x60;{|}~</code>. Note that spaces, double quotes&nbsp;(`"`), and semicolons&nbsp;(`;`) are not permitted.

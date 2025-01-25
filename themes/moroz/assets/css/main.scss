@@ -14,7 +14,7 @@
   :root {
     --base-fg: #fff;
     --base-bg: #{$tw-gray-800};
-    --primary: #{$tw-rose-500};
+    --primary: #{$tw-rose-400};
     --text-dimmed: #{$tw-slate-400};
     --inline-code-bg: #{$tw-gray-700};
     --inline-code-fg: #{$tw-amber-400};
@@ -94,6 +94,10 @@ header {
   min-height: $header-height;
   line-height: $header-height;
 
+  a {
+    color: var(--primary);
+  }
+
   @include mobile {
     flex-direction: column;
     line-height: 0.8 * $header-height;
@@ -152,6 +156,15 @@ a {
   text-decoration: none;
 }
 
+a code {
+  color: var(--primary);
+  text-decoration: underline;
+
+  @include dark {
+    color: #{$tw-blue-300};
+  }
+}
+
 .blog,
 .videos {
   article {
@@ -176,6 +189,18 @@ a {
 
     h2 {
       margin-top: 2rem;
+    }
+
+    a {
+      text-decoration: underline;
+
+      @include dark {
+        color: #{$tw-blue-300};
+      }
+    }
+
+    sup > a {
+      text-decoration: none;
     }
   }
 }
