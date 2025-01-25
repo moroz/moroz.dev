@@ -1,6 +1,26 @@
 @import "./vars";
 @import "./mixins";
 
+:root {
+  --base-fg: #333;
+  --base-bg: #fff;
+  --primary: #{$tw-rose-600};
+  --text-dimmed: #555;
+  --inline-code-bg: #{$tw-slate-200};
+  --inline-code-fg: #{$tw-rose-800};
+}
+
+@include dark {
+  :root {
+    --base-fg: #fff;
+    --base-bg: #{$tw-gray-800};
+    --primary: #{$tw-rose-500};
+    --text-dimmed: #{$tw-slate-400};
+    --inline-code-bg: #{$tw-gray-700};
+    --inline-code-fg: #{$tw-amber-400};
+  }
+}
+
 *,
 *::before,
 *::after {
@@ -29,24 +49,13 @@ pre {
   margin: 0;
 }
 
+:not(pre) > code {
+  background: var(--inline-code-bg);
+  color: var(--inline-code-fg);
+}
+
 .language-go {
   tab-size: 4;
-}
-
-:root {
-  --base-fg: #333;
-  --base-bg: #fff;
-  --primary: #{$tw-rose-600};
-  --text-dimmed: #555;
-}
-
-@include dark {
-  :root {
-    --base-fg: #fff;
-    --base-bg: #{$tw-gray-800};
-    --primary: #{$tw-rose-500};
-    --text-dimmed: #{$tw-slate-400};
-  }
 }
 
 body {
