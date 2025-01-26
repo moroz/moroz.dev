@@ -1,8 +1,8 @@
 ---
 title: "Secure cookie library in Go from scratch"
-date: 2025-01-14
+date: 2025-01-26
 slug: "secure-cookie-library-in-go-from-scratch"
-summary: In this post, I show you how to write a "secure cookie" library in Go using AEAD cryptographic primitives.
+summary: In this post, I show you how to write a "secure cookie" library that will encrypt and authenticate payloads using the XChaCha20-Poly1305 AEAD, using the Go programming language.
 lang: en
 draft: yes
 ---
@@ -143,7 +143,8 @@ If you want to know exactly how this algorithm works, you can read the original 
 ### The Random Nonce Problem
 
 As mentioned above, the nonce used in AES-GCM mode is 96 bits long and must not be reused.
-In theory, that gives us 2<sup>96</sup> possible nonces, which should be more than enough for unlimited use by all of humanity and [Santi people](https://baike.baidu.com/item/%E4%B8%89%E4%BD%93%E4%BA%BA/8709210) (sorry, link in Chinese), until the [Universe dies of hypothermia](https://en.wikipedia.org/wiki/Heat_death_of_the_universe).
+In theory, that gives us 2<sup>96</sup> possible nonces, which should be more than enough for unlimited use by all of humanity and Santi people[^16], until the [Universe dies of hypothermia](https://en.wikipedia.org/wiki/Heat_death_of_the_universe).
+
 Unfortunately, due to a phenomenon called the [birthday problem](https://en.wikipedia.org/wiki/Birthday_problem), if you generate nonces using a random (or pseudo-random) number generator, the risk of a nonce collision increases greatly.
 
 For this reason, the National Institute of Standards and Technology[^9] recommends that:
@@ -203,6 +204,8 @@ const (
 The names of the `KeySize` and `NonceSize` constants are rather self-explanatory. Note that the nonce size is equal to a constant called `NonceSizeX`, with an `X` at the end. The `X` at the end indicates that this is the size of a nonce in XChaCha20-Poly1305, which is 192 bits or 24 bytes, unlike regular ChaCha20-Poly1305, whose nonce is 96 bits long.
 The constant called `Overhead` corresponds to the size of the authentication tag, or the checksum that will be appended at the end of the authenticated ciphertext.
 
+#### Define the `Store` interface
+
 Now, let us step back for a moment and think about the actual functionality that we want to implement.
 What we need is a library that can encrypt and authenticate an arbitrary binary string and serialize it to a format that can be safely stored in a cookie[^2].
 Then, we would also need a way to decrypt and verify a payload loaded from a cookie.
@@ -229,6 +232,8 @@ type Store interface {
 }
 ```
 
+#### Implement a `store` struct
+
 Now, let us implement a concrete type to implement this interface. We can start by defining a simple `struct` to store the secret key.
 
 ```go
@@ -237,7 +242,7 @@ type store struct {
 }
 ```
 
-Since this type is not exported, define a constructor that will validate the key and return a `Store` if the key satisfies our requirements:
+Since this type is not exported, we can only use it if we also define a constructor function. We can use this opportunity to validate the length of the provided secret key:
 
 ```go
 var ErrKeySize = errors.New("Invalid key size")
@@ -252,6 +257,8 @@ func NewStore(key []byte) (Store, error) {
 ```
 
 An interesting observation is that even though we defined the return type as `(Store, error)`, returning `nil, error` still satisfies the Go compiler. This is because an interface value can be backed by a `nil` concrete value[^15] (but you would still get a panic if you tried to call a method on a `nil` value).
+
+#### The `Encrypt` method
 
 At this point, this code is not terribly helpful. We can't event test it, because the `store` type does not implement any of the four methods defined in our `interface Store`.
 Let us start with the encryption part.
@@ -282,9 +289,80 @@ func (s *store) Encrypt(plaintext []byte) ([]byte, error) {
 }
 ```
 
-This is, hopefully, not too difficult to understand. First, we allocate a buffer big enough to accommodate the whole authenticated message. Then, we generate a random nonce using [`rand.Read`](https://pkg.go.dev/crypto/rand#Read). Under the hood, `rand.Read` uses [`io.ReadFull`](https://pkg.go.dev/io#ReadFull) to copy random data from [`rand.Reader`](https://pkg.go.dev/crypto/rand#Reader). According to the documentation, the `io.ReadFull` function "&hellip;reads exactly `len(buf)` bytes&hellip;", which guarantees that the generated random data will be exactly the desired size of `NonceSize`.
+This is, hopefully, not too difficult to understand. Let us analyze the code bit by bit.
 
+```go
+nonce := make([]byte, NonceSize, NonceSize+len(plaintext)+Overhead)
+```
+
+First, we allocate a buffer with the initial size of `NonceSize` bytes, but with capacity for the whole authenticated message, containing the nonce, the ciphertext, and the authentication tag. Pre-allocating just enough space means that we will not need to reallocate memory or copy data.
+
+```go
+rand.Read(nonce)
+```
+
+Then, we generate a random nonce (initialization vector) using [`rand.Read`](https://pkg.go.dev/crypto/rand#Read).
+Since we set the initial length of the `nonce` slice to `NonceSize`, we can be sure that the nonce generated using will be exactly `NonceSize` bytes long. This is because under the hood, `rand.Read` uses [`io.ReadFull`](https://pkg.go.dev/io#ReadFull) to copy random data from [`rand.Reader`](https://pkg.go.dev/crypto/rand#Reader).
+According to its documentation, the `io.ReadFull` function "&hellip;reads exactly `len(buf)` bytes&hellip;", which guarantees that the generated random data will be exactly the desired size of `NonceSize`.
+
+```go
+aead, err := chacha20poly1305.NewX(s.key)
+if err != nil {
+    return nil, fmt.Errorf("Encrypt: %w", err)
+}
+```
+
+Then, we initialize a new XChaCha20-Poly1305 AEAD with the secret key.
 The `chacha20poly1305.NewX` function's first return value is an interface type called [`cipher.AEAD`](https://pkg.go.dev/crypto/cipher#AEAD).
+This interface has two methods that are of interest to us:
+
+```go
+type AEAD interface {
+        // Seal encrypts and authenticates plaintext, authenticates the
+        // additional data and appends the result to dst, returning the updated
+        // slice.
+        // ...
+        Seal(dst, nonce, plaintext, additionalData []byte) []byte
+
+        // Open decrypts and authenticates ciphertext, authenticates the
+        // additional data and, if successful, appends the resulting plaintext
+        // to dst, returning the updated slice. The nonce must be NonceSize()
+        // bytes long and both it and the additional data must match the
+        // value passed to Seal.
+        // ...
+        Open(dst, nonce, ciphertext, additionalData []byte) ([]byte, error)
+}
+```
+
+The AEAD uses the metaphor of a sealed letter: While a letter is sealed, no-one, not even the person who sealed it, can read it or modify its content.
+In order to read the letter, you need to make sure the seal is authentic, then crack the seal open.
+
+```go
+msg := aead.Seal(nonce, nonce, plaintext, nil)
+return msg, nil
+```
+
+Using the `Seal` method of the `cipher.AEAD`, encrypt and authenticate the `plaintext` using `nonce`, writing the result to the byte slice currently used by the `nonce`.
+We pass `nil` to the last argument, `additionalData`.
+Finally, return the message and `nil`, indicating that there was no error.
+
+#### Implementing the `Decrypt` method
+
+```go
+func (s *store) Decrypt(message []byte) ([]byte, error) {
+	if len(message) < NonceSize+Overhead {
+		return nil, ErrMsgTooShort
+	}
+
+	nonce, ciphertext := message[:NonceSize], message[NonceSize:]
+	aead, err := chacha20poly1305.NewX(s.key)
+	if err != nil {
+		return nil, fmt.Errorf("Decrypt: %w", err)
+	}
+
+	return aead.Open(nil, nonce, ciphertext, nil)
+}
+```
 
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
 [^2]: According to [RFC 6265](https://httpwg.org/specs/rfc6265.html#sane-set-cookie), all the characters permitted within a cookie are: `A`&ndash;`Z`, `a`&ndash;`z`, `0`&ndash;`9`, and the following: <code>!#$%&'()&#x2a;+-./:&lt;=&gt;?@[]^&#x5F;&#x60;{|}~</code>. Note that spaces, double quotes&nbsp;(`"`), and semicolons&nbsp;(`;`) are not permitted.
@@ -301,3 +379,4 @@ The `chacha20poly1305.NewX` function's first return value is an interface type c
 [^13]: In a similar context, the ChaCha20 spec calls it a _keystream_. ChaCha20 is a stream cipher, unlike AES, so I'm not sure if the wording can be used interchangeably.
 [^14]: For instance, you may pick `securebiscuit` if you are from the UK.
 [^15]: Go Programming Language Specification. (n.d.). *Interface types*. Retrieved January 25, 2025, from [https://go.dev/ref/spec#Interface_types](https://go.dev/ref/spec#Interface_types)
+[^16]: [https://en.wikipedia.org/wiki/The_Three-Body_Problem_(novel)](https://en.wikipedia.org/wiki/The_Three-Body_Problem_(novel)), [https://baike.baidu.com/item/三体人/8709210](https://baike.baidu.com/item/%E4%B8%89%E4%BD%93%E4%BA%BA/8709210) (Chinese).
