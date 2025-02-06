@@ -273,12 +273,14 @@ func (s *store) Encrypt(plaintext []byte) ([]byte, error) {
 
 	// Generate a random nonce. `rand.Read` will only generate as much data as can fit
     // within the initial size of the slice
-	rand.Read(nonce)
+	if _, err := rand.Read(nonce); err != nil {
+        return nil, err
+    }
 
     // Initialize an XChaCha20-Poly1305 AEAD with the secret key
 	aead, err := chacha20poly1305.NewX(s.key)
 	if err != nil {
-		return nil, fmt.Errorf("Encrypt: %w", err)
+		return nil, err
 	}
 
 	// Encrypt and authenticate the message
@@ -299,7 +301,9 @@ First, we allocate a buffer with the initial length of `NonceSize` bytes, but wi
 Later on, this byte slice will contain not just the nonce&hellip; but the ciphertext, and the authentication tag, too.
 
 ```go
-rand.Read(nonce)
+if _, err := rand.Read(nonce); err != nil {
+    return nil, err
+}
 ```
 
 Then, we generate a random nonce (initialization vector) using [`rand.Read`](https://pkg.go.dev/crypto/rand#Read).
@@ -492,6 +496,167 @@ return s.Decrypt(msg)
 ```
 
 On success, this call will return the verified plaintext.
+
+### Testing the implementation
+
+Now, before we can roll this out to our Web-scale application, we need to test if it even works.
+In the test suite, I will be using convenience functions from the library [github.com/stretchr/testify/assert](https://pkg.go.dev/github.com/stretchr/testify@v1.10.0/assert). Install it like so:
+
+```
+go get -u github.com/stretchr/testify/assert
+```
+
+An in-depth explanation of Go tests is beyond the scope of this article.
+
+#### `NewStore` initializes a cookie store
+
+Let us start by testing the constructor. Create a file called `securecookie_test.go` in the root directory of the project:
+
+```go
+package securecookie_test
+
+import (
+	"bytes"
+	"crypto/rand"
+	"encoding/base64"
+	"testing"
+
+	"github.com/moroz/securecookie"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNewStore(t *testing.T) {
+	t.Parallel()
+
+	examples := []struct {
+		key   []byte
+		valid bool
+	}{
+		{
+			key:   []byte{1, 2, 3},
+			valid: false,
+		},
+		{
+			key:   bytes.Repeat([]byte{1}, securecookie.KeySize+1),
+			valid: false,
+		},
+		{
+			key:   bytes.Repeat([]byte{1}, securecookie.KeySize),
+			valid: true,
+		},
+	}
+
+	for _, example := range examples {
+		_, err := securecookie.NewStore(example.key)
+		if example.valid {
+			assert.NoError(t, err)
+		} else {
+			assert.ErrorIs(t, err, securecookie.ErrKeySize)
+		}
+	}
+}
+```
+
+In this example, we check that the constructor only accepts keys of length equal to `KeySize`.
+We iterate over a list of examples, checking if the constructor returns an error when called with keys of different lengths.
+We check that it returns `ErrKeySize` if the key passed to `NewStore` is too short or too long, and that there is no error when the key is exactly `KeySize` bytes long.
+
+#### Testing `Encrypt` and `Decrypt`
+
+Now that we know that the constructor works, let us test the `Encrypt` and `Decrypt` methods.
+
+In order to do that, we need to first initialize the store with a proper secret key.
+This helper method generates a secret key of the desired length:
+
+```go
+func generateKey() []byte {
+	var key = make([]byte, securecookie.KeySize)
+	if _, err := rand.Read(key); err != nil {
+		panic(err)
+	}
+	return key
+}
+```
+
+Now, let us go ahead and test the workflow:
+
+```go
+func TestEncryptDecrypt(t *testing.T) {
+	store, err := securecookie.NewStore(generateKey())
+	assert.NoError(t, err)
+
+	plaintext := []byte("OrpheanBeholderScryDoubt")
+
+	msg, err := store.Encrypt(plaintext)
+	assert.NoError(t, err)
+	assert.Len(t, msg, len(plaintext)+securecookie.NonceSize+securecookie.Overhead)
+
+	decrypted, err := store.Decrypt(msg)
+	assert.NoError(t, err)
+	assert.Equal(t, plaintext, decrypted)
+}
+```
+
+We test that both `Encrypt` and `Decrypt` methods do not return any errors, and that the encryption process can be correctly reversed.
+
+#### Testing `EncryptCookie` and `DecryptCookie`
+
+The next step would be testing that the value returned by `EncryptedCookie` is a valid cookie value, as per RFC 6265[^2].
+We can write these functions to check whether each `rune` in the generated cookie is in the valid character set:
+
+```go
+// validateCookieOctet checks whether c is a valid cookie-octet as defined
+// in RFC 6265 (https://httpwg.org/specs/rfc6265.html#sane-set-cookie):
+//
+// cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
+//
+//	; US-ASCII characters excluding CTLs,
+//	; whitespace DQUOTE, comma, semicolon,
+//	; and backslash
+func validateCookieOctet(c rune) bool {
+	return c == 0x21 || c >= 0x23 && c <= 0x2B || c >= 0x2D && c <= 0x3A ||
+		c >= 0x3C && c <= 0x5B || c >= 0x5D && c <= 0x7E
+}
+
+// validateCookieValue checks whether each rune in the cookie is a valid cookie-octet,
+// as per RFC 6265 (https://httpwg.org/specs/rfc6265.html#sane-set-cookie)
+// cookie-value      = *cookie-octet / ( DQUOTE *cookie-octet DQUOTE )
+func validateCookieValue(cookie string) bool {
+	for _, c := range cookie {
+		if !validateCookieOctet(c) {
+			return false
+		}
+	}
+	return true
+}
+```
+
+```go
+func TestEncDecCookie(t *testing.T) {
+	store, err := securecookie.NewStore(generateKey())
+	assert.NoError(t, err)
+
+	plaintext := []byte("OrpheanBeholderScryDoubt")
+
+	cookie, err := store.EncryptCookie(plaintext)
+	assert.True(t, validateCookieValue(cookie))
+
+	decrypted, err := store.DecryptCookie(cookie)
+	assert.NoError(t, err)
+	assert.Equal(t, plaintext, decrypted)
+
+	// Try to tamper the cookie by NOTing a byte in the signature
+	binary, _ := base64.RawURLEncoding.DecodeString(cookie)
+	i := len(binary) - 5
+	binary[i] = ^binary[i]
+
+	tampered := base64.RawURLEncoding.EncodeToString(binary)
+
+	got, err := store.DecryptCookie(tampered)
+	assert.ErrorContains(t, err, "message authentication failed")
+	assert.Nil(t, got)
+}
+```
 
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
 
