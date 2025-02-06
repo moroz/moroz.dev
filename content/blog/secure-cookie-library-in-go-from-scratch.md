@@ -289,13 +289,14 @@ func (s *store) Encrypt(plaintext []byte) ([]byte, error) {
 }
 ```
 
-This is, hopefully, not too difficult to understand. Let us analyze the code bit by bit.
+Let us analyze the code bit by bit.
 
 ```go
 nonce := make([]byte, NonceSize, NonceSize+len(plaintext)+Overhead)
 ```
 
-First, we allocate a buffer with the initial size of `NonceSize` bytes, but with capacity for the whole authenticated message, containing the nonce, the ciphertext, and the authentication tag. Pre-allocating just enough space means that we will not need to reallocate memory or copy data.
+First, we allocate a buffer with the initial length of `NonceSize` bytes, but with capacity for the whole authenticated message.
+Later on, this byte slice will contain not just the nonce&hellip; but the ciphertext, and the authentication tag, too.
 
 ```go
 rand.Read(nonce)
@@ -303,7 +304,7 @@ rand.Read(nonce)
 
 Then, we generate a random nonce (initialization vector) using [`rand.Read`](https://pkg.go.dev/crypto/rand#Read).
 Since we set the initial length of the `nonce` slice to `NonceSize`, we can be sure that the nonce generated using will be exactly `NonceSize` bytes long. This is because under the hood, `rand.Read` uses [`io.ReadFull`](https://pkg.go.dev/io#ReadFull) to copy random data from [`rand.Reader`](https://pkg.go.dev/crypto/rand#Reader).
-According to its documentation, the `io.ReadFull` function "&hellip;reads exactly `len(buf)` bytes&hellip;", which guarantees that the generated random data will be exactly the desired size of `NonceSize`.
+According to its documentation, the `io.ReadFull` function "&hellip;reads exactly `len(buf)` bytes&hellip;", which will be equal to the second argument passed to `make`.
 
 ```go
 aead, err := chacha20poly1305.NewX(s.key)
@@ -334,24 +335,36 @@ type AEAD interface {
 }
 ```
 
-The AEAD uses the metaphor of a sealed letter: While a letter is sealed, no-one, not even the person who sealed it, can read it or modify its content.
-In order to read the letter, you need to make sure the seal is authentic, then crack the seal open.
+Based on this interface, I understand the AEAD to use the metaphor of a sealed letter: While a letter is sealed, no-one, not even the person who sealed it, can read it or modify its content.
+At the same time, a proper seal guarantees that the message really comes from the purported sender.
+Analogously, a message encrypted and authenticated with an AEAD is sealed from prying eyes and it cannot be modified.
+
+This is how we use `Seal` in our `Encrypt` method:
 
 ```go
 msg := aead.Seal(nonce, nonce, plaintext, nil)
+```
+
+This call will encrypt and authenticate the `plaintext` using `nonce`, writing the result to the byte slice currently used by the `nonce`.
+We pass `nil` to the last argument, `additionalData`, indicating that we do not wish to use any additional authenticated data.
+
+```go
 return msg, nil
 ```
 
-Using the `Seal` method of the `cipher.AEAD`, encrypt and authenticate the `plaintext` using `nonce`, writing the result to the byte slice currently used by the `nonce`.
-We pass `nil` to the last argument, `additionalData`.
-Finally, return the message and `nil`, indicating that there was no error.
+Finally, we return the message and `nil`, indicating that there was no error.
 
 #### Implementing the `Decrypt` method
 
+The next step is implementing the `Decrypt` method to decode and verify AEAD-encrypted messages. Unsurprisingly, in this method, we are going to use the `Open` method of the `cipher.AEAD` interface:
+
 ```go
+var ErrMsgTooShort = errors.New("encrypted message too short")
+
 func (s *store) Decrypt(message []byte) ([]byte, error) {
 	if len(message) < NonceSize+Overhead {
-		return nil, ErrMsgTooShort
+		return nil, fmt.Errorf("%w (got %v, want %v or more)",
+			ErrMsgTooShort, len(message), NonceSize+Overhead)
 	}
 
 	nonce, ciphertext := message[:NonceSize], message[NonceSize:]
@@ -364,19 +377,76 @@ func (s *store) Decrypt(message []byte) ([]byte, error) {
 }
 ```
 
+Let us analyze this method in detail.
+
+First, we validate that the message is long enough to even possibly be valid.
+
+```go
+if len(message) < NonceSize+Overhead {
+    return nil, fmt.Errorf("%w (got %v, want %v or more)",
+        ErrMsgTooShort, len(message), NonceSize+Overhead)
+}
+```
+
+By design, any message encrypted with `Encrypt` has the combined length of its plaintext, the nonce (initialization vector), and the authentication tag.
+As per the ChaCha20-Poly1305 spec[^17], on which XChaCha20-Poly1305 is based, both the plaintext and the additional associated data can be of arbitrary length, including zero length.
+This implies that the minimal length of a valid AEAD-authenticated message is nonce size + length of the authentication tag.
+While a malformed message would have been rejected by the AEAD implementation, we need to validate the length of the encrypted message to ensure the correct execution of the following line:
+
+```go
+nonce, ciphertext := message[:NonceSize], message[NonceSize:]
+```
+
+Split the message into the nonce and the remainder (ciphertext with authentication tag).
+This operation would cause a panic (_runtime error: slice bounds out of range_) if we tried to perform it on an input value shorter than `NonceSize`.
+
+```go
+aead, err := chacha20poly1305.NewX(s.key)
+if err != nil {
+    return nil, fmt.Errorf("Decrypt: %w", err)
+}
+```
+
+Initialize a `cipher.AEAD` the same way as in `Encrypt`.
+
+```go
+return aead.Open(nil, nonce, ciphertext, nil)
+```
+
+Finally, &ldquo;open&rdquo; the &ldquo;sealed letter.&rdquo;
+On success, return the authenticated plaintext as a byte slice and an empty error (`nil`).
+On failure, return an empty slice (`nil`) and the error returned by `Open`.
+
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
+
 [^2]: According to [RFC 6265](https://httpwg.org/specs/rfc6265.html#sane-set-cookie), all the characters permitted within a cookie are: `A`&ndash;`Z`, `a`&ndash;`z`, `0`&ndash;`9`, and the following: <code>!#$%&'()&#x2a;+-./:&lt;=&gt;?@[]^&#x5F;&#x60;{|}~</code>. Note that spaces, double quotes&nbsp;(`"`), and semicolons&nbsp;(`;`) are not permitted.
+
 [^3]: Stuart, A. (2002). *Where cookie comes from.* Retrieved January 14, 2025, from [http://dominopower.com/article/where-cookie-comes-from/](http://dominopower.com/article/where-cookie-comes-from/).
+
 [^4]: If you are tired of obnoxious cookie banners, you can hide them using the browser extension _I still don't care about cookies_ (available for [Chrome/Edge](https://chromewebstore.google.com/detail/i-still-dont-care-about-c/edibdbjcniadpccecjdfdjjppcpchdlm) and [Firefox](https://addons.mozilla.org/en-US/firefox/addon/istilldontcareaboutcookies/)).
+
 [^5]: Ehrsam, W. F., Meyer, C. H. W., Smith, J. L., & Tuchman, W. L. (1976). *Message verification and transmission error detection by block chaining.* US Patent 4074066.
+
 [^6]: Cimpanu, C. (2020). *China is now blocking all encrypted HTTPS traffic that uses TLS 1.3 and ESNI.* ZDNet. Retrieved January 16, 2025, from [https://www.zdnet.com/article/china-is-now-blocking-all-encrypted-https-traffic-using-tls-1-3-and-esni/](https://www.zdnet.com/article/china-is-now-blocking-all-encrypted-https-traffic-using-tls-1-3-and-esni/).
+
 [^7]: McGrew, D. A., & Viega, J. (n.d.). *The Galois/Counter Mode of Operation (GCM).* Retrieved January 17, 2025, from [https://luca-giuzzi.unibs.it/corsi/Support/papers-cryptography/gcm-spec.pdf](https://luca-giuzzi.unibs.it/corsi/Support/papers-cryptography/gcm-spec.pdf).
+
 [^8]: Or maybe 2005. I have not found a conclusive source.
+
 [^9]: Dworkin, M. (2007). *Recommendation for block cipher modes of operation: Galois/Counter Mode (GCM) and GMAC (NIST SP 800-38D).* National Institute of Standards and Technology. Retrieved January 19, 2025, from [https://doi.org/10.6028/NIST.SP.800-38D](https://doi.org/10.6028/NIST.SP.800-38D).
+
 [^10]: I don't think it's an official cryptographic term, but it seems logical enough to me. Then again, _I'm not a lawyer_.
+
 [^11]: Internet Engineering Task Force (IETF). (2015). *RFC 7539: ChaCha20 and Poly1305 for IETF protocols.* Retrieved January 20, 2025, from [https://www.rfc-editor.org/rfc/rfc7539](https://www.rfc-editor.org/rfc/rfc7539)
+
 [^12]: It does state that a 96-bit nonce is the most efficient due to the way CPUs process data (they operate on 32-bit words).
+
 [^13]: In a similar context, the ChaCha20 spec calls it a _keystream_. ChaCha20 is a stream cipher, unlike AES, so I'm not sure if the wording can be used interchangeably.
+
 [^14]: For instance, you may pick `securebiscuit` if you are from the UK.
+
 [^15]: Go Programming Language Specification. (n.d.). *Interface types*. Retrieved January 25, 2025, from [https://go.dev/ref/spec#Interface_types](https://go.dev/ref/spec#Interface_types)
+
 [^16]: [https://en.wikipedia.org/wiki/The_Three-Body_Problem_(novel)](https://en.wikipedia.org/wiki/The_Three-Body_Problem_(novel)), [https://baike.baidu.com/item/三体人/8709210](https://baike.baidu.com/item/%E4%B8%89%E4%BD%93%E4%BA%BA/8709210) (Chinese).
+
+[^17]: IETF. (2018). *RFC 8439: ChaCha20 and Poly1305 for IETF protocols*. Internet Engineering Task Force. Retrieved February 6, 2025, from [https://datatracker.ietf.org/doc/html/rfc8439#section-2.8](https://datatracker.ietf.org/doc/html/rfc8439#section-2.8).
