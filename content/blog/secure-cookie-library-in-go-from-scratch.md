@@ -1,6 +1,6 @@
 ---
 title: "Secure cookie library in Go from scratch"
-date: 2025-02-06
+date: 2025-02-07
 slug: "secure-cookie-library-in-go-from-scratch"
 summary: In this post, I show you how to write a "secure cookie" library that will encrypt and authenticate payloads using the XChaCha20-Poly1305 AEAD, using the Go programming language.
 lang: en
