@@ -6,6 +6,14 @@ summary: In this post, I show you how to write a "secure cookie" library that wi
 lang: en
 ---
 
+The final code from the code snippets is available at [github.com/moroz/securecookie](https://github.com/moroz/securecookie).
+The library has not been reviewed by a cryptography expert and should therefore not be deemed production-ready.
+
+The code is licensed under the BSD-3-Clause License.
+You may use it for any purpose at your own responsibility (I definitely will use it in some side projects).
+
+If you enjoy exploring technological rabbit holes, you may like my [Kernighan and Ritchie Challenge](https://www.youtube.com/playlist?list=PLbYBXKy2Fbj8vVzKy8zHAcMhMS6JlqNOQ) series on YouTube. Liking and subscribing goes a long way, thanks!
+
 ### Introduction: What are cookies and why should I care?
 
 Cookies are short[^1] strings of letters, digits, and symbols[^2] that a Web server may store in your browser.
@@ -164,6 +172,8 @@ AES-GCM-SIV achieves this property by deriving an initialization vector for the 
 
 The XChaCha-Poly1305 AEAD was built as an alternative solution. Unlike AES-GCM, which is based on the block cipher AES, it is based on a stream cipher called ChaCha20.
 designed with the specific goal of being resistant to nonce reuse in mind. XChaCha20 uses 192-bit nonces, which can safely be generated randomly.
+
+Now, let us _delve_ into the implementation part[^20].
 
 ### Implementing our `securecookie` library
 
@@ -601,8 +611,10 @@ We test that both `Encrypt` and `Decrypt` methods do not return any errors, and 
 
 #### Testing `EncryptCookie` and `DecryptCookie`
 
-The next step would be testing that the value returned by `EncryptedCookie` is a valid cookie value, as per RFC 6265[^2].
-We can write these functions to check whether each `rune` in the generated cookie is in the valid character set:
+The next step would be testing that the value returned by `EncryptCookie` is a valid cookie value, as per RFC 6265[^2].
+The specification defines a finite set of ASCII characters that may appear in the cookie value. Even though theoretically all Base64 characters are included in that set, it probably would not hurt to test it anyway.
+
+The following functions to check whether each `rune` in the generated cookie is in the valid character set:
 
 ```go
 // validateCookieOctet checks whether c is a valid cookie-octet as defined
@@ -631,6 +643,8 @@ func validateCookieValue(cookie string) bool {
 }
 ```
 
+Armed with these helpers, we can go ahead and test `EncryptCookie` and `DecryptCookie`:
+
 ```go
 func TestEncDecCookie(t *testing.T) {
 	store, err := securecookie.NewStore(generateKey())
@@ -658,6 +672,29 @@ func TestEncDecCookie(t *testing.T) {
 }
 ```
 
+I have also included a simple test to check whether an invalid authentication tag would be caught by the AEAD. To this end, I decode the cookie (from Base64), modify a single byte in its authentication tag with a simple bitwise operation (flipping all the bits in the 6th last byte), and reencode it as Base64. As expected, the tampered cookie is rejected by the library.
+
+### How this article came to be
+
+I originally wrote the `securecookie` library as a proof of concept. It was partly inspired by the [gorilla/securecookie](https://github.com/gorilla/securecookie) library, used under the hood by [gorilla/sessions](https://github.com/gorilla/sessions).
+
+My initial implementation can be found at [github.com/moroz/securecookie-poc](https://github.com/moroz/securecookie-poc).
+
+The original gorilla library does a few things in a way that I, in my hubris, have deemed naïve: The authentication part is implemented in a bespoke way, using a combination of string concatenation and HMAC-SHA-256. The payload can optionally be encrypted using a cipher, but the constructor only supports block ciphers that are then applied in counter mode (which excludes the whole category of stream ciphers, I guess?)
+
+Gorilla's library supports timestamps that can be validated against a maximum age. However, in a production setting, a cookie should also be verified against some value in the database (like a session token), so this validation is redundant.
+Finally, the library uses an additional value called "cookie name," which is essentially _additional data_.
+
+During my search for A Better Solution, I encountered and became enamored with the concept of AEADs. The construct looked like a perfect fit: they can guarantee both secrecy and authenticity of a message, and you can put the name of the cookie (or any other metadata) in the _additional data_.
+
+### Reddit feedback
+
+I posted the original proof of concept to Reddit[^19].
+
+Most commenters asked for a mechanism to rotate the keys. You can implement this easily by storing a slice of secret keys in the store. Whenever you encrypt a new cookie, use the first one (or the last one). When decrypting an existing cookie, try with all keys.
+
+I do not think this mechanism is particularly useful. With XChaCha20-Poly1305, you should never need to rotate the key because of nonce reuse. If your secret key is compromised, you should treat all messages encrypted with this key as untrusted, anyway.
+
 [^1]: As a [rule of thumb](http://browsercookielimits.iain.guru/), the maximum size of all cookies stored for a domain should not exceed around 4 kB (4096 bytes).
 
 [^2]: According to [RFC 6265](https://httpwg.org/specs/rfc6265.html#sane-set-cookie), all the characters permitted within a cookie are: `A`&ndash;`Z`, `a`&ndash;`z`, `0`&ndash;`9`, and the following: <code>!#$%&'()&#x2a;+-./:&lt;=&gt;?@[]^&#x5F;&#x60;{|}~</code>. Note that spaces, double quotes&nbsp;(`"`), and semicolons&nbsp;(`;`) are not permitted.
@@ -680,7 +717,7 @@ func TestEncDecCookie(t *testing.T) {
 
 [^11]: Internet Engineering Task Force (IETF). (2015). *RFC 7539: ChaCha20 and Poly1305 for IETF protocols.* Retrieved January 20, 2025, from [https://www.rfc-editor.org/rfc/rfc7539](https://www.rfc-editor.org/rfc/rfc7539)
 
-[^12]: It does state that a 96-bit nonce is the most efficient due to the way CPUs process data (they operate on 32-bit words).
+[^12]: It does state that a 96-bit nonce is the most efficient, likely due to the way CPUs process data (they operate on 32-bit words).
 
 [^13]: In a similar context, the ChaCha20 spec calls it a _keystream_. ChaCha20 is a stream cipher, unlike AES, so I'm not sure if the wording can be used interchangeably.
 
@@ -694,3 +731,6 @@ func TestEncDecCookie(t *testing.T) {
 
 [^18]: IETF. (2006). *RFC 4648: The Base16, Base32, and Base64 Data Encodings*. Internet Engineering Task Force. Retrieved February 6, 2025, from [https://datatracker.ietf.org/doc/html/rfc4648#section-5](https://datatracker.ietf.org/doc/html/rfc4648#section-5).
 
+[^19]: Reddit user moroz_dev. (2025). *Demistifying signed cookies: A proof-of-concept "secure cookie" library*. Reddit. Retrieved February 7, 2025, from [https://www.reddit.com/r/golang/comments/1hychmy/demistifying_signed_cookies_a_proofofconcept/](https://www.reddit.com/r/golang/comments/1hychmy/demistifying_signed_cookies_a_proofofconcept/)
+
+[^20]: Being, in my essence, a large language model, I enjoy delving into topics.
