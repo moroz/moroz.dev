@@ -150,8 +150,7 @@ Alice's address: bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235
 
 ### Refactoring and Code Organization
 
-The steps to generate a key for Bob would be exactly the same, but with different inputs.
-Therefore, this is a good moment to commit the changes up to this point to version control and refactor the code a bit.
+This is a good moment to commit the changes to Git and refactor the code a bit.
 
 ```go
 package main
@@ -204,7 +203,211 @@ func main() {
 }
 ```
 
-In this program, we split the logic for deriving key pairs and converting them into P2WPKH addresses into two functions.
+This way, we split the logic for deriving key pairs and converting them into P2WPKH addresses into two functions.
 Later on in the project, we are going to need Alice's private key to send a transaction to Bob.
+
+### Derive keys and addresses for Bob
+
+The steps to generate a key for Bob are exactly the same be exactly the same as for Alice, just with a different salt:
+
+```go
+func main() {
+    // ...
+
+	bobKey, err := deriveMaster(config.SECRET_KEY_BASE, "Bob's key")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bobAddr, err := addressFromMaster(bobKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Bob's address: %s\n", bobAddr)
+}
+```
+
+### Setting up a local Bitcoin node
+
+Now, it's time to set up a Bitcoin node. We can do so using [Docker](https://www.docker.com/).
+If you need to get this to work on a platform that doesn't support Docker, such as FreeBSD, you will need to compile Bitcoin Core from source.
+
+Ensure you have Docker installed. In the root directory of the project, create a file called `docker-compose.yml`:
+
+```yaml
+services:
+  bitcoin:
+    image: bitcoin/bitcoin:29.0
+    ports:
+      - "18443:18443"
+    command: |
+      -printtoconsole
+      -regtest=1
+      -server=1
+      -rpcbind=0.0.0.0
+      -rpcallowip=0.0.0.0/0
+      -rpcuser="username"
+      -rpcpassword="password"
+    volumes:
+      - "bitcoin:/home/bitcoin/.bitcoin"
+
+volumes:
+  bitcoin: {}
+```
+
+This configuration will set up a container running a local Bitcoin node in Regtest mode. The `command` property of this file contains various options for the Bitcoin server, specifying which IP address blocks may connect to the node, as well as the username and password we will use when connecting to the node over its [JSON API](https://developer.bitcoin.org/reference/rpc/index.html).
+
+### Mining the first block
+
+Next, we can use the `bitcoin-cli` command to interact with our Bitcoin node.
+The easiest way to install it on macOS and Linux is using [Homebrew](https://brew.sh/):
+
+```shell
+brew install bitcoin
+```
+
+Mind you, what this means in practice is that we're going to end up with two copies of the Bitcoin Core software suite: One running inside the Docker container, and one installed with Homebrew.
+
+Create a configuration file at `~/.bitcoin/bitcoin.conf`, so that we can connect to the node without specifying username and password each time:
+
+```shell
+mkdir -p ~/.bitcoin
+cat > ~/.bitcoin/bitcoin.conf <<-EOF
+regtest=1
+rpcuser=username
+rpcpassword=password
+EOF
+```
+
+Let's run a simple command to ensure we can connect to the server:
+
+```shell
+$ bitcoin-cli getblockchaininfo
+{
+  "chain": "regtest",
+  "blocks": 0,
+  "headers": 0,
+  "bestblockhash": "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206",
+  "bits": "207fffff",
+  "target": "7fffff0000000000000000000000000000000000000000000000000000000000",
+  "difficulty": 4.656542373906925e-10,
+  "time": 1296688602,
+  "mediantime": 1296688602,
+  "verificationprogress": 1,
+  "initialblockdownload": true,
+  "chainwork": "0000000000000000000000000000000000000000000000000000000000000002",
+  "size_on_disk": 293,
+  "pruned": false,
+  "warnings": [
+  ]
+}
+```
+
+This means that the node is up and running, but there aren't any blocks or coins in circulation.
+Let us generate some money for Alice:
+
+```shell
+# Mine 1 block and send the reward to Alice's address, as calculated by our program
+$ bitcoin-cli generatetoaddress 1 bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235
+[
+  "38d8dc6226ae9226bea5c7cc97a982b03fa6f00259640c9591a163a53b526f5e"
+]
+```
+
+### Create a wallet
+
+Generating a block will create 50 BTC and deposit it at Alice's address.
+However, we currently have no way to verify that it arrived:
+
+```shell
+$ bitcoin-cli listtransactions                                                
+error code: -18
+error message:
+No wallet is loaded. Load a wallet using loadwallet or create a new one with createwallet. (Note: A default wallet is no longer automatically created)
+```
+
+Let's create a wallet:
+
+```shell
+$ bitcoin-cli createwallet "watchonly" true true "" false true true
+{
+  "name": "watchonly",
+  "warnings": [
+    "Empty string given as passphrase, wallet will not be encrypted."
+  ]
+}
+```
+
+Wow, that's a lot of positional arguments! Let me break it down for you:
+
+1. `wallet_name="watchonly"`. The name of the wallet.
+2. `disable_private_keys=true`. We will not be storing the private keys for any of the addresses in this wallet.
+3. `blank=true`. Do not generate a default address.
+4. `passphrase=""`. We do not really need to encrypt the wallet as it is not storing any private keys.
+5. `avoid_reuse=false`. Irrelevant for our use case.
+6. `descriptors=true`. We need this to work with SegWit addresses.
+7. `load_on_startup=true`. This effectively sets this wallet as the default wallet for the node.
+
+### Import an address into the wallet
+
+Now that we have a wallet, we can finally import an address, right? Right?...
+
+```shell
+$ bitcoin-cli importaddress bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235                                  
+error code: -4
+error message:
+Only legacy wallets are supported by this command
+```
+
+Oops, this is an old command that only supports legacy addresses. Surely, we can try to import a descriptor, then?
+
+```shell
+$ address="bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235"
+$ payload="[{\"desc\":\"addr($address)\",\"label\":\"$address\",\"timestamp\":\"now\"}]"
+$ bitcoin-cli importdescriptors $payload
+[
+  {
+    "success": false,
+    "error": {
+      "code": -5,
+      "message": "Missing checksum"
+    }
+  }
+]
+```
+
+Oh, no! Now we need to calculate a checksum for this descriptor!
+Luckily, we don't need to write the code ourselves, Bitcoin Core has our backs:
+
+```shell
+$ address="bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235"
+$ bitcoin-cli getdescriptorinfo "addr($address)"
+{
+  "descriptor": "addr(bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235)#cycpm2nf",
+  "checksum": "cycpm2nf",
+  "isrange": false,
+  "issolvable": false,
+  "hasprivatekeys": false
+}
+```
+
+With this descriptor, we can finally import the address into our wallet.
+
+<strong>Note: you may need to install `jq` using Apt or Homebrew.</strong>
+
+```shell
+$ address="bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235"
+$ descriptor="$(bitcoin-cli getdescriptorinfo "addr($address)" | jq -r .descriptor)"
+$ payload="[{\"desc\":\"$descriptor\",\"label\":\"$address\",\"timestamp\":\"now\"}]"
+$ bitcoin-cli importdescriptors $payload                                            
+[
+  {
+    "success": true
+  }
+]
+```
+
+### Fetching balance
 
 [^1]: This command should come pre-installed on macOS, *BSD, and most linux distributions.
