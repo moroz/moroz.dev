@@ -173,19 +173,14 @@ func deriveMaster(base []byte, salt string) (*hdkeychain.ExtendedKey, error) {
 	return hdkeychain.NewMaster(seed, netParams)
 }
 
-func addressFromMaster(master *hdkeychain.ExtendedKey) (string, error) {
+func addressFromMaster(master *hdkeychain.ExtendedKey) (btcutil.Address, error) {
 	pubKey, err := master.ECPubKey()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	witnessProgram := btcutil.Hash160(pubKey.SerializeCompressed())
-	addr, err := btcutil.NewAddressWitnessPubKeyHash(witnessProgram, netParams)
-	if err != nil {
-		return "", err
-	}
-
-	return addr.EncodeAddress(), nil
+	return btcutil.NewAddressWitnessPubKeyHash(witnessProgram, netParams)
 }
 
 func main() {
@@ -226,6 +221,14 @@ func main() {
 
 	fmt.Printf("Bob's address: %s\n", bobAddr)
 }
+```
+
+The program should now print these addresses:
+
+```
+$ go run .
+Alice's address: bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235
+Bob's address: bcrt1qsltjpv4zgzsed00tg32rvpvakuev0fnf8ev3rg
 ```
 
 ### Setting up a local Bitcoin node
@@ -353,7 +356,7 @@ Wow, that's a lot of positional arguments! Let me break it down for you:
 
 Now that we have a wallet, we can finally import an address, right? Right?...
 
-```shell
+```
 $ bitcoin-cli importaddress bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235                                  
 error code: -4
 error message:
@@ -409,5 +412,132 @@ $ bitcoin-cli importdescriptors $payload
 ```
 
 ### Fetching balance
+
+The `listunspent` command returns the unspent transaction outputs in your wallet.
+At this point, however, even though we have received a 50 BTC reward, the `listunspent` command does not return any transactions:
+
+```
+$ bitcoin-cli listunspent
+[
+]
+```
+
+A look at the transaction history gives us a hint as to the reason:
+
+```json
+$ bitcoin-cli listtransactions
+[
+  {
+    "address": "bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235",
+    "parent_descs": [
+      "addr(bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235)#cycpm2nf"
+    ],
+    "category": "immature",
+    "amount": 50.00000000,
+    "label": "bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235",
+    "vout": 0,
+    "abandoned": false,
+    "confirmations": 1,
+    "generated": true,
+    "blockhash": "38d8dc6226ae9226bea5c7cc97a982b03fa6f00259640c9591a163a53b526f5e",
+    "blockheight": 1,
+    "blockindex": 0,
+    "blocktime": 1748766660,
+    "txid": "7fe00dc35e2e9d0f03d7ba3cbc19962ce37bb7c124dc744321eb706487faca4a",
+    "wtxid": "5fc67692510bef557ea0ab0504cafdcb9b2e0a9de9e991265688e63c83462dcf",
+    "walletconflicts": [
+    ],
+    "mempoolconflicts": [
+    ],
+    "time": 1748766660,
+    "timereceived": 1748768359,
+    "bip125-replaceable": "no"
+  }
+]
+```
+
+The `"category": "immature"` line indicates that the transaction cannot currently be spent because it is _immature_. That is an issue that's only going to happen with _coinbase_ transactions, i. e. coins that were mined.
+Unlike coins that you may have received elsewhere, _coinbase_ transactions can only be spent once they have at least a 100 confirmations. In other words, at least 100 blocks must be mined on top of this block until we can finally spend these coins!
+
+Luckily, in regression testing mode, this can be achieved very easily with this command:
+
+```
+$ bitcoin-cli generatetoaddress 100 "bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235"
+[
+  // ... 100 block hashes ...
+]
+```
+
+Now, we should be able to spend the 50 BTC that were generated in the first block:
+
+```json
+$ bitcoin-cli listunspent
+[
+  {
+    "txid": "7fe00dc35e2e9d0f03d7ba3cbc19962ce37bb7c124dc744321eb706487faca4a",
+    "vout": 0,
+    "address": "bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235",
+    "label": "bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235",
+    "scriptPubKey": "00149154b23b4f6ebbade97c9b5ba4651e962618489b",
+    "amount": 50.00000000,
+    "confirmations": 101,
+    "spendable": true,
+    "solvable": false,
+    "parent_descs": [
+      "addr(bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235)#cycpm2nf"
+    ],
+    "safe": true
+  }
+]
+```
+
+### Building a raw transaction in Go
+
+Now that we have 50 BTC to spend at Alice's address, we can start building a _raw transaction_ in Go.
+
+Raw transactions are far from the easiest way to transfer Bitcoin, but they give us the most flexibility.
+Using raw transactions, we never need to expose the private key for Alice's address to the server &mdash; instead, we sign the transaction in our Go application, and rely on our node to broadcast the raw transaction to the network.
+
+In the Go code, we're going to need a way to fetch the exact information about unspent transaction outputs.
+We can do this using the [`rpcclient` package](https://pkg.go.dev/github.com/btcsuite/btcd/rpcclient), a part of `btcsuite`.
+
+First, install `rpcclient`:
+
+```
+go get -u github.com/btcsuite/btcd/rpcclient
+```
+
+Then, we can configure the client and use it to query the API for any unspent transaction outputs associated with Alice's address:
+
+```go
+func main() {
+    // ... generate keys and addresses
+    
+	client, err := rpcclient.New(&rpcclient.ConnConfig{
+		Host:         "127.0.0.1:18443",
+		User:         "username",
+		Pass:         "password",
+		DisableTLS:   true,
+		HTTPPostMode: true,
+	}, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	unspent, err := client.ListUnspentMinMaxAddresses(1, 1e7-1, []btcutil.Address{aliceAddr})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%#v\n", unspent)
+}
+```
+
+```
+$ go run .
+// ... Alice and Bob's addresses omitted for brevity
+[]btcjson.ListUnspentResult{btcjson.ListUnspentResult{TxID:"7fe00dc35e2e9d0f03d7ba3cbc19962ce37bb7c124dc744321eb706487faca4a", Vout:0x0, Address:"bcrt1qj92tyw60d6a6m6tundd6geg7jcnpsjym58y235", Account:"", ScriptPubKey:"00149154b23b4f6ebbade97c9b5ba4651e962618489b", RedeemScript:"", Amount:50, Confirmations:101, Spendable:true}}
+
+```
 
 [^1]: This command should come pre-installed on macOS, *BSD, and most linux distributions.
