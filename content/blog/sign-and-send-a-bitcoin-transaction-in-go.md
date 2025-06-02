@@ -272,11 +272,24 @@ brew install bitcoin
 
 Mind you, what this means in practice is that we're going to end up with two copies of the Bitcoin Core software suite: One running inside the Docker container, and one installed with Homebrew.
 
-Create a configuration file at `~/.bitcoin/bitcoin.conf`, so that we can connect to the node without specifying username and password each time:
+Create a configuration file for Bitcoin Core, so that we can connect to the node without specifying username and password each time.
+On Linux, the file is located at `~/.bitcoin/bitcoin.conf`.
+On macOS, the file is instead located at `~/Library/Application Support/Bitcoin/bitcoin.conf`.
 
 ```shell
-mkdir -p ~/.bitcoin
-cat > ~/.bitcoin/bitcoin.conf <<-EOF
+# Use ~/.bitcoin by default
+config_dir="$HOME/.bitcoin"
+
+# Use ~/Library/Application Support/Bitcoin if on macOS
+if [[ "$(uname -s)" = "Darwin" ]]; then
+    config_dir="$HOME/Library/Application Support/Bitcoin"
+fi
+
+# Create the configuration directory if it does not exist
+mkdir -p "$config_dir"
+
+# Create configuration file
+cat > $config_dir/bitcoin.conf <<-EOF
 regtest=1
 rpcuser=username
 rpcpassword=password

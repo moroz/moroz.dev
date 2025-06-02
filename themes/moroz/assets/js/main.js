@@ -15,7 +15,7 @@ document.querySelectorAll(".gist[data-code]").forEach((gist) => {
 
     const isShell =
       gist.querySelector(
-        "code.language-shell, code.language-plain, code.language-text",
+        "code.language-shell, code.language-plain, code.language-text, code.language-json",
       ) !== null;
     const hasDollar = lines.some((line) => line?.startsWith("$"));
 
