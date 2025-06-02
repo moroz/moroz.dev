@@ -1,0 +1,9 @@
+{{- $attributes := .Attributes }}
+{{- $lang := .Type | default "text" -}}
+{{- $classes := slice (printf "language-%s" $lang) .Attributes.class }}
+{{- $attributes = merge $attributes (dict "class" (delimit $classes " ")) }}
+<article class="gist" data-code="{{- .Inner | safeHTMLAttr -}}">
+  {{- $highlighted := transform.Highlight .Inner $lang "" -}}
+  {{- $highlighted | safeHTML -}}
+</article>
+{{- .Page.Store.Set "hasCodeBlock" true }}

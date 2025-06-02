@@ -284,3 +284,12 @@ figure {
     margin: 0;
   }
 }
+
+.gist {
+  display: flex;
+  flex-direction: column;
+
+  button {
+    align-self: flex-end;
+  }
+}
