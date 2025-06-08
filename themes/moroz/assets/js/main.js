@@ -2,10 +2,11 @@ document.querySelectorAll(".gist[data-code]").forEach((gist) => {
   const button = document.createElement("button");
   button.setAttribute("type", "button");
   button.className = "button copy-to-clipboard";
-  button.textContent = "Copy to clipboard";
+
+  button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><use href="/icons/copy.svg" /></svg><span>Copy to clipboard</span><span class="success">Copied!</span>`;
 
   const lines = gist.dataset.code?.split("\n");
-  if (lines.length === 1) {
+  if (lines.length < 4) {
     button.classList.add("is-centered");
   }
 
@@ -27,6 +28,12 @@ document.querySelectorAll(".gist[data-code]").forEach((gist) => {
     }
 
     navigator.clipboard.writeText(lines.join("\n").trim());
+
+    button.classList.add("is-success");
+
+    setTimeout(() => {
+      button.classList.remove("is-success");
+    }, 5000);
   });
 
   gist.prepend(button);

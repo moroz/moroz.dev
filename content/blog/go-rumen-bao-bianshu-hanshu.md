@@ -100,7 +100,7 @@ code .
 輸入框中應該出現 _Install 'code' command in PATH_ 的選項（如圖），請用箭頭選擇此指令並按 Enter。
 
 <figure>
-<img src="/images/go-1/install-code-in-path.webp" />
+<img src="/images/go-1/install-code-in-path.webp" alt="" />
 <figcaption><em>Install 'code' command in PATH</em> 的截圖</figcaption>
 </figure>
 

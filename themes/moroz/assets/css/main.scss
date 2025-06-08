@@ -13,7 +13,7 @@
 @include dark {
   :root {
     --base-fg: #fff;
-    --base-bg: #{$tw-gray-800};
+    --base-bg: #{$tw-gray-900};
     --primary: #{$tw-rose-400};
     --text-dimmed: #{$tw-slate-400};
     --inline-code-bg: #{$tw-gray-700};
@@ -286,10 +286,65 @@ figure {
 }
 
 .gist {
-  display: flex;
-  flex-direction: column;
+  position: relative;
 
-  button {
-    align-self: flex-end;
+  &:not(:hover) {
+    .copy-to-clipboard {
+      opacity: 0;
+    }
+  }
+}
+
+.copy-to-clipboard {
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  gap: 0.75em;
+  padding: 0.5em 0.75em;
+  background: var(--bg);
+  color: inherit;
+  outline: 0;
+  border: 1px solid var(--primary);
+  transition: 0.2s ease-in-out;
+  cursor: pointer;
+  border-radius: 3px;
+  --bg: white;
+  --hover-bg: #{$tw-rose-300};
+
+  &:hover {
+    --bg: var(--hover-bg);
+  }
+
+  @include dark {
+    --bg: #282a36;
+    --hover-bg: #{$tw-rose-900};
+  }
+
+  &.is-centered {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .success {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+  }
+
+  &:not(.is-success) {
+    .success {
+      opacity: 0;
+    }
+  }
+
+  svg {
+    height: 1.25em;
+    fill: currentColor;
   }
 }
