@@ -40,7 +40,7 @@ $ cd $project_name
 Set versions for Node, pnpm and Prettier for the current project:
 
 ```shell
-mise use node@24.1.10 npm:pnpm@10.11.1 npm:prettier@3.5.3
+mise use node@24.1.0 npm:pnpm@10.11.1 npm:prettier@3.5.3
 ```
 
 ### Install and set up Prettier
