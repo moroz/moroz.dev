@@ -130,12 +130,14 @@ In the Astro configuration file, `astro.config.mjs`, add these settings to tell 
 // @ts-check
 import { defineConfig } from "astro/config";
 
+const isProd = process.env.NODE_ENV === "production";
+
 // https://astro.build/config
 export default defineConfig({
   // Add these two lines; replace `moroz` with your username
-  site: "https://moroz.github.io",
+  site: isProd ? "https://moroz.github.io" : undefined,
   // Replace `megane` with the name of your project
-  base: "megane",
+  base: isProd ? "megane" : undefined,
 });
 ```
 

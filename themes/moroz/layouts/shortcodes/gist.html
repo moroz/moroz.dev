@@ -7,6 +7,8 @@
 {{- end -}}
 {{- $content := (readFile $file) -}}
 
-<article class="gist"><h3 class="gist-title">File: {{ $filename -}}</h3>
-  <pre class="language-{{ $format }} line-numbers" data-code="{{- $content | safeHTMLAttr -}}" data-meta="{{- $attrs | safeHTMLAttr -}}"><code>{{ $content }}</code></pre>
+<h3 class="gist-title">File: {{ $filename -}}</h3>
+<article class="gist" data-code="{{- $content | safeHTMLAttr -}}">
+  {{- $highlighted := transform.Highlight $content $format "" -}}
+  {{- $highlighted | safeHTML -}}
 </article>
