@@ -1,4 +1,0 @@
-[tools]
-hugo = "0.147.6"
-node = "24"
-"npm:prettier" = "3.5.3"
