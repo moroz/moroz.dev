@@ -1,4 +1,2 @@
 [tools]
 hugo = "0.147.6"
-node = "latest"
-"npm:prettier" = "latest"
