@@ -1,3 +1,6 @@
 [tools]
 "go:github.com/cortesi/modd/cmd/modd" = "latest"
 hugo = "0.147.6"
+node = "latest"
+"npm:pnpm" = "latest"
+"npm:prettier" = "latest"
