@@ -3,7 +3,7 @@ document.querySelectorAll(".gist[data-code]").forEach((gist) => {
   button.setAttribute("type", "button");
   button.className = "button copy-to-clipboard";
 
-  button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><use href="/icons/copy.svg" /></svg><span>Copy to clipboard</span><span class="success">Copied!</span>`;
+  button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><use href="/icons/copy.svg" /></svg><span>Copy</span><span class="success">Copied!</span>`;
 
   const lines = gist.dataset.code?.split("\n");
   if (lines.length < 4) {

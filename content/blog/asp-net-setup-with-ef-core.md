@@ -6,8 +6,6 @@ summary: |
     In this article you will learn how to set up an ASP.NET Core MVC project with a PostgreSQL database using Entity Framework Core and Npgsql.
 ---
 
-WORK IN PROGRESS
-
 This walkthrough assumes you are using the [JetBrains Rider](https://www.jetbrains.com/rider/) IDE on a Unix-like operating system (Linux, macOS, or Windows with [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)). To a certain extent, it _may_ work on Windows with PowerShell, but I have not tested it.
 
 In this workthrough, I will be using the .NET toolchain installed using [mise](https://mise.jdx.dev/). Ensure that `mise` is correctly installed and up to date:

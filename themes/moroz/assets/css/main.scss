@@ -287,19 +287,13 @@ figure {
 
 article.gist {
   position: relative;
-  margin-bottom: 1rem;
-
-  &:not(:hover) {
-    .copy-to-clipboard {
-      opacity: 0;
-    }
-  }
+  margin-block: 1.5rem;
 }
 
 .copy-to-clipboard {
   position: absolute;
-  top: 1em;
-  right: 1em;
+  top: 0;
+  right: 0;
   display: flex;
   align-items: center;
   font-size: 0.75rem;
@@ -311,9 +305,10 @@ article.gist {
   border: 1px solid var(--primary);
   transition: 0.2s ease-in-out;
   cursor: pointer;
-  border-radius: 3px;
   --bg: white;
   --hover-bg: #{$tw-rose-300};
+  transform: translateY(-100%);
+  border-bottom: 0;
 
   &:hover {
     --bg: var(--hover-bg);
@@ -322,11 +317,6 @@ article.gist {
   @include dark {
     --bg: #282a36;
     --hover-bg: #{$tw-rose-900};
-  }
-
-  &.is-centered {
-    top: 50%;
-    transform: translateY(-50%);
   }
 
   .success {
