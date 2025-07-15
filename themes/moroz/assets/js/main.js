@@ -1,6 +1,7 @@
 document.querySelectorAll(".gist[data-code]").forEach((gist) => {
   const button = document.createElement("button");
   button.setAttribute("type", "button");
+  button.setAttribute("title", "Copy to clipboard");
   button.className = "button copy-to-clipboard";
 
   button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><use href="/icons/copy.svg" /></svg><span>Copy</span><span class="success">Copied!</span>`;
