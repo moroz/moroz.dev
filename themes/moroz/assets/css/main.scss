@@ -166,8 +166,8 @@ a code {
   }
 }
 
-.blog,
-.videos {
+:is(.blog),
+:is(.videos) {
   article {
     margin-bottom: 2rem;
   }
@@ -285,8 +285,9 @@ figure {
   }
 }
 
-.gist {
+article.gist {
   position: relative;
+  margin-bottom: 1rem;
 
   &:not(:hover) {
     .copy-to-clipboard {
