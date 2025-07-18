@@ -154,13 +154,13 @@ $ dotnet add package Microsoft.EntityFrameworkCore.Design
 $ dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
 ```
 
-Within the `MyApp.Web` project, we **are** going to need `Microsoft.EntityFrameworkCore` and `Npgsql.EntityFrameworkCore.PostgreSQL` to configure a database context. However, at this point we **do not need** `Microsoft.EntityFrameworkCore.Design`, which is needed to generate and run database schema migrations.
-Another library we are going to install is `EFCore.NamingConventions`, which lets us configure EF Core to generate queries and migrations using `snake_case` for table and column names, rather than the customary `PascalCase`.
+Within the `MyApp.Web` project, install the same packages, as well as `EFCore.NamingConventions`. This library lets us configure EF Core to generate queries and migrations using `snake_case` for table and column names, rather than the customary `PascalCase`.
 
 ```shell
 $ cd ~/projects/MyApp/MyApp.Web
 $ dotnet add package Microsoft.EntityFrameworkCore
 $ dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
+$ dotnet add package Microsoft.EntityFrameworkCore.Design
 $ dotnet add package EFCore.NamingConventions
 ```
 
