@@ -535,3 +535,60 @@ This is a good point to commit the changes:
 $ git add -A
 $ git commit -m "Create UUIDv7 SQL function"
 ```
+
+## Add Member Model
+
+In `MyApp.Data/Entities/Model.cs`, define a class representing a member record:
+
+```cs
+namespace MyApp.Data.Entities;
+
+public enum Gender
+{
+    Male,
+    Female,
+    ApacheHelicopter,
+    NonBinary,
+}
+
+public class Member
+{
+    public Guid Id { get; set; }
+    public string GivenName { get; set; }
+    public string FamilyName { get; set; }
+    public Gender Gender { get; set; }
+    public string Email { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+```
+
+In `MyApp.Data/AppDbContext.cs`:
+
+```cs
+using Microsoft.EntityFrameworkCore;
+using MyApp.Data.Entities;
+
+namespace MyApp.Data;
+
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+{
+    public DbSet<Member> Members { get; set; }
+}
+```
+
+In `MyApp.Web/Program.cs`, tell Npgsql about our newly defined enumeration type `Gender`:
+
+```cs
+using Microsoft.EntityFrameworkCore;
+using MyApp.Data;
+using MyApp.Data.Entities;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options
+        .UseNpgsql(builder.Configuration.GetConnectionString("AppDbContext"),
+            optionsBuilder => { optionsBuilder.MapEnum<Gender>("gender"); })
+        .UseSnakeCaseNamingConvention());
+```
