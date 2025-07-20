@@ -7,13 +7,14 @@ const allBlogPosts = await getCollection("blog");
 ---
 
 <Layout title="Blog">
+  <h2 class="my-8 text-center text-4xl font-bold">Blog</h2>
   {
     allBlogPosts.map((blog) => (
-      <article>
-        <a href={`/blog/${blog.id}`}>
+      <article class="my-8">
+        <a href={`/blog/${blog.id}`} class="hover:text-primary">
           <h3 class="text-2xl font-bold">{blog.data.title}</h3>
         </a>
-        <p>{blog.data.summary}</p>
+        <p class="my-2">{blog.data.summary}</p>
         <span>
           <strong>Karol Moroz</strong> on
           <time datetime={blog.data.date.toJSON()}>
