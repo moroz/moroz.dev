@@ -19,6 +19,15 @@ export default defineConfig({
       },
     },
   },
+  markdown: {
+    shikiConfig: {
+      themes: {
+        light: "solarized-light",
+        dark: "catppuccin-macchiato",
+      },
+      wrap: true,
+    },
+  },
 
   integrations: [markdoc(), svelte()],
 });
