@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
 
 interface Props {
   title: string;
@@ -17,29 +18,13 @@ const { title } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body>
+  <body class="flex min-h-screen flex-col">
     <Header />
-    <main>
+    <main class="flex-1">
       <div class="container mx-auto">
         <slot />
       </div>
     </main>
-    <footer>&copy; 2020&ndash;2025 by Karol Moroz.</footer>
+    <Footer />
   </body>
 </html>
-
-<style>
-  @reference "@css/global.css";
-
-  body {
-    @apply flex min-h-screen flex-col;
-  }
-
-  main {
-    @apply flex-1;
-  }
-
-  footer {
-    @apply grid h-20 place-items-center bg-[salmon] text-center;
-  }
-</style>

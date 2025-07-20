@@ -1,15 +1,33 @@
 <header class="flex h-16 items-center justify-between bg-blue-200">
-  <div
-    class="container mx-auto flex h-full items-center justify-between bg-blue-600"
-  >
-    <h1>moroz.dev</h1>
-    <nav>
-      <ul class="flex gap-2">
-        <li>Home</li>
-        <li>Blog</li>
-        <li>Videos</li>
-        <li>Contact</li>
+  <div class="container mx-auto flex h-full items-center justify-between">
+    <a href="/">
+      <h1 class="text-xl font-bold">moroz.dev</h1>
+    </a>
+    <nav class="h-full">
+      <ul class="flex h-full items-stretch">
+        <li><a href="/">Home</a></li>
+        <li><a href="/blog">Blog</a></li>
+        <li><a href="/videos">Videos</a></li>
+        <li><a href="/contact">Contact</a></li>
       </ul>
     </nav>
   </div>
 </header>
+
+<style>
+  @reference "@css/global.css";
+
+  li {
+    @apply h-full;
+  }
+
+  nav a {
+    @apply inline-flex h-full items-center px-5 font-semibold transition;
+  }
+
+  nav:has(:hover) {
+    a:not(:hover) {
+      @apply text-gray-500;
+    }
+  }
+</style>
