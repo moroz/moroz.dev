@@ -3,7 +3,9 @@ import Layout from "@layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import { formatDateTime } from "@/lib/datetime.ts";
 
-const allBlogPosts = await getCollection("blog");
+const allBlogPosts = (await getCollection("blog")).sort(
+  (a, b) => -(+a.data.date - +b.data.date),
+);
 ---
 
 <Layout title="Blog">

@@ -33,6 +33,10 @@
   h2 {
     @apply mt-8 mb-4 text-xl font-bold;
   }
+
+  :not(pre) > code {
+    @apply dark:bg-[#24273a];
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -46,5 +50,21 @@
     font-style: var(--shiki-dark-font-style) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+}
+
+figure {
+  text-align: center;
+
+  img {
+    max-width: 90%;
+    max-height: 80vh;
+    margin-inline: auto;
+  }
+}
+
+.bordered-figure {
+  img {
+    border: 1px solid #999;
   }
 }
