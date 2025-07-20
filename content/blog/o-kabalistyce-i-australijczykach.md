@@ -1,7 +1,7 @@
 ---
 title: "181. China day 106. O kabalistyce i Australijczykach"
 author: "Karol Moroz <karol@moroz.dev>"
-date: "2014-12-15 14:08:13"
+date: 2014-12-15 14:08:13
 language: "pl"
 slug: "o-kabalistyce-i-australijczykach"
 ---
