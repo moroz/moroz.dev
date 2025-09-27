@@ -2,7 +2,7 @@
 title: "Secure direct upload to S3 using Elixir, Svelte, and Vite"
 date: 2021-06-26
 slug: secure-direct-upload-to-s3-using-elixir-react-typescript-vite
-draft: yes
+draft: true
 tags:
   - vite
   - s3

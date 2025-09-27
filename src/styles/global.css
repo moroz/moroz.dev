@@ -41,7 +41,7 @@
   }
 
   a:not([class]) {
-    @apply hover:text-primary underline underline-offset-2;
+    @apply hover:text-primary-hover text-primary underline underline-offset-2;
   }
 }
 

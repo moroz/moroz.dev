@@ -5,7 +5,11 @@ import { formatDateTime } from "@/lib/datetime.ts";
 const { slug } = Astro.params;
 
 export async function getStaticPaths() {
-  const allBlogPosts = await getCollection("blog");
+  const displayDrafts = process.env.NODE_ENV === "development";
+  let allBlogPosts = await getCollection("blog");
+  if (!displayDrafts) {
+    allBlogPosts = allBlogPosts.filter((p) => !p.data.draft);
+  }
   return allBlogPosts.map((post) => ({ params: { slug: post.id } }));
 }
 
