@@ -15,4 +15,20 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+const videos = defineCollection({
+  loader: glob({
+    pattern: ["*.md"],
+    base: "./content/videos",
+  }),
+
+  schema: z.object({
+    title: z.string(),
+    youtube: z.string(),
+    date: z.date(),
+    slug: z.string(),
+    summary: z.string().optional(),
+    tags: z.array(z.string()),
+  }),
+});
+
+export const collections = { blog, videos };

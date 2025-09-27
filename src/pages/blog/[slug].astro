@@ -9,11 +9,10 @@ export async function getStaticPaths() {
   return allBlogPosts.map((post) => ({ params: { slug: post.id } }));
 }
 
-const post = await getEntry("blog", slug);
+const post = await getEntry("blog", slug)!;
 ---
 
 <Layout title={post.data.title}>
-  <h3 class="my-8 mb-4 text-center text-3xl font-bold">{post.data.title}</h3>
   <p class="text-center">
     <strong>Karol Moroz</strong> on <time datetime={post.data.date.toJSON()}
       >{formatDateTime(post.data.date)}</time
@@ -22,7 +21,7 @@ const post = await getEntry("blog", slug);
 
   <div
     class="content my-8 text-lg"
-    set:html={post.rendered.html}
+    set:html={post.rendered?.html}
     lang={post.data.lang}
   />
 </Layout>

@@ -8,6 +8,8 @@ interface Props {
 }
 
 const { title } = Astro.props;
+const defaultTitle = "moroz.dev";
+const resolvedTitle = title ? `${title} | ${defaultTitle}` : defaultTitle;
 ---
 
 <html lang="en">
@@ -16,7 +18,7 @@ const { title } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>{title}</title>
+    <title>{resolvedTitle}</title>
   </head>
   <body
     class="flex min-h-screen flex-col bg-white text-black dark:bg-gray-900 dark:text-gray-300"
@@ -24,6 +26,9 @@ const { title } = Astro.props;
     <Header />
     <main class="flex-1 py-16">
       <div class="container mx-auto">
+        <h2 class="mt-6 mb-4 text-2xl font-bold lg:text-center lg:text-4xl">
+          {title}
+        </h2>
         <slot />
       </div>
     </main>
