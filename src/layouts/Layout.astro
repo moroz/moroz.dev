@@ -21,12 +21,14 @@ const resolvedTitle = title ? `${title} | ${defaultTitle}` : defaultTitle;
     <title>{resolvedTitle}</title>
   </head>
   <body
-    class="flex min-h-screen flex-col bg-white text-black dark:bg-gray-900 dark:text-gray-300"
+    class="flex min-h-screen flex-col bg-white text-black dark:bg-slate-950 dark:text-gray-200"
   >
     <Header />
     <main class="flex-1 py-16">
       <div class="container mx-auto">
-        <h2 class="mt-6 mb-4 text-2xl font-bold lg:text-center lg:text-4xl">
+        <h2
+          class="mt-6 mb-4 text-2xl font-bold lg:mt-10 lg:text-center lg:text-4xl"
+        >
           {title}
         </h2>
         <slot />

@@ -1,70 +1,76 @@
 @import "tailwindcss";
 
 @theme {
-    --breakpoint-lg: 40rem;
-    --breakpoint-xl: 48rem;
-    --breakpoint-2xl: 50rem;
+  --breakpoint-lg: 40rem;
+  --breakpoint-xl: 48rem;
+  --breakpoint-2xl: 50rem;
 }
 
 @theme {
-    --color-primary: var(--color-blue-900);
+  --color-primary: var(--color-blue-900);
+  --color-primary-hover: var(--color-blue-800);
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
-        --color-primary: var(--color-amber-400);
-    }
+  :root {
+    --color-primary: var(--color-amber-500);
+    --color-primary-hover: var(--color-amber-400);
+  }
 }
 
 .content {
-    pre.astro-code {
-        @apply my-8 rounded-sm p-4 text-base whitespace-pre-wrap;
-    }
+  pre.astro-code {
+    @apply my-8 rounded-sm p-4 text-base whitespace-pre-wrap;
+  }
 
-    p {
-        @apply my-4;
-    }
+  p {
+    @apply my-4;
+  }
 
-    h2,
-    h3 {
-        @apply font-bold;
-    }
+  h2,
+  h3 {
+    @apply font-bold;
+  }
 
-    h2 {
-        @apply mt-8 mb-4 text-xl font-bold;
-    }
+  h2 {
+    @apply mt-8 mb-4 text-xl font-bold;
+  }
 
-    :not(pre) > code {
-        @apply dark:bg-[#24273a];
-    }
+  :not(pre) > code {
+    @apply dark:bg-[#24273a];
+  }
+
+  a:not([class]) {
+    @apply hover:text-primary underline underline-offset-2;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
-    .astro-code,
-    .astro-code span {
-        @apply transition;
+  .astro-code,
+  .astro-code span {
+    @apply transition;
 
-        color: var(--shiki-dark) !important;
-        background-color: var(--shiki-dark-bg) !important;
-        /* Optional, if you also want font styles */
-        font-style: var(--shiki-dark-font-style) !important;
-        font-weight: var(--shiki-dark-font-weight) !important;
-        text-decoration: var(--shiki-dark-text-decoration) !important;
-    }
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    /* Optional, if you also want font styles */
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
 }
 
 figure {
-    text-align: center;
+  text-align: center;
 
-    img {
-        max-width: 90%;
-        max-height: 80vh;
-        margin-inline: auto;
-    }
+  img {
+    max-width: 90%;
+    max-height: 80vh;
+    margin-inline: auto;
+  }
 }
 
 .bordered-figure {
-    img {
-        border: 1px solid #999;
-    }
+  img {
+    border: 1px solid #999;
+  }
 }
