@@ -30,4 +30,29 @@ $ dotnet sln add ./Courses.Tests/Courses.Tests.csproj
 Project `Courses.Tests/Courses.Tests.csproj` added to the solution.
 ```
 
-[^1]: Microsoft. (2025, March 25). *Integration tests in ASP.NET Core*. Microsoft Learn. https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-9.0&pivots=xunit (Archived at https://web.archive.org/web/20250927142022/https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-9.0&pivots=xunit)
+In the `Courses.Tests` project, add a reference to the `Courses` project, so that we can access the latter project's code in tests:
+
+```shell
+$ dotnet add reference Courses/Courses.csproj --project Courses.Tests
+Reference `..\Courses\Courses.csproj` added to the project.
+```
+
+In `Courses/Program.cs`, expose the implicitly defined `Program` class to outside projects. At the very end of the file, add this empty class:
+
+```cs
+public partial class Program
+{
+}
+```
+
+In `Courses/Courses.csproj`, configure the protocol buffer code generator to create both server and client code for the gRPC services defined in `courses.proto`:
+
+```xml
+<ItemGroup>
+    <Protobuf Include="Protos\greet.proto" GrpcServices="Server"/>
+    <!-- Add ;Client in this line: -->
+    <Protobuf Include="Protos\courses.proto" GrpcServices="Server;Client"/>
+</ItemGroup>
+```
+
+[^1]: Microsoft. (2025, March 25). *Integration tests in ASP.NET Core*. Microsoft Learn. https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-9.0&pivots=xunit ([Web Archive](https://web.archive.org/web/20250927142022/https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-9.0&pivots=xunit))
