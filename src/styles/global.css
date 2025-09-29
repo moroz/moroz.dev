@@ -4,6 +4,7 @@
   --breakpoint-lg: 40rem;
   --breakpoint-xl: 48rem;
   --breakpoint-2xl: 50rem;
+  --font-mono: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
 }
 
 @theme {
@@ -20,7 +21,7 @@
 
 .content {
   pre.astro-code {
-    @apply my-8 rounded-sm p-4 text-base whitespace-pre-wrap;
+    @apply my-4 rounded-xs border border-solid border-slate-400 bg-slate-100/40! p-4 text-base whitespace-pre-wrap dark:border-none;
   }
 
   p {
@@ -37,7 +38,7 @@
   }
 
   :not(pre) > code {
-    @apply dark:bg-[#24273a];
+    @apply bg-slate-100 text-blue-900 dark:bg-[#24273a];
   }
 
   a:not([class]) {
