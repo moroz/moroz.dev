@@ -21,7 +21,7 @@
 
 .content {
   pre.astro-code {
-    @apply my-4 rounded-xs border border-solid border-slate-400 bg-slate-100/40! p-4 text-base whitespace-pre-wrap dark:border-none;
+    @apply my-4 rounded-xs border border-solid border-slate-400 p-4 text-base whitespace-pre-wrap dark:border-none;
   }
 
   p {
@@ -38,11 +38,17 @@
   }
 
   :not(pre) > code {
-    @apply bg-slate-100 text-blue-900 dark:bg-[#24273a];
+    @apply bg-slate-100 text-blue-900 dark:bg-[#24273a] dark:text-blue-300;
   }
 
   a:not([class]) {
     @apply hover:text-primary-hover text-primary underline underline-offset-2;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  pre.astro-code {
+    @apply bg-slate-100/40!;
   }
 }
 

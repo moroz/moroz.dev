@@ -3,7 +3,6 @@ title: Testing ASP.NET Core Applications Against a Real Database
 date: 2025-09-27
 summary: |
     In this post, I briefly explain how to set up integration tests in an ASP.NET Core application, using Entity Framework Core, PostgreSQL, Npgsql, and gRPC.
-draft: true
 ---
 
 I am writing this post to record the steps necessary to set up integration testing in my side project, which I am building for my YouTube channel, [Make Programming Fun Again](https://www.youtube.com/@KarolMoroz).
@@ -139,7 +138,7 @@ Within the newly created `Courses/appsettings.Test.json` file, update the `Conne
 }
 ```
 
-Create a `CustomWebApplicationFactory` class. In further examples, we are going to use this code to test the specific HTTP and gRPC calls:
+Create a `GlobalTestFixture` class, wrapping a `WebApplicationFactory<Program>`:
 
 ```cs
 using Microsoft.AspNetCore.Hosting;
@@ -149,41 +148,181 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Courses.Tests;
 
-public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+public class GlobalTestFixture : IAsyncLifetime
 {
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.UseEnvironment("Test");
+    private WebApplicationFactory<Program>? _factory;
 
-        builder.ConfigureServices(services =>
-        {
-            var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            db.Database.Migrate();
-        });
+    public WebApplicationFactory<Program> Factory =>
+        _factory ?? throw new InvalidOperationException("Factory is not initialized");
+
+    public AsyncServiceScope AsyncScope => Factory.Services.CreateAsyncScope();
+
+    public async Task InitializeAsync()
+    {
+        _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder => builder.UseEnvironment("Test"));
+        await MigrateDb();
+    }
+
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    private async Task MigrateDb()
+    {
+        await using var scope = AsyncScope;
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.MigrateAsync();
     }
 }
 ```
 
-Inside `ConfigureWebHost`, we explicitly instruct the application to use the `Test` environment:
+Let's analyze this code.
 
 ```cs
-builder.UseEnvironment("Test");
-```
-
-Then, within a call to `builder.ConfigureServices`, we obtain an instance of `AppDbContext` and apply all database migrations:
-
-```cs
-builder.ConfigureServices(services =>
+public class GlobalTestFixture : IAsyncLifetime
 {
-    var sp = services.BuildServiceProvider();
-    using var scope = sp.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-});
+    private WebApplicationFactory<Program>? _factory;
+
+    public WebApplicationFactory<Program> Factory =>
+        _factory ?? throw new InvalidOperationException("Factory is not initialized");
 ```
 
-All of these will happen every time we instantiate `CustomWebApplicationFactory`. Due to the fact that performing database migrations is slow, we should only perform this step once, when we set up the entire test suite.
+This class wraps an instance of `WebApplicationFactory<Program>`. In this case, `Program` is the application's main entry point, and is a class defined implicitly in `Courses/Program.cs`. This class implements [`IAsyncLifetime`](https://api.xunit.net/v3/3.1.0/Xunit.IAsyncLifetime.html), so that it can be asynchronously initialized and disposed of. We also expose a computed property called `Factory`, which returns the private `WebApplicationFactory<Program>` instance, or throws an exception if, for some reason, the field `_factory` has not been correctly set.
+
+
+```cs
+public AsyncServiceScope AsyncScope => Factory.Services.CreateAsyncScope();
+```
+
+We define a computed property `AsyncScope`, which creates a new service scope using the [`IServiceProvider`](https://learn.microsoft.com/en-us/dotnet/api/system.iserviceprovider?view=net-9.0) associated with `_factory`.
+The concept of a _service scope_ will turn out to be very important in ASP.NET core. Service scopes are [`IDisposable`](https://learn.microsoft.com/en-us/dotnet/api/system.idisposable?view=net-9.0), and must be used within a `using` statement, or be manually disposed after use.
+
+```cs
+public async Task InitializeAsync()
+{
+    _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder => builder.UseEnvironment("Test"));
+    await MigrateDb();
+}
+```
+
+`InitializeAsync` is a callback method required by the `IAsyncLifetime` interface. We can read this as a workaround to call asynchronous methods during initialization.
+We instantiate `_factory` with an instance of `WebApplicationFactory<Program>`, and instruct the factory to use configuration from the `Test` environment.
+Afterwards, we call `MigrateDb` to migrate the database.
+
+```cs
+public Task DisposeAsync()
+{
+    return Task.CompletedTask;
+}
+```
+
+The `DisposeAsync` method is a no-op (this is a fancy IT term to say: it does nothing).
+
+```cs
+private async Task MigrateDb()
+{
+    await using var scope = AsyncScope;
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
+```
+
+Finally, in `MigrateDb`, we obtain an `AppDbContext` instance from the service scope, and migrate the database.
+
+### Define a Test Collection
+
+In `Courses.Tests/IntegrationCollection.cs`, create a placeholder class called `IntegrationCollection`. This class is used by xUnit to group our tests into a _collection_. If I understand the implications correctly, this means that the `GlobalTestFixture` will only be instantiated once per test run.
+
+```cs
+namespace Courses.Tests;
+
+[CollectionDefinition("integration")]
+public class IntegrationCollection : ICollectionFixture<GlobalTestFixture>
+{
+}
+```
+
+In `Courses.Tests/DbTestFixture.cs`, create a base abstract class that all our test classes will later inherit from:
+
+```cs
+namespace Courses.Tests;
+
+public abstract class DbTestBase(GlobalTestFixture fixture) : IAsyncLifetime
+{
+    protected readonly GlobalTestFixture Fixture = fixture;
+
+    public Task InitializeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
+    }
+}
+```
+
+This class is mostly there just to implement `IAsyncLifetime` and to expose the test fixture to our tests.
+
+Finally, in the existing `Courses.Tests/UnitTest1.cs` file, modify the test class to use the `Collection` decorator, and to inherit from `DbTestBase`:
+
+```cs
+using System.Net;
+using Courses.Grpc;
+using Courses.Repository;
+using Grpc.Net.Client;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Courses.Tests;
+
+[Collection("integration")]
+public class UnitTest1(GlobalTestFixture fixture) : DbTestBase(fixture)
+{
+    // Tests go here
+}
+```
+
+Now, inside of this class, we can write tests using the database and other services injected in `Program.cs`. For instance, below is a test using `EventRepository`:
+
+```cs
+[Fact]
+public async Task Test_EventRepository()
+{
+    await using var scope = Fixture.AsyncScope;
+    var repo = scope.ServiceProvider.GetRequiredService<IEventRepository>();
+    var actual = await repo.ListEvents();
+    Assert.Empty(actual);
+}
+```
+
+We can also write test examples making HTTP requests to the application:
+
+```cs
+[Fact]
+public async Task Test_HttpClient()
+{
+    var client = Fixture.Factory.CreateDefaultClient();
+    var response = await client.GetAsync("/");
+    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+}
+```
+
+You can even make gRPC requests to the application's gRPC services:
+
+```cs
+[Fact]
+public async Task Test_GrpcClient()
+{
+    var client = Fixture.Factory.CreateDefaultClient();
+    var channel = GrpcChannel.ForAddress(client.BaseAddress!, new GrpcChannelOptions { HttpClient = client, });
+    var grpcClient = new CoursesApi.CoursesApiClient(channel);
+    var actual = await grpcClient.ListEventsAsync(new ListEventsRequest());
+    Assert.Empty(actual.Events);
+}
+```
+
+Thank you for reading!
 
 [^1]: Microsoft. (2025, March 25). *Integration tests in ASP.NET Core*. Microsoft Learn. https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-9.0&pivots=xunit ([Web Archive](https://web.archive.org/web/20250927142022/https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-9.0&pivots=xunit))
