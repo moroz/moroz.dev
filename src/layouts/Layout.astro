@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import Header from "@components/Header.astro";
+import Header from "@components/Header.svelte";
 import Footer from "@components/Footer.astro";
 
 interface Props {
@@ -23,9 +23,9 @@ const resolvedTitle = title ? `${title} | ${defaultTitle}` : defaultTitle;
   <body
     class="flex min-h-screen flex-col bg-white text-black dark:bg-slate-950 dark:text-gray-200"
   >
-    <Header />
+    <Header client:load />
     <main class="flex-1 py-16">
-      <div class="container mx-auto">
+      <div class="container mx-auto max-md:px-4">
         <h2
           class="mt-6 mb-4 text-2xl font-bold lg:mt-10 lg:text-center lg:text-4xl"
         >

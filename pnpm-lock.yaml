@@ -26,6 +26,9 @@ importers:
       svelte:
         specifier: ^5.36.10
         version: 5.36.10
+      svelte-hamburgers:
+        specifier: ^5.0.0
+        version: 5.0.0(svelte@5.36.10)
       tailwindcss:
         specifier: ^4.1.11
         version: 4.1.11
@@ -1614,6 +1617,11 @@ packages:
 
   suf-log@2.5.3:
     resolution: {integrity: sha512-KvC8OPjzdNOe+xQ4XWJV2whQA0aM1kGVczMQ8+dStAO6KfEB140JEVQ9dE76ONZ0/Ylf67ni4tILPJB41U0eow==}
+
+  svelte-hamburgers@5.0.0:
+    resolution: {integrity: sha512-MMb47VCozKDgn/jtmeqw+CbI3cZmkDXd/FG3VCkReMdw2YCSOaWYLsqsXiWTWoQE/oSmw1vH/Tm5mChqlsldHQ==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   svelte2tsx@0.7.41:
     resolution: {integrity: sha512-/TUwpyn/Qc1wcGuayf2GSwvZ7htdAOzpo0JFFm96srKnRXoTD0gy4n06g+XgH8w016S3lPtyFVtFAm+0yJ0BZw==}
@@ -3705,6 +3713,10 @@ snapshots:
   suf-log@2.5.3:
     dependencies:
       s.color: 0.0.15
+
+  svelte-hamburgers@5.0.0(svelte@5.36.10):
+    dependencies:
+      svelte: 5.36.10
 
   svelte2tsx@0.7.41(svelte@5.36.10)(typescript@5.8.3):
     dependencies:

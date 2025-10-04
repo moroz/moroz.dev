@@ -4,6 +4,7 @@
   --breakpoint-lg: 40rem;
   --breakpoint-xl: 48rem;
   --breakpoint-2xl: 50rem;
+  --breakpoint-hh: var(--breakpoint-md);
   --font-mono: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
 }
 
