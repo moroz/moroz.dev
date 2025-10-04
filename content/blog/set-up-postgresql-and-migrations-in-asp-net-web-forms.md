@@ -1,7 +1,6 @@
 ---
 title: How to Set Up PostgreSQL, Migrations, and Tailwind in ASP.NET Web Forms
 date: 2025-10-04
-draft: true
 summary: |
     If, for archeological reasons, you need to work with ASP.NET Web Forms in 2025, this post is for you.
     You will find out how to set up Entity Framework 6 with PostgreSQL, how to create migrations, and how to set up Tailwind CSS.
@@ -76,4 +75,113 @@ The following PowerShell snippet clones the starter project to `.\MyApp`, launch
 # Stage and commit all changes
 > git add -A
 > git commit -m "Rename project to $projectName"
+```
+
+### Install NuGet packages
+
+Open the project in JetBrains Rider:
+
+```powershell
+rider .
+```
+
+Open the NuGet Tool Window using the keyboard shortcut `Alt + Shift + 7`.
+
+Within the `MyApp` project, install the following dependencies:
+
+* `Npgsql` version `4.1.14`,
+* `EntityFramework6.Npgsql` version `3.2.1.1`.
+* `Medo.Uuid7`, latest compatible version (`3.1.0.0` as of this writing).
+
+### Create a database context class
+
+Create a directory at `MyApp/Models`. Within this directory, create a C# file called `AppDbContext.cs` with the following content:
+
+```cs
+using System.Data.Entity;
+using Npgsql;
+
+namespace MyApp.Models
+{
+    [DbConfigurationType(typeof(NpgSqlConfiguration))]
+    public class AppDbContext : DbContext
+    {
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.HasDefaultSchema("public");
+        }
+    }
+
+    public class NpgSqlConfiguration : DbConfiguration
+    {
+        public NpgSqlConfiguration()
+        {
+            var name = "Npgsql";
+
+            SetProviderFactory(providerInvariantName: name, providerFactory: NpgsqlFactory.Instance);
+            SetProviderServices(providerInvariantName: name, provider: NpgsqlServices.Instance);
+            SetDefaultConnectionFactory(connectionFactory: new NpgsqlConnectionFactory());
+        }
+    }
+}
+```
+
+### Expose `AppDbContext` to Pages
+
+In the root directory of the project, create a class called `BasePage`. This will be the base class from which all pages in the application will later inherit from.
+
+```cs
+using System;
+using MyApp.Models;
+
+namespace MyApp
+{
+    public class BasePage : System.Web.UI.Page
+    {
+        protected readonly AppDbContext _db = new AppDbContext();
+
+        protected override void OnUnload(EventArgs e)
+        {
+            base.OnUnload(e);
+            _db.Dispose();
+        }
+    }
+}
+```
+
+### Create a Migration Configuration Class
+
+```cs
+using GangOfFour.Models;
+
+namespace GangOfFour.Migrations
+{
+    using System;
+    using System.Data.Entity;
+    using System.Data.Entity.Migrations;
+    using System.Linq;
+
+    internal sealed class Configuration : DbMigrationsConfiguration<AppDbContext>
+    {
+        public Configuration()
+        {
+            AutomaticMigrationsEnabled = false;
+        }
+
+        protected override void Seed(AppDbContext context)
+        {
+            context.Events.AddOrUpdate(
+                new Event
+                {
+                    TitleEn = "Example Event 1",
+                    DescriptionEn = "Example description",
+                    StartsAt = new DateTime(2025, 10, 1, 9, 0, 0),
+                    EndsAt = new DateTime(2025, 10, 1, 11, 0, 0),
+                    EventId = new Guid("0199aac4-698b-772d-b79a-085a45267a66"),
+                });
+        }
+    }
+}
 ```

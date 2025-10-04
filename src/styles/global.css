@@ -40,7 +40,11 @@
   }
 
   h2 {
-    @apply mt-8 mb-4 text-xl font-bold;
+    @apply mt-8 mb-4 text-xl;
+  }
+
+  h3 {
+    @apply mt-8;
   }
 
   :not(pre) > code {
