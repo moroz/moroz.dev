@@ -271,9 +271,9 @@ In `Web.config`, we need to ensure that three separate configuration blocks exis
     <!-- The following two sections need to be at the end of the <configuration> block -->
     <entityFramework>
         <providers>
-            <provider invariantName="System.Data.SqlClient"
-                      type="System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer"/>
+            <provider invariantName="Npgsql" type="Npgsql.NpgsqlServices, EntityFramework6.Npgsql"/>
         </providers>
+        <defaultConnectionFactory type="Npgsql.NpgsqlConnectionFactory, EntityFramework6.Npgsql"/>
     </entityFramework>
 
     <connectionStrings>
@@ -377,7 +377,7 @@ If clicking on _Test connection_ shows a check mark with the caption _Test conne
 <figcaption>Select <em>Use connection string</em>, then paste a connection string.</figcaption>
 </figure>
 
-After connecting, you should be able to see the 
+After connecting, you should be able to see two tables in the schema `public`: `__MigrationHistory` and `Products`.
 
 <figure>
 <img src="/images/asp.net/db-2.png" alt="" />
