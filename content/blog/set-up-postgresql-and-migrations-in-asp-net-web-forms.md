@@ -48,24 +48,32 @@ You need to install the following software:
     ```powershell
     winget install Git.Git
     ```
+* [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.5) 7 or later. Note that the version of PowerShell that comes bundled with Windows 11 is 5.x, and behaves differently from PowerShell 7.
+
+<figure>
+<img src="/images/asp.net/powershell.png" alt="" />
+<figcaption>List of terminal presets within the Windows Terminal application.</figcaption>
+</figure>
 
 ### Creating a Web Forms Project
 
-When I tried to set up my very own Web Forms project on a fresh install of Windows 11, I quickly found out that I couldn't even get Visual Studio to show me the ASP.NET application template, and I had to resort to creating a starter project on another machine. Therefore, I am not going to go over the [official instructions](https://learn.microsoft.com/en-us/aspnet/web-forms/overview/getting-started/getting-started-with-aspnet-45-web-forms/create-the-project) on how to create a Web Forms project. Instead, you may just clone my [starter project](https://github.com/moroz/WebFormsStarter).
+In the remaining part of this tutorial, I'm going to assume that your project is called `MyApp`. If you wish to use a different name, replace `MyApp` in all code snippets with something else.
 
-In the remaining part of this tutorial, I'm going to assume that your project is called `MyApp`. If you wish to use a different name, replace `MyApp` with something else.
+When I tried to set up my very own Web Forms project on a fresh installation of Windows 11, I quickly found out that I couldn't even get Visual Studio to show me the ASP.NET application template, and I had to resort to creating a starter project on another machine. Therefore, I am not going to go over the [official instructions](https://learn.microsoft.com/en-us/aspnet/web-forms/overview/getting-started/getting-started-with-aspnet-45-web-forms/create-the-project) on how to create a Web Forms project. Instead, you may just clone my [starter project](https://github.com/moroz/WebFormsStarter).
+
+The following PowerShell snippet clones the starter project to `.\MyApp`, launches a PowerShell script that renames all classes and files to `MyApp`, and commits the changes to Git:
 
 ```powershell
-$projectName = "MyApp"
+> $projectName = "MyApp"
 
 # Clone the starter project to .\MyApp
-git clone https://github.com/moroz/WebFormsStarter $projectName
-cd .\$projectName
+> git clone https://github.com/moroz/WebFormsStarter $projectName
+> cd .\$projectName
 
 # Replace WebFormsStarter with MyApp project-wide
-.\rename_project.ps1 -New $projectName
+> .\rename_project.ps1 -New $projectName
 
 # Stage and commit all changes
-git add -A
-git commit -m "Rename project to $projectName"
+> git add -A
+> git commit -m "Rename project to $projectName"
 ```

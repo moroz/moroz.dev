@@ -20,6 +20,8 @@
 }
 
 .content {
+  counter-reset: figure;
+
   pre.astro-code {
     @apply rounded-tr-none bg-transparent! p-4 text-base whitespace-pre-wrap dark:border-none;
   }
@@ -75,12 +77,27 @@
 }
 
 figure {
-  text-align: center;
+  counter-increment: figure;
+  @apply my-2 text-center;
 
   img {
     max-width: 90%;
-    max-height: 80vh;
+    max-height: 60vh;
     margin-inline: auto;
+  }
+
+  figcaption {
+    @apply my-2;
+
+    &::before {
+      content: "Fig. " counter(figure) ": ";
+    }
+
+    &:lang(zh) {
+      &::before {
+        content: "圖" counter(figure, trad-chinese-informal) "：";
+      }
+    }
   }
 }
 
