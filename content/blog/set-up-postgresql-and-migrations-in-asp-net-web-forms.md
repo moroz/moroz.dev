@@ -28,7 +28,7 @@ In this tutorial, I'm going to show you how to set up code-first database schema
 In order to follow along with this tutorial, you should:
 
 * know the difference between [Visual Studio](https://visualstudio.microsoft.com/) (purple icon) and [Visual Studio Code](https://code.visualstudio.com/) (blue icon),
-* know the difference between [.NET Framework](https://dotnet.microsoft.com/en-us/download/dotnet-framework) (supports Windows only) and [.NET Core](https://dotnet.microsoft.com/en-us/download) (supports Windows, macOS, and GNU/Linux),
+* know the difference between [.NET Framework](https://dotnet.microsoft.com/en-us/download/dotnet-framework) (Windows only) and [.NET Core](https://dotnet.microsoft.com/en-us/download) (supports Windows, macOS, and GNU/Linux),
 * know the difference between [PostgreSQL](https://www.postgresql.org/download/) (the most advanced free and open source database system in the world) and [MS SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) (can't handle UTF-8).
 
 You need to install the following software:
@@ -39,15 +39,19 @@ You need to install the following software:
     winget install --id=PostgreSQL.PostgreSQL.17 -e
     ```
 
-    The installation may take several minutes due to the way Windows Defender scans all new files upon creation. You may also install PostgreSQL inside [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
+    The installation may take several minutes due to the way Windows Defender scans all new files upon creation. Alternatively, you may install PostgreSQL inside [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
 
-* [Visual Studio 2022](https://visualstudio.microsoft.com/) is necessary to generate and run database migrations. Other that that, it's a pretty bad IDE, so I usually edit code in...
+* [Visual Studio 2022](https://visualstudio.microsoft.com/) is necessary to generate and run database migrations. Other than that, it's a pretty bad IDE, so I usually edit code in&hellip;
 * [JetBrains Rider](https://www.jetbrains.com/rider/). You may stick to Visual Studio if you insist, but Rider is easier to use.
 * [Git](https://git-scm.com/). You may install Git on Windows using the following command:
     ```powershell
     winget install Git.Git
     ```
-* [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.5) 7 or later. Note that the version of PowerShell that comes bundled with Windows 11 is 5.x, and behaves differently from PowerShell 7.
+* [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.5) 7 or later. Note that the version of PowerShell that comes bundled with Windows 11 is 5.x, and behaves differently from PowerShell 7. You may install the latest PowerShell using the following command:
+    ```powershell
+    winget install --id Microsoft.PowerShell --source winget
+    ```
+    In the Windows Terminal application, PowerShell 7 will appear as just _PowerShell_, and PowerShell 5.x will appear as _Windows PowerShell_.
 
 <figure>
 <img src="/images/asp.net/powershell.png" alt="" />
@@ -87,9 +91,9 @@ rider .
 
 Open the NuGet Tool Window using the keyboard shortcut `Alt + Shift + 7`.
 
-Within the `MyApp` project, install the following dependencies with the exact versions stated below:
+Within the `MyApp` project, install the following dependencies with the **exact versions** stated below:
 
-* `EntityFramework` version `6.5.1` (upgrade existing package),
+* `EntityFramework` version `6.5.1` (upgrade the package already installed in the project),
 * `Npgsql` version `4.1.3`,
 * `EntityFramework6.Npgsql` version `3.2.1.1`.
 * `Medo.Uuid7`, latest compatible version (`3.1.0.0` as of this writing).
@@ -160,7 +164,7 @@ namespace MyApp
 
 Create a directory called `MyApp/Migrations`, and within this directory, create a file called `MyApp/Migrations/Configuration.cs`. Here, we disable automatic schema migrations and opt in to code-first schema migrations.
 
-We also define a class called `MyHistoryContext`, which helps us move the database table used to track migration history to schema `public` (rather than the default, `dbo`).
+We also define a class called `MyHistoryContext`, which is needed to move the database table used to track migration history to schema `public` (rather than the default, `dbo`).
 
 ```cs
 using System.Data.Common;
@@ -254,7 +258,6 @@ namespace MyApp.Models {
 ### Configuration Magic in `Web.config`
 
 In `Web.config`, we need to ensure that three separate configuration blocks exist in their correct places.
-ensure that you have a default connection string set within the `<configuration>` tag:
 
 ```xml
 <configuration>
