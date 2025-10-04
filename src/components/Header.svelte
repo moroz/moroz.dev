@@ -8,7 +8,7 @@
   class="b-unset fixed inset-0 z-10 flex h-16 items-center justify-between border-b border-slate-700 bg-white dark:bg-slate-900"
 >
   <div
-    class="container mx-auto flex h-full items-center justify-between max-md:pl-4"
+    class="container flex h-full items-center justify-between max-md:pl-4 md:mx-auto"
   >
     <a href="/">
       <h1 class="text-2xl font-bold">moroz.dev</h1>
