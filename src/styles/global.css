@@ -21,7 +21,7 @@
 
 .content {
   pre.astro-code {
-    @apply my-4 rounded-xs border border-solid border-slate-400 p-4 text-base whitespace-pre-wrap dark:border-none;
+    @apply mt-10 mb-4 rounded-xs rounded-tr-none border border-solid border-slate-400 p-4 text-base whitespace-pre-wrap dark:border-none;
   }
 
   p {
@@ -84,4 +84,8 @@ figure {
   img {
     border: 1px solid #999;
   }
+}
+
+.snippet-wrapper {
+  @apply relative;
 }
