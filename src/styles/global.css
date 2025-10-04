@@ -42,7 +42,11 @@
   }
 
   a:not([class]) {
-    @apply hover:text-primary-hover text-primary underline underline-offset-2;
+    @apply hover:text-primary-hover text-primary underline underline-offset-2 visited:text-violet-700 dark:visited:text-violet-400;
+  }
+
+  ul {
+    @apply mb-4 list-disc pl-6;
   }
 }
 
