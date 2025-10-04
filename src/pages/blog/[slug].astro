@@ -16,6 +16,10 @@ export async function getStaticPaths() {
 const post = await getEntry("blog", slug)!;
 ---
 
+<script>
+  import "@/lib/snippets.ts";
+</script>
+
 <Layout title={post.data.title}>
   <p class="text-center">
     <strong>Karol Moroz</strong> on <time datetime={post.data.date.toJSON()}
