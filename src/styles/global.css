@@ -21,7 +21,11 @@
 
 .content {
   pre.astro-code {
-    @apply mt-10 mb-4 rounded-xs rounded-tr-none border border-solid border-slate-400 p-4 text-base whitespace-pre-wrap dark:border-none;
+    @apply rounded-tr-none bg-transparent! p-4 text-base whitespace-pre-wrap dark:border-none;
+  }
+
+  .snippet-wrapper {
+    @apply rounded-sm border border-solid border-slate-400 dark:bg-[#24292e];
   }
 
   p {
@@ -51,8 +55,8 @@
 }
 
 @media (prefers-color-scheme: light) {
-  pre.astro-code {
-    @apply bg-slate-100/40!;
+  .snippet-wrapper {
+    @apply bg-slate-100/40;
   }
 }
 

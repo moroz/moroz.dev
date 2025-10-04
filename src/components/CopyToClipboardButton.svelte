@@ -1,14 +1,14 @@
 <script lang="ts">
   interface Props {
-    lines: string[];
+    code: string;
   }
 
-  const { lines } = $props();
+  const { code } = $props();
 
   let success = $state(false);
 
   function onClick() {
-    navigator.clipboard.writeText(lines.join("\n"));
+    navigator.clipboard.writeText(code);
     success = true;
 
     setTimeout(() => {
@@ -29,6 +29,6 @@
   @reference "@css/global.css";
 
   button {
-    @apply absolute -top-8 right-0 h-8 w-34 cursor-pointer border border-b-0 border-solid border-slate-400 bg-slate-100/40 px-2 text-sm text-slate-900 transition hover:bg-slate-100;
+    @apply h-8 w-34 cursor-pointer rounded-tr-sm px-2 text-sm text-inherit transition hover:bg-slate-100 dark:hover:bg-gray-700;
   }
 </style>

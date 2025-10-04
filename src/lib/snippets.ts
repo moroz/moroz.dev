@@ -1,5 +1,5 @@
 import { mount } from "svelte";
-import Button from "@/components/CopyToClipboardButton.svelte";
+import SnippetHeader from "@components/SnippetHeader.svelte";
 
 const snippets = document.querySelectorAll<HTMLPreElement>("pre.astro-code");
 for (const snippet of snippets) {
@@ -7,9 +7,14 @@ for (const snippet of snippets) {
   if (!content) continue;
 
   const lang = snippet.dataset.language;
-  const isShell = ["powershell", "plain", "text", "json", "bash"].includes(
-    lang as string,
-  );
+  const isShell = [
+    "powershell",
+    "plain",
+    "text",
+    "json",
+    "bash",
+    "shell",
+  ].includes(lang as string);
   const prompt = lang === "powershell" ? "> " : "$ ";
   let lines = content.split("\n");
   const hasPrompt = lines.some((line) => line.startsWith(prompt));
@@ -32,5 +37,8 @@ for (const snippet of snippets) {
   // Then move snippet into wrapper and add button
   wrapper.appendChild(snippet);
   wrapper.prepend(buttonContainer);
-  mount(Button, { target: buttonContainer, props: { lines } });
+  mount(SnippetHeader, {
+    target: buttonContainer,
+    props: { code: lines.join("\n"), lang },
+  });
 }
