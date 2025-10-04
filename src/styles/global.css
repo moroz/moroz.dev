@@ -49,7 +49,7 @@
   }
 
   :not(pre) > code {
-    @apply bg-slate-100 text-blue-900 dark:bg-[#24273a] dark:text-blue-300;
+    @apply bg-slate-100 break-words text-blue-900 dark:bg-[#24273a] dark:text-blue-300;
   }
 
   a:not([class]) {
