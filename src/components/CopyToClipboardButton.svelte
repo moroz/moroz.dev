@@ -21,14 +21,21 @@
   {#if success}
     Copied!
   {:else}
-    Copy to clipboard
+    <svg viewBox="0 0 24 24">
+      <use xlink:href="/icons/copy.svg" />
+    </svg>
+    Copy code
   {/if}
 </button>
 
 <style>
   @reference "@css/global.css";
 
+  svg {
+    @apply h-4;
+  }
+
   button {
-    @apply h-8 w-34 cursor-pointer rounded-tr-sm px-2 text-sm text-inherit transition hover:bg-slate-100 dark:hover:bg-gray-700;
+    @apply flex h-8 w-32 cursor-pointer items-center justify-center gap-2 rounded-tr-sm px-2 text-center text-sm text-inherit transition hover:bg-slate-100 dark:hover:bg-gray-700;
   }
 </style>

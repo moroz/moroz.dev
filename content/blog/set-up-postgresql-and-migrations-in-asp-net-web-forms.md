@@ -87,9 +87,10 @@ rider .
 
 Open the NuGet Tool Window using the keyboard shortcut `Alt + Shift + 7`.
 
-Within the `MyApp` project, install the following dependencies:
+Within the `MyApp` project, install the following dependencies with the exact versions stated below:
 
-* `Npgsql` version `4.1.14`,
+* `EntityFramework` version `6.5.1` (upgrade existing package),
+* `Npgsql` version `4.1.3`,
 * `EntityFramework6.Npgsql` version `3.2.1.1`.
 * `Medo.Uuid7`, latest compatible version (`3.1.0.0` as of this writing).
 
@@ -128,9 +129,13 @@ namespace MyApp.Models
 }
 ```
 
+In this snippet, we have defined a database context class called `AppDbContext` and instructed the application to connect to PostgreSQL using `Npgsql` whenever we instantiate `AppDbContext`. Using `HasDefaultSchema`, we set the default database schema used by models to `public` (which is the default schema in PostgreSQL) rather than `dbo`, which is the default schema in MS SQL Server.
+
 ### Expose `AppDbContext` to Pages
 
-In the root directory of the project, create a class called `BasePage`. This will be the base class from which all pages in the application will later inherit from.
+In the root directory of the project, create a class called `BasePage`. This will be the superclass for all pages in the application.
+
+In this class, we define a `_db` property, which will be set to brand-new instance of `AppDbContext` on every request. We also define a method called `OnUnload` which disposes of the database context after a request has been served.
 
 ```cs
 using System;
@@ -153,35 +158,225 @@ namespace MyApp
 
 ### Create a Migration Configuration Class
 
-```cs
-using GangOfFour.Models;
+Create a directory called `MyApp/Migrations`, and within this directory, create a file called `MyApp/Migrations/Configuration.cs`. Here, we disable automatic schema migrations and opt in to code-first schema migrations.
 
-namespace GangOfFour.Migrations
+We also define a class called `MyHistoryContext`, which helps us move the database table used to track migration history to schema `public` (rather than the default, `dbo`).
+
+```cs
+using System.Data.Common;
+using System.Data.Entity;
+using System.Data.Entity.Migrations.History;
+using MyApp.Models;
+
+namespace MyApp.Migrations
 {
-    using System;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Linq;
 
     internal sealed class Configuration : DbMigrationsConfiguration<AppDbContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
+
+            SetHistoryContextFactory("Npgsql", (conn, schema) => new MyHistoryContext(conn, schema));
         }
 
         protected override void Seed(AppDbContext context)
         {
-            context.Events.AddOrUpdate(
-                new Event
-                {
-                    TitleEn = "Example Event 1",
-                    DescriptionEn = "Example description",
-                    StartsAt = new DateTime(2025, 10, 1, 9, 0, 0),
-                    EndsAt = new DateTime(2025, 10, 1, 11, 0, 0),
-                    EventId = new Guid("0199aac4-698b-772d-b79a-085a45267a66"),
-                });
+            // Seed data comes here
+        }
+    }
+
+    public class MyHistoryContext : HistoryContext
+    {
+        public MyHistoryContext(DbConnection dbConnection, string defaultSchema)
+            : base(dbConnection, defaultSchema)
+        {
+        }
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Move the migration history table to schema public
+            modelBuilder.Entity<HistoryRow>().ToTable("__MigrationHistory", "public");
         }
     }
 }
 ```
+
+### Define a Product Model
+
+Create a class called `Product` within `Models/Product.cs`:
+
+```cs
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace MyApp.Models
+{
+    public class Product
+    {
+        [Key] public Guid ProductId { get; set; } = Medo.Uuid7.NewGuid();
+        [Required] public string Title { get; set; }
+        [Required] public string Description { get; set; }
+        [Required] public decimal Price { get; set; }
+
+        [Index(IsUnique = true)]
+        [StringLength(50)]
+        public string SKU { get; set; }
+
+        [StringLength(255)] public string ImageUrl { get; set; }
+
+        [Required] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Required] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    }
+}
+```
+
+Within `Models/AppDbContext.cs`, add the `Product` model as a new `DbSet` to the `AppDbContext` class:
+
+```cs
+namespace MyApp.Models {
+    public class AppDbContext : DbContext
+    {
+        // ... omitted for brevity ...
+        
+        // add this line:
+        public DbSet<Product> Products { get; set; }
+    }
+    
+    // ... omitted for brevity ...
+}
+```
+
+### Configuration Magic in `Web.config`
+
+In `Web.config`, we need to ensure that three separate configuration blocks exist in their correct places.
+ensure that you have a default connection string set within the `<configuration>` tag:
+
+```xml
+<configuration>
+    <!-- This section needs to be at the beginning of the <configuration> block -->
+    <configSections>
+        <section name="entityFramework"
+                 type="System.Data.Entity.Internal.ConfigFile.EntityFrameworkSection, EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+                 requirePermission="false"/>
+    </configSections>
+    
+    <!-- The following two sections need to be at the end of the <configuration> block -->
+    <entityFramework>
+        <providers>
+            <provider invariantName="System.Data.SqlClient"
+                      type="System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer"/>
+        </providers>
+    </entityFramework>
+
+    <connectionStrings>
+        <add name="AppDbContext"
+             connectionString="Server=localhost;port=5432;Database=MyAppDevelopment;User Id=postgres;Password=postgres"
+             providerName="Npgsql"/>
+    </connectionStrings>
+</configuration>
+```
+
+The connection string is a list of key-value pairs which you may want to customize based on your needs. For instance, on my Windows machine, I have two PostgreSQL clusters: one installed within WSL2, which listens on port 5432, and another one installed natively on Windows, which listens on port 5433. Therefore, on my machine, I have modified the connection string to connect on port 5433.
+
+### Generate `CreateProducts` Migration
+
+Open the project in Visual Studio 2022. Open the _Package Manager Console_ by clicking _Tools > NuGet Package Manager > Package Manager Console_.
+
+In the console, type:
+
+```powershell
+> Add-Migration CreateProducts
+Scaffolding migration 'CreateProducts'.
+```
+
+If everything goes well, this command should now generate a file called `<TIMESTAMP>_CreateProducts.cs` (with the `<TIMESTAMP>` part being a 15-digit long timestamp). This file should look something like this:
+
+```cs
+namespace MyApp.Migrations
+{
+    using System;
+    using System.Data.Entity.Migrations;
+    
+    public partial class CreateProducts : DbMigration
+    {
+        public override void Up()
+        {
+            CreateTable(
+                "public.Products",
+                c => new
+                    {
+                        ProductId = c.Guid(nullable: false),
+                        Title = c.String(nullable: false),
+                        Description = c.String(nullable: false),
+                        Price = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        SKU = c.String(maxLength: 50),
+                        ImageUrl = c.String(maxLength: 255),
+                        CreatedAt = c.DateTime(nullable: false),
+                        UpdatedAt = c.DateTime(nullable: false),
+                    })
+                .PrimaryKey(t => t.ProductId)
+                .Index(t => t.SKU, unique: true);
+        }
+        
+        public override void Down()
+        {
+            DropIndex("public.Products", new[] { "SKU" });
+            DropTable("public.Products");
+        }
+    }
+}
+```
+
+Modify this file to add an `ALTER TABLE` statement after the call to `CreateTable`. This statement creates a [check constraint](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-CHECK-CONSTRAINTS) that ensures that the `Price` column cannot be set to a negative value (but can be zero):
+
+```cs
+                // ... omitted for brevity ...
+                .Index(t => t.SKU, unique: true);
+
+            Sql("alter table \"Products\" add constraint \"Products_Price_NonNegative\" check (\"Price\" >= 0)");
+        }
+```
+
+Back in Visual Studio 2022, open up Package Manager Console and apply migrations:
+
+```powershell
+> Update-Database
+Specify the '-Verbose' flag to view the SQL statements being applied to the target database.
+Applying explicit migrations: [202510041214240_CreateProducts].
+Applying explicit migration: 202510041214240_CreateProducts.
+Running Seed method.
+```
+
+### Connect to PostgreSQL in JetBrains Rider
+
+In JetBrains Rider, open the _Database_ panel on the right. Click on the plus icon, then on _Connect to database&hellip;_:
+
+<figure>
+<img src="/images/asp.net/db-0.png" alt="" />
+<figcaption>Open the <em>Database</em> panel in Rider.</figcaption>
+</figure>
+
+In the next view, choose _Use connection string_, then paste the following connection string. You may need to adjust some of the connection parameters.
+
+```plain
+jdbc:postgresql://localhost:5432/MyAppDevelopment?password=postgres&user=postgres
+```
+
+If clicking on _Test connection_ shows a check mark with the caption _Test connection succeeded_, it means you have configured the connection correctly.
+
+<figure>
+<img src="/images/asp.net/db-1.png" alt="" />
+<figcaption>Select <em>Use connection string</em>, then paste a connection string.</figcaption>
+</figure>
+
+After connecting, you should be able to see the 
+
+<figure>
+<img src="/images/asp.net/db-2.png" alt="" />
+<figcaption>Database tree showing the <code>MyAppDevelopment</code> database with two tables in schema <code>public</code>.</figcaption>
+</figure>
