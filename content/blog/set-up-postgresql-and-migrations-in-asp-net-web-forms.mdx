@@ -1,9 +1,9 @@
 ---
-title: How to Set Up PostgreSQL, Migrations, and Tailwind in ASP.NET Web Forms
+title: How to Set Up PostgreSQL and Migrations in ASP.NET Web Forms
 date: 2025-10-04
 summary: |
     If, for archeological reasons, you need to work with ASP.NET Web Forms in 2025, this post is for you.
-    You will find out how to set up Entity Framework 6 with PostgreSQL, how to create migrations, and how to set up Tailwind CSS.
+    You will find out how to set up Entity Framework 6 with PostgreSQL and how to create migrations.
     None of this has been tested in production.
 ---
 import Figure from "@components/Figure.svelte";
@@ -21,7 +21,7 @@ If you are a decisive person at a large institution in Taiwan and need to pay fo
 
 ### What this tutorial covers
 
-In this tutorial, I'm going to show you how to set up code-first database schema migrations in an ASP.NET Web Forms application. We will be using PostgreSQL 17 for persistence and [Tailwind CSS](https://tailwindcss.com/) for styling.
+In this tutorial, I'm going to show you how to set up code-first database schema migrations in an ASP.NET Web Forms application. We will be using PostgreSQL 17 for persistence.
 
 ### Pre-requisites
 
@@ -47,25 +47,26 @@ You need to install the following software:
     ```powershell
     winget install Git.Git
     ```
-* [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.5) 7 or later. Note that the version of PowerShell that comes bundled with Windows 11 is 5.x, and behaves differently from PowerShell 7. You may install the latest PowerShell using the following command:
+* [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.5) 7. Note that this is not the same as the _Windows PowerShell_ bundled with Windows. You may install PowerShell using the following command:
     ```powershell
     winget install --id Microsoft.PowerShell --source winget
     ```
-    In the Windows Terminal application, PowerShell 7 will appear as just _PowerShell_, and PowerShell 5.x will appear as _Windows PowerShell_.
 
-<Figure src="/images/asp.net/powershell.png">List of terminal presets within the Windows Terminal application.</Figure>
-
-### Creating a Web Forms Project
+## Create a Web Forms Project
 
 In the remaining part of this tutorial, I'm going to assume that your project is called `MyApp`. If you wish to use a different name, replace `MyApp` in all code snippets with something else.
 
-When I tried to set up my very own Web Forms project on a fresh installation of Windows 11, I quickly found out that I couldn't even get Visual Studio to show me the ASP.NET application template, and I had to resort to creating a starter project on another machine. Therefore, I am not going to go over the [official instructions](https://learn.microsoft.com/en-us/aspnet/web-forms/overview/getting-started/getting-started-with-aspnet-45-web-forms/create-the-project) on how to create a Web Forms project. Instead, you may just clone my [starter project](https://github.com/moroz/WebFormsStarter).
+During my research, I couldn't get Visual Studio to show me the ASP.NET application template, and I had to resort to creating a starter project on another machine. Therefore, I am not going to go over the [official instructions](https://learn.microsoft.com/en-us/aspnet/web-forms/overview/getting-started/getting-started-with-aspnet-45-web-forms/create-the-project) on how to create a Web Forms project. Instead, you may just clone my [starter project](https://github.com/moroz/WebFormsStarter).
 
-The following PowerShell snippet clones the starter project to `.\MyApp`, launches a PowerShell script that renames all classes and files to `MyApp`, and commits the changes to Git:
+First, set the desired project name:
 
 ```powershell
 > $projectName = "MyApp"
+```
 
+The following PowerShell snippet clones the starter project to `.\MyApp`, launches a PowerShell script that renames all classes and files to `MyApp`, and commits the changes to Git.
+
+```powershell
 # Clone the starter project to .\MyApp
 > git clone https://github.com/moroz/WebFormsStarter $projectName
 > cd .\$projectName
@@ -93,9 +94,9 @@ Within the `MyApp` project, install the following dependencies with the **exact 
 * `EntityFramework` version `6.5.1` (upgrade the package already installed in the project),
 * `Npgsql` version `4.1.3`,
 * `EntityFramework6.Npgsql` version `3.2.1.1`.
-* `Medo.Uuid7`, latest compatible version (`3.1.0.0` as of this writing).
+* `Medo.Uuid7`, version `3.1.0.0` (or later).
 
-### Create a database context class
+## Create a database context class
 
 Create a directory at `MyApp/Models`. Within this directory, create a C# file called `AppDbContext.cs` with the following content:
 
@@ -131,31 +132,6 @@ namespace MyApp.Models
 ```
 
 In this snippet, we have defined a database context class called `AppDbContext` and instructed the application to connect to PostgreSQL using `Npgsql` whenever we instantiate `AppDbContext`. Using `HasDefaultSchema`, we set the default database schema used by models to `public` (which is the default schema in PostgreSQL) rather than `dbo`, which is the default schema in MS SQL Server.
-
-### Expose `AppDbContext` to Pages
-
-In the root directory of the project, create a class called `BasePage`. This will be the superclass for all pages in the application.
-
-In this class, we define a `_db` property, which will be set to brand-new instance of `AppDbContext` on every request. We also define a method called `OnUnload` which disposes of the database context after a request has been served.
-
-```cs
-using System;
-using MyApp.Models;
-
-namespace MyApp
-{
-    public class BasePage : System.Web.UI.Page
-    {
-        protected readonly AppDbContext _db = new AppDbContext();
-
-        protected override void OnUnload(EventArgs e)
-        {
-            base.OnUnload(e);
-            _db.Dispose();
-        }
-    }
-}
-```
 
 ### Create a Migration Configuration Class
 
@@ -298,16 +274,18 @@ The connection string is a list of key-value pairs separated by colons. You may 
 
 Now that Entity Framework is properly configured, we should be able to generate a migration.
 
-Open the project in Visual Studio 2022. Open the _Package Manager Console_ by clicking _Tools > NuGet Package Manager > Package Manager Console_.
+Open the project in Visual Studio 2022 (in .NET Framework projects, migrations can only be generated and applied using Visual Studio).
+
+Open the _Package Manager Console_ by clicking _Tools > NuGet Package Manager > Package Manager Console_.
 
 In the console, type:
 
 ```powershell
-> Add-Migration CreateProducts
+> Add-Migration CreateProducts -Project MyApp
 Scaffolding migration 'CreateProducts'.
 ```
 
-If everything goes well, this command should now generate a file called `<TIMESTAMP>_CreateProducts.cs` (with the `<TIMESTAMP>` part being a 15-digit long timestamp). If you get any errors, make sure your `Web.config` file contains valid configuration and that all NuGet packages are installed at correct versions.
+If everything goes well, this command should now generate a file called `<TIMESTAMP>_CreateProducts.cs` (the `<TIMESTAMP>` part being a 15-digit long timestamp). If you get any errors, make sure your `Web.config` file contains valid configuration and that all NuGet packages are installed at correct versions.
 
 The newly generated migration file should look similar to the following:
 
@@ -360,14 +338,14 @@ Modify this file to add an `ALTER TABLE` statement after the call to `CreateTabl
 Back in Visual Studio 2022, open up Package Manager Console and apply migrations:
 
 ```powershell
-> Update-Database
+> Update-Database -Project MyApp
 Specify the '-Verbose' flag to view the SQL statements being applied to the target database.
 Applying explicit migrations: [202510041214240_CreateProducts].
 Applying explicit migration: 202510041214240_CreateProducts.
 Running Seed method.
 ```
 
-### Connect to PostgreSQL in JetBrains Rider
+## Connect to PostgreSQL in JetBrains Rider
 
 In JetBrains Rider, open the _Database_ panel on the right. Click on the plus icon, then on _Connect to database&hellip;_:
 
@@ -389,22 +367,119 @@ After connecting, you should be able to see two tables in the schema `public`: `
 
 You may want to play around with this view to see if the tables contain the columns that you expect.
 
-### Add Seed Data
+### Connect to PostgreSQL Using `psql`
 
-The migration configuration class in `MyApp/Migrations/Configuration.cs` provides a convenient way to pre-fill the database with seed data. In order to do so, implement the method `Seed(AppDbContext context)` inside the `Configuration` class.
+The `psql` command-line tool is a great way to run simple SQL commands from the terminal or from shell scripts.
 
-This method will execute every time you run `Update-Database`.
-Make sure that the method is **idempotent**, which is a fancy way to say: it must not cause any issues if you run the same code more than once.
+In a PowerShell window, type:
 
-In the context of seed data, this means that the code must make sure that the data _exists_, but it **must not** create multiple copies of the same records.
+```powershell
+> psql postgres://postgres:postgres@localhost:5432/MyAppDevelopment
+psql (17.6)
+Type "help" for help.
+```
 
-On the database level, we can ensure data uniqueness using primary keys and unique constraints.
-The `INSERT` statement in PostgreSQL comes with an [`ON CONFLICT` clause](https://www.postgresql.org/docs/18/sql-insert.html#SQL-ON-CONFLICT), which lets us define an action to be taken if the event of conflicting inserts.
-This technique is called _upsert_, which is a [portmanteau](https://en.wikipedia.org/wiki/Portmanteau) of the words _update_ and _insert_.
+You may need to adjust the connection string according to your needs.
 
-In Entity Framework, you can perform an _upsert_ using a method called `AddOrUpdate`.
+Note that the `psql` will only be available in the environment where you have installed PostgreSQL.
+If you have installed PostgreSQL using WinGet, `psql` should be available in PowerShell on Windows. If it is not, make sure the directory `C:\Program Files\PostgreSQL\17\bin` is in your `PATH`:
 
-Replace the `Seed` method inside the class `MyApp.Migrations.Configuration` with the following:
+```powershell
+> $ENV:PATH -Split ";" | Select-String -Pattern "PostgreSQL"
+C:\Program Files\PostgreSQL\17\bin
+
+> Get-Command psql | Select-Object Source
+
+Source
+------
+C:\Program Files\PostgreSQL\17\bin\psql.exe
+```
+
+If you have installed PostgreSQL inside WSL2, `psql` is going to be available inside WSL2:
+
+```shell
+$ uname
+Linux
+
+$ which psql
+/usr/bin/psql
+
+$ psql postgres://postgres:postgres@localhost:5432/MyAppDevelopment
+psql (16.10 (Debian 16.10-1.pgdg13+1))
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
+Type "help" for help.
+
+MyAppDevelopment=# 
+```
+
+If you are using PostgreSQL in a Docker container, `psql` is only available inside the container, and the proper way to use it is beyond the scope of this article.
+
+### Inspect Database Schema in `psql`
+
+Once you have figured out how to run `psql`, you can use this tool to inspect the database schema.
+
+Type `\d "Products"` to inspect the `Products` table. Note that you need to wrap the table name in double quotes (`"`) as it contains an uppercase letter.
+
+```plain
+MyAppDevelopment=# \d "Products"
+                          Table "public.Products"                                                                                        
+   Column    |            Type             | Collation | Nullable | Default 
+-------------+-----------------------------+-----------+----------+---------
+ ProductId   | uuid                        |           | not null | 
+ Title       | text                        |           | not null | 
+ Description | text                        |           | not null | 
+ Price       | numeric(18,2)               |           | not null | 
+ SKU         | character varying(50)       |           |          | 
+ ImageUrl    | character varying(255)      |           |          | 
+ CreatedAt   | timestamp without time zone |           | not null |                                                                      
+ UpdatedAt   | timestamp without time zone |           | not null | 
+Indexes:
+    "PK_public.Products" PRIMARY KEY, btree ("ProductId")
+    "Products_IX_SKU" UNIQUE, btree ("SKU")
+Check constraints:
+    "Products_Price_NonNegative" CHECK ("Price" >= 0::numeric)
+```
+
+Type `\d "__MigrationHistory"` to inspect the `__MigrationHistory` table:
+
+```plain
+MyAppDevelopment=# \d "__MigrationHistory"
+                    Table "public.__MigrationHistory"                                                                                    
+     Column     |          Type          | Collation | Nullable | Default 
+----------------+------------------------+-----------+----------+---------
+ MigrationId    | character varying(150) |           | not null | 
+ ContextKey     | character varying(300) |           | not null | 
+ Model          | bytea                  |           | not null | 
+ ProductVersion | character varying(32)  |           | not null | 
+Indexes:
+    "PK_public.__MigrationHistory" PRIMARY KEY, btree ("MigrationId", "ContextKey")
+```
+
+You may also execute any SQL commands inside `psql`. Make sure to end every SQL query with a semicolon (`;`).
+
+```plain
+MyAppDevelopment=# select count(*) from "Products";
+ count
+-------
+     0
+(1 row)
+```
+
+## Add Seed Data
+
+The migration configuration class in `MyApp/Migrations/Configuration.cs` provides a convenient way to pre-populate the database with seed data.
+To do this, implement the `Seed(AppDbContext context)` method inside the `Configuration` class.
+
+This method executes every time you run `Update-Database`, therefore you must ensure that the method is **idempotent**—in other words, it must not cause any issues when run multiple times.
+
+For seed data, this means the code must ensure that the data *exists* without creating duplicate records.
+
+At the database level, you can ensure data uniqueness using primary keys and unique constraints.
+PostgreSQL's `INSERT` statement includes an [`ON CONFLICT` clause](https://www.postgresql.org/docs/18/sql-insert.html#SQL-ON-CONFLICT) that lets you define an action to take when inserts conflict.
+This technique is called an *upsert*—a [portmanteau](https://en.wikipedia.org/wiki/Portmanteau) of *update* and *insert*.
+
+In Entity Framework, you can perform an *upsert* using the `AddOrUpdate` method.
+Replace the `Seed` method inside the `MyApp.Migrations.Configuration` class with the following:
 
 ```cs
 protected override void Seed(AppDbContext context)
@@ -434,4 +509,57 @@ protected override void Seed(AppDbContext context)
 ```
 
 The `Products` table has two unique columns: `ProductId`, which is the primary key, and `SKU`, which has a unique index.
-Unfortunately, Entity Framework is not smart enough to notice that the `SKU` column is unique, therefore we must provide each record with a primary key.
+Unfortunately, Entity Framework is not smart enough to detect that the `SKU` column is unique, therefore you must provide a primary key for each record.
+
+In this example, primary keys are [UUIDs](https://en.wikipedia.org/wiki/Universally_unique_identifier), called [`Guid`](https://learn.microsoft.com/en-us/dotnet/api/system.guid?view=net-9.0) in the Microsoft ecosystem. More specifically, these are UUIDv7 (version 7). The first 48 bits of each UUIDv7 encode the timestamp (date and time) at which the UUID was generated making them sortable in the database&mdash;unlike the older UUIDv4, which is entirely random and thus useless for sorting.
+
+### Seed the Database
+
+Open the project in Visual Studio 2022. Open the Package Manager Console.
+
+```powershell
+> Update-Database -Project MyApp
+Specify the '-Verbose' flag to view the SQL statements being applied to the target database.
+No pending explicit migrations.
+Running Seed method.
+```
+
+The `Products` table should now contain two rows:
+
+```plain
+> psql MyAppDevelopment
+psql (17.6)
+Type "help" for help.
+
+MyAppDevelopment=# select count(*) from "Products";
+ count
+-------
+     2
+(1 row)
+```
+
+### Expose `AppDbContext` to Pages
+
+In the root directory of the project, create a class called `BasePage`. This will be the superclass for all pages in the application.
+
+In this class, we define a `_db` property, which will be set to brand-new instance of `AppDbContext` on every request. We also define a method called `OnUnload` which disposes of the database context after a request has been served.
+
+```cs
+using System;
+using MyApp.Models;
+
+namespace MyApp
+{
+    public class BasePage : System.Web.UI.Page
+    {
+        protected readonly AppDbContext _db = new AppDbContext();
+
+        protected override void OnUnload(EventArgs e)
+        {
+            base.OnUnload(e);
+            _db.Dispose();
+        }
+    }
+}
+```
+
