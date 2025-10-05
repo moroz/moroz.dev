@@ -3,7 +3,7 @@ import { glob } from "astro/loaders";
 
 const blog = defineCollection({
   loader: glob({
-    pattern: ["**/*.md", "*.md", "**/*.mdx", "*.mdx"],
+    pattern: ["**/*.{md,mdx}"],
     base: "./content/blog",
   }),
 

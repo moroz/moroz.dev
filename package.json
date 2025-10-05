@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@astrojs/markdoc": "^0.15.1",
+    "@astrojs/mdx": "^4.3.6",
     "@astrojs/svelte": "^7.1.0",
     "@tailwindcss/vite": "^4.1.11",
     "astro": "^5.12.0",

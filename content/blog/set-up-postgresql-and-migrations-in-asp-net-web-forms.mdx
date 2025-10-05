@@ -6,6 +6,7 @@ summary: |
     You will find out how to set up Entity Framework 6 with PostgreSQL, how to create migrations, and how to set up Tailwind CSS.
     None of this has been tested in production.
 ---
+import Figure from "@components/Figure.svelte";
 
 ### Introduction
 
@@ -13,7 +14,6 @@ ASP.NET Web Forms is an old technology. As of this writing, the [latest release]
 
 In general, there is no good reason to start a new project with Web Forms in 2025, nor is there a good reason to teach Web Forms to beginners.
 Unfortunately, in Taiwan, ASP.NET Web Forms is still in widespread use at [governmental](https://english.gov.taipei/News_Photo.aspx?n=4FF938C7E036410F&sms=A03DD346DED13796) and [educational](https://my.ntu.edu.tw/Default.aspx?lang=eng) institutions. Historically, there has been little to no incentive to replace it with a more modern stack.
-<!-- However, to my surprise, I have been unable to find a single bank or financial institution still using Web Forms in production. -->
 
 According to anecdotal evidence, one of the reasons commercial software stacks are so prevalent in Taiwan may be because some institutions need to pay for the software they use, and most open source stacks are completely free of charge.
 
@@ -53,10 +53,7 @@ You need to install the following software:
     ```
     In the Windows Terminal application, PowerShell 7 will appear as just _PowerShell_, and PowerShell 5.x will appear as _Windows PowerShell_.
 
-<figure>
-<img src="/images/asp.net/powershell.png" alt="" />
-<figcaption>List of terminal presets within the Windows Terminal application.</figcaption>
-</figure>
+<Figure src="/images/asp.net/powershell.png">List of terminal presets within the Windows Terminal application.</Figure>
 
 ### Creating a Web Forms Project
 
@@ -267,15 +264,10 @@ In `Web.config`, we need to ensure that three separate configuration blocks exis
                  type="System.Data.Entity.Internal.ConfigFile.EntityFrameworkSection, EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
                  requirePermission="false"/>
     </configSections>
-    
-    <!-- The following two sections need to be at the end of the <configuration> block -->
-    <entityFramework>
-        <providers>
-            <provider invariantName="Npgsql" type="Npgsql.NpgsqlServices, EntityFramework6.Npgsql"/>
-        </providers>
-        <defaultConnectionFactory type="Npgsql.NpgsqlConnectionFactory, EntityFramework6.Npgsql"/>
-    </entityFramework>
 
+    <!-- ... 60+ lines of configuration ... -->
+    
+    <!-- The following section needs to be at the end of the <configuration> block -->
     <connectionStrings>
         <add name="AppDbContext"
              connectionString="Server=localhost;port=5432;Database=MyAppDevelopment;User Id=postgres;Password=postgres"
@@ -359,10 +351,7 @@ Running Seed method.
 
 In JetBrains Rider, open the _Database_ panel on the right. Click on the plus icon, then on _Connect to database&hellip;_:
 
-<figure>
-<img src="/images/asp.net/db-0.png" alt="" />
-<figcaption>Open the <em>Database</em> panel in Rider.</figcaption>
-</figure>
+<Figure src="/images/asp.net/db-0.png">Open the <em>Database</em> panel in Rider.</Figure>
 
 In the next view, choose _Use connection string_, then paste the following connection string. You may need to adjust some of the connection parameters.
 
@@ -372,14 +361,8 @@ jdbc:postgresql://localhost:5432/MyAppDevelopment?password=postgres&user=postgre
 
 If clicking on _Test connection_ shows a check mark with the caption _Test connection succeeded_, it means you have configured the connection correctly.
 
-<figure>
-<img src="/images/asp.net/db-1.png" alt="" />
-<figcaption>Select <em>Use connection string</em>, then paste a connection string.</figcaption>
-</figure>
+<Figure src="/images/asp.net/db-1.png">Select <em>Use connection string</em>, then paste a connection string.</Figure>
 
 After connecting, you should be able to see two tables in the schema `public`: `__MigrationHistory` and `Products`.
 
-<figure>
-<img src="/images/asp.net/db-2.png" alt="" />
-<figcaption>Database tree showing the <code>MyAppDevelopment</code> database with two tables in schema <code>public</code>.</figcaption>
-</figure>
+<Figure src="/images/asp.net/db-2.png">Database tree showing the <code>MyAppDevelopment</code> database with two tables in schema <code>public</code>.</Figure>

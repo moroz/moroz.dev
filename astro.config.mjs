@@ -7,6 +7,8 @@ import svelte from "@astrojs/svelte";
 import path from "path";
 import rehypeExternalLinks from "rehype-external-links";
 
+import mdx from "@astrojs/mdx";
+
 // https://astro.build/config
 export default defineConfig({
   vite: {
@@ -39,5 +41,5 @@ export default defineConfig({
     ],
   },
 
-  integrations: [markdoc(), svelte()],
+  integrations: [markdoc(), svelte(), mdx()],
 });

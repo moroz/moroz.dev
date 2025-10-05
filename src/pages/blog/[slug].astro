@@ -1,6 +1,6 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import { getEntry, getCollection } from "astro:content";
+import { render, getEntry, getCollection } from "astro:content";
 import { formatDateTime } from "@/lib/datetime.ts";
 const { slug } = Astro.params;
 
@@ -14,6 +14,8 @@ export async function getStaticPaths() {
 }
 
 const post = await getEntry("blog", slug)!;
+
+const { Content } = await render(post);
 ---
 
 <script>
@@ -27,9 +29,7 @@ const post = await getEntry("blog", slug)!;
     >
   </p>
 
-  <div
-    class="content my-8 text-lg"
-    set:html={post.rendered?.html}
-    lang={post.data.lang}
-  />
+  <div class="content my-8 text-lg" lang={post.data.lang}>
+    <Content />
+  </div>
 </Layout>
