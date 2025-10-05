@@ -252,41 +252,6 @@ namespace MyApp.Models {
 }
 ```
 
-### Add Seed Data
-
-The migration configuration class in `MyApp/Migrations/Configuration.cs` provides a convenient way to pre-fill the database with seed data. In order to do so, implement the method `Seed(AppDbContext context)` inside the `Configuration` class.
-
-The `AppDbContext` exposes a method called `AddOrUpdate` on all `DbSet`s. This method takes an array of database records to insert or update. If one of these records already exists in the database, the database will not insert any new records.
-
-Replace the `Seed` method inside the class `MyApp.Migrations.Configuration` with the following:
-
-```cs
-protected override void Seed(AppDbContext context)
-{
-    context.Products.AddOrUpdate(new Product[]
-    {
-        new Product
-        {
-            ProductId = new Guid("0199b327-17b7-7e22-8926-c35f6d19a1e8"),
-            Title = "Wrangler GREENSBORO Sunset Rinse W34 L32",
-            SKU = "112357414 W34 L32",
-            Price = 56.29M,
-            Description = "Wrangler Greensboro 803 Regular Straight Sunset Rinse W34 L32",
-            ImageUrl = "https://a.allegroimg.com/original/111327/73f12ec0425ab72d4cb0821314e1",
-        },
-        new Product
-        {
-            ProductId = new Guid("0199b32b-32ef-7676-804f-f2206b8c2d92"),
-            Title = "Wrangler LARSTON Rodeo FREE TO STRETCH W32 L32",
-            SKU = "5401139119734 W32 L32",
-            Description = "Wrangler Larston 812 Slim Tapered FREE TO STRETCH Midnight Rodeo W32 L32",
-            Price = 47.05M,
-            ImageUrl = "https://a.allegroimg.com/original/114ba9/1f6db55d4a8faf676810614e2c0b",
-        }
-    });
-}
-```
-
 ### Configure Entity Framework in `Web.config`
 
 In `Web.config`, we need to ensure that two configuration blocks exist in their correct places.
@@ -315,7 +280,7 @@ This part is very important. If you set the connection string incorrectly, you m
 The connection string is a list of key-value pairs separated by colons. You may wish to customize some of these values:
 
 * `Server=localhost`: connect to the PostgreSQL instance on `localhost`. On Windows, you can run PostgreSQL natively, in WSL2, or inside a Docker container.
-* `port=5432`: 5432 is the default port for fresh PostgreSQL installations. If you install several copies of PostgreSQL on the same machine, e. g. version 16 and 17, or a native Windows build and a Linux build inside WSL2, the second copy will use port 5433 instead.
+* `port=5432`: 5432 is the default port for fresh PostgreSQL installations. If you install several copies of PostgreSQL on the same machine, e. g. version 16 and 17, or: a native Windows build and a Linux build inside WSL2, the second copy will use port 5433 instead.
 * `Database=MyAppDevelopment`: the name of the application database. You do not need to create the database if it does not exist, `Update-Database` will create it for you.
 * `User Id=postgres`: `postgres` is the default database user name in both the Linux build of PostgreSQL (if you install it inside WSL2) and the native Windows build.
 * `Password=postgres`: `postgres` should be the default password for the `postgres` user. If you have trouble connecting to the database using this password, you may need to set a password in `psql` using [`ALTER USER`](https://www.postgresql.org/docs/18/sql-alteruser.html):
@@ -326,11 +291,12 @@ The connection string is a list of key-value pairs separated by colons. You may 
     Type "help" for help.
     karol=# alter user postgres password 'postgres';
     ALTER ROLE
+    karol=# \q
     ```
 
-For instance, on my Windows machine, I have two PostgreSQL clusters: one installed within WSL2, which listens on port 5432, and another one installed natively on Windows, which listens on port 5433. Therefore, on my machine, I have modified the connection string to connect on port 5433.
-
 ### Generate `CreateProducts` Migration
+
+Now that Entity Framework is properly configured, we should be able to generate a migration.
 
 Open the project in Visual Studio 2022. Open the _Package Manager Console_ by clicking _Tools > NuGet Package Manager > Package Manager Console_.
 
@@ -420,3 +386,52 @@ If clicking on _Test connection_ shows a check mark with the caption _Test conne
 After connecting, you should be able to see two tables in the schema `public`: `__MigrationHistory` and `Products`.
 
 <Figure src="/images/asp.net/db-2.png">Database tree showing the <code>MyAppDevelopment</code> database with two tables in schema <code>public</code>.</Figure>
+
+You may want to play around with this view to see if the tables contain the columns that you expect.
+
+### Add Seed Data
+
+The migration configuration class in `MyApp/Migrations/Configuration.cs` provides a convenient way to pre-fill the database with seed data. In order to do so, implement the method `Seed(AppDbContext context)` inside the `Configuration` class.
+
+This method will execute every time you run `Update-Database`.
+Make sure that the method is **idempotent**, which is a fancy way to say: it must not cause any issues if you run the same code more than once.
+
+In the context of seed data, this means that the code must make sure that the data _exists_, but it **must not** create multiple copies of the same records.
+
+On the database level, we can ensure data uniqueness using primary keys and unique constraints.
+The `INSERT` statement in PostgreSQL comes with an [`ON CONFLICT` clause](https://www.postgresql.org/docs/18/sql-insert.html#SQL-ON-CONFLICT), which lets us define an action to be taken if the event of conflicting inserts.
+This technique is called _upsert_, which is a [portmanteau](https://en.wikipedia.org/wiki/Portmanteau) of the words _update_ and _insert_.
+
+In Entity Framework, you can perform an _upsert_ using a method called `AddOrUpdate`.
+
+Replace the `Seed` method inside the class `MyApp.Migrations.Configuration` with the following:
+
+```cs
+protected override void Seed(AppDbContext context)
+{
+    context.Products.AddOrUpdate(new Product[]
+    {
+        new Product
+        {
+            ProductId = new Guid("0199b327-17b7-7e22-8926-c35f6d19a1e8"),
+            Title = "Wrangler GREENSBORO Sunset Rinse W34 L32",
+            SKU = "112357414 W34 L32",
+            Price = 56.29M,
+            Description = "Wrangler Greensboro 803 Regular Straight Sunset Rinse W34 L32",
+            ImageUrl = "https://a.allegroimg.com/original/111327/73f12ec0425ab72d4cb0821314e1",
+        },
+        new Product
+        {
+            ProductId = new Guid("0199b32b-32ef-7676-804f-f2206b8c2d92"),
+            Title = "Wrangler LARSTON Rodeo FREE TO STRETCH W32 L32",
+            SKU = "5401139119734 W32 L32",
+            Description = "Wrangler Larston 812 Slim Tapered FREE TO STRETCH Midnight Rodeo W32 L32",
+            Price = 47.05M,
+            ImageUrl = "https://a.allegroimg.com/original/114ba9/1f6db55d4a8faf676810614e2c0b",
+        }
+    });
+}
+```
+
+The `Products` table has two unique columns: `ProductId`, which is the primary key, and `SKU`, which has a unique index.
+Unfortunately, Entity Framework is not smart enough to notice that the `SKU` column is unique, therefore we must provide each record with a primary key.
