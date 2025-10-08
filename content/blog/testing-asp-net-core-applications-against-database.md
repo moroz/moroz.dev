@@ -1,6 +1,6 @@
 ---
 title: Testing ASP.NET Core Applications Against a Real Database
-date: 2025-09-27
+date: 2025-09-29
 summary: |
     In this post, I briefly explain how to set up integration tests in an ASP.NET Core application, using Entity Framework Core, PostgreSQL, Npgsql, and gRPC.
 ---
@@ -112,7 +112,7 @@ $ git add -A
 $ git commit -m "Set up Courses.Tests project"
 ```
 
-### Set Up a `CustomWebApplicationFactory`
+### Set Up a `WebApplicationFactory`
 
 Install the `Microsoft.AspNetCore.Mvc.Testing` package in the `Courses.Tests` project:
 
@@ -243,7 +243,7 @@ public class IntegrationCollection : ICollectionFixture<GlobalTestFixture>
 }
 ```
 
-In `Courses.Tests/DbTestFixture.cs`, create a base abstract class that all our test classes will later inherit from:
+In `Courses.Tests/DbTestBase.cs`, create a base abstract class that all our test classes will later inherit from:
 
 ```cs
 namespace Courses.Tests;
