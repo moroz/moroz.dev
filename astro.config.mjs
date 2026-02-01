@@ -6,14 +6,13 @@ import markdoc from "@astrojs/markdoc";
 import svelte from "@astrojs/svelte";
 import path from "path";
 import rehypeExternalLinks from "rehype-external-links";
-import svgr from "vite-plugin-svelte-svgr";
 
 import mdx from "@astrojs/mdx";
 
 // https://astro.build/config
 export default defineConfig({
   vite: {
-    plugins: [tailwindcss(), svgr()],
+    plugins: [tailwindcss()],
     resolve: {
       alias: {
         "@": path.resolve("./src"),
