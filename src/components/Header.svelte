@@ -8,12 +8,12 @@
   class="b-unset fixed inset-0 z-10 flex h-16 items-center justify-between border-b border-slate-700 bg-white dark:bg-slate-900"
 >
   <div
-    class="container flex h-full w-full items-center justify-between max-md:pl-4 md:mx-auto"
+    class="mobile:pl-4 desktop:mx-auto container flex h-full w-full items-center justify-between"
   >
     <a href="/">
       <h1 class="text-2xl font-bold">moroz.dev</h1>
     </a>
-    <div class="hamburger-wrapper md:hidden">
+    <div class="hamburger-wrapper desktop:hidden">
       <Hamburger bind:open />
     </div>
     <nav class={["h-full", open && "open"]}>
@@ -61,21 +61,21 @@
   }
 
   nav:not(.open) {
-    @apply inset-0 top-16 z-10 max-md:fixed max-md:hidden;
+    @apply mobile:fixed mobile:hidden inset-0 top-16 z-10;
   }
 
   nav.open {
-    @apply inset-0 top-16 z-10 bg-white max-md:fixed dark:bg-slate-900;
+    @apply mobile:fixed inset-0 top-16 z-10 bg-white dark:bg-slate-900;
 
     ul {
       @apply flex-col items-start;
     }
 
     li {
-      @apply max-md:h-16 max-md:w-full max-md:text-lg;
+      @apply mobile:h-16 mobile:w-full mobile:text-lg;
 
       a {
-        @apply h-full hover:bg-slate-100 max-md:w-full max-md:justify-end max-md:text-right dark:hover:bg-slate-800;
+        @apply mobile:w-full mobile:justify-end mobile:text-right h-full hover:bg-slate-100 dark:hover:bg-slate-800;
       }
     }
   }

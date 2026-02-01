@@ -11,7 +11,7 @@ const allVideos = await getCollection("videos").then((collection) =>
 <Layout title="Videos">
   {
     allVideos.map((v) => (
-      <article class="mb-12 lg:mb-16">
+      <article class="container mx-auto mb-12 lg:mb-16">
         <a
           href={`https://www.youtube.com/watch?v=${v.data.youtube}`}
           target="_blank"
@@ -32,7 +32,9 @@ const allVideos = await getCollection("videos").then((collection) =>
               {v.data.title}
             </a>
           </h3>
-          {v.data.summary ? <p>{v.data.summary}</p> : null}
+          {v.data.summary ? (
+            <p class="prose dark:prose-invert">{v.data.summary}</p>
+          ) : null}
         </footer>
       </article>
     ))
