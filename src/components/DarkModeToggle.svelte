@@ -1,5 +1,7 @@
 <script lang="ts">
   import { DarkModePreference } from "./types.ts";
+  import MoonIcon from "../icons/MoonIcon.svelte";
+  import SunIcon from "../icons/SunIcon.svelte";
 
   const initial =
     typeof window === "undefined" || !("localStorage" in window)
@@ -43,9 +45,13 @@
   title="Toggle dark/light mode"
   class="hover:text-primary mobile:ml-auto grid aspect-square h-full cursor-pointer place-items-center"
 >
-  <svg class="h-5 w-5 fill-current">
-    <use xlink:href="/icons/sun.svg" class="dark:invisible" />
-    <use xlink:href="/icons/moon.svg" class="not-dark:invisible" />
-  </svg>
+  <div class="relative h-5 w-5">
+    <MoonIcon
+      class="absolute inset-0 h-5 w-5 fill-current transition-opacity not-dark:opacity-0"
+    />
+    <SunIcon
+      class="absolute inset-0 h-5 w-5 fill-current transition-opacity dark:opacity-0"
+    />
+  </div>
   <span class="sr-only">{description}</span>
 </button>
