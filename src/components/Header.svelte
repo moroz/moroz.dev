@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Hamburger } from "svelte-hamburgers";
+  import DarkModeToggle from "./DarkModeToggle.svelte";
 
   let open = $state(false);
 </script>
@@ -22,6 +23,7 @@
         <li><a href="/blog/">Blog</a></li>
         <li><a href="/videos/">Videos</a></li>
         <li><a href="/contact/">Contact</a></li>
+        <li><DarkModeToggle /></li>
       </ul>
     </nav>
   </div>
@@ -50,7 +52,7 @@
     @apply p-0;
   }
 
-  header:has(:hover) {
+  nav:has(:hover) {
     a:not(:hover) {
       @apply text-slate-700 dark:text-gray-400;
     }

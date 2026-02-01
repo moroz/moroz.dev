@@ -19,6 +19,14 @@ const resolvedTitle = title ? `${title} | ${defaultTitle}` : defaultTitle;
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <title>{resolvedTitle}</title>
+    <script is:inline>
+      document.documentElement.classList.toggle(
+        "dark",
+        localStorage.theme === "dark" ||
+          (!("theme" in localStorage) &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches),
+      );
+    </script>
   </head>
   <body
     class="flex min-h-screen flex-col bg-white text-black dark:bg-slate-950 dark:text-gray-200"
