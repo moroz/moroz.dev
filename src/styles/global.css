@@ -24,14 +24,15 @@ html {
   --color-primary-hover: var(--color-blue-800);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+:root {
+  @variant dark {
     --color-primary: var(--color-amber-500);
     --color-primary-hover: var(--color-amber-400);
   }
 }
 
-body, html {
+body,
+html {
   @apply transition-colors;
 }
 
@@ -60,15 +61,15 @@ body, html {
   @apply prose dark:prose-invert mx-auto;
 }
 
-@media (prefers-color-scheme: light) {
-  .snippet-wrapper {
+.snippet-wrapper {
+  @variant not-dark {
     @apply bg-slate-100/40;
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .astro-code,
-  .astro-code span {
+.astro-code,
+.astro-code span {
+  @variant dark {
     @apply transition;
 
     color: var(--shiki-dark) !important;
