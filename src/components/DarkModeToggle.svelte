@@ -3,12 +3,14 @@
   import MoonIcon from "../icons/MoonIcon.svelte";
   import SunIcon from "../icons/SunIcon.svelte";
 
-  const initial =
+  const stored =
     typeof window === "undefined" || !("localStorage" in window)
       ? null
       : localStorage.getItem("theme");
 
-  let mode = $state(initial);
+  const preference = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+
+  let mode = $state(preference);
 
   function apply() {
     document.documentElement.classList.toggle(

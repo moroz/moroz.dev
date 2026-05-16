@@ -1,7 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import RootLayout from "@layouts/RootLayout.astro";
-import karolLouvre from "@/assets/karol-louvre.png";
+import karolLouvre from "@/assets/karol-louvre.webp";
 import { getAllPosts, transformPost } from "@/lib/blog.ts";
 import { formatDateTime } from "@/lib/datetime.ts";
 
@@ -40,7 +40,8 @@ const featured = FEATURED_SLUGS.map((slug) => all.find((p) => p.id === slug))
           <p
             class="mb-8 max-w-xl text-lg leading-relaxed text-slate-700 xl:text-xl dark:text-slate-300"
           >
-            I am a Senior Software Developer based in The Hague, Netherlands.
+            I am a Senior Software Developer based in The&nbsp;Hague,
+            Netherlands.
           </p>
           <ul
             class="text-primary flex flex-wrap gap-x-6 gap-y-2 text-base font-semibold xl:text-lg"
