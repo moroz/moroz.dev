@@ -1,4 +1,4 @@
 [tools]
-node = "latest"
+node = "26"
 "npm:prettier" = "latest"
 pnpm = "latest"
