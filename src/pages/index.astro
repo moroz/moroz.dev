@@ -1,15 +1,100 @@
 ---
-import Layout from "@layouts/Layout.astro";
+import { Image } from "astro:assets";
+import RootLayout from "@layouts/RootLayout.astro";
+import karolLouvre from "@/assets/karol-louvre.png";
+import { getAllPosts, transformPost } from "@/lib/blog.ts";
+import { formatDateTime } from "@/lib/datetime.ts";
+
+const FEATURED_SLUGS = [
+  "secure-cookie-library-in-go-from-scratch",
+  "sign-and-send-a-bitcoin-transaction-in-go",
+  "absinthe-tips-and-tricks",
+  "refactoring-common-ecto-queries-with-macros",
+  "integrating-vite-js-with-phoenix-1-6",
+];
+
+const all = await getAllPosts();
+const featured = FEATURED_SLUGS.map((slug) => all.find((p) => p.id === slug))
+  .filter((p): p is NonNullable<typeof p> => Boolean(p))
+  .map(transformPost);
 ---
 
-<Layout title="Hello world!">
-  <div class="content mx-auto">
-    <p>
-      My name is Karol Moroz. I am a software developer based in Kaohsiung,
-      Taiwan. I mostly work with Elixir, Ruby on Rails, React, and Go.
-    </p><p>
-      This is my personal website, where I share my thoughts about software
-      development, niche operating systems, and things I learn.
-    </p>
-  </div>
-</Layout>
+<RootLayout title="">
+  <main class="flex-1">
+    <section
+      class="desktop:px-8 desktop:pt-32 desktop:pb-24 mx-auto max-w-5xl px-4 pt-24 pb-16"
+    >
+      <div
+        class="desktop:grid desktop:grid-cols-[1fr_auto] desktop:items-center desktop:gap-16"
+      >
+        <div>
+          <p class="mb-4 font-semibold text-slate-600 dark:text-slate-400">
+            Hello World! My name is
+          </p>
+          <h2 class="font-heading mb-6 text-5xl font-bold xl:text-7xl">
+            Karol Moroz.
+          </h2>
+          <p class="mb-3 max-w-xl text-xl leading-relaxed xl:text-2xl">
+            I build modern Web applications.
+          </p>
+          <p
+            class="mb-8 max-w-xl text-lg leading-relaxed text-slate-700 xl:text-xl dark:text-slate-300"
+          >
+            I am a Senior Software Developer based in The Hague, Netherlands.
+          </p>
+          <ul
+            class="text-primary flex flex-wrap gap-x-6 gap-y-2 text-base font-semibold xl:text-lg"
+          >
+            <li><a href="/blog/" class="hover:underline">Blog</a></li>
+            <li><a href="/videos/" class="hover:underline">Videos</a></li>
+            <li>
+              <a
+                href="https://github.com/moroz"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hover:underline">GitHub</a
+              >
+            </li>
+            <li>
+              <a href="mailto:karol@moroz.dev" class="hover:underline"
+                >karol@moroz.dev</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div
+          class="desktop:mt-0 desktop:w-80 mt-10 w-full max-w-sm text-center xl:w-96"
+        >
+          <Image
+            src={karolLouvre}
+            alt="Karol Moroz outside the Louvre in Paris"
+            widths={[384, 768, 1152]}
+            sizes="(min-width: 60rem) 24rem, 100vw"
+            class="w-full"
+          />
+          <blockquote
+            class="border-primary mt-4 border-l-2 pl-4 text-sm text-slate-600 dark:text-slate-400"
+          >
+            <p class="italic">
+              "I have a receding hairline and am astigmatic.<br />I own a
+              counterfeit Patagonia jacket."
+            </p>
+            <footer class="mt-2 text-right text-xs">&mdash; Karol Moroz</footer>
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="desktop:px-8 desktop:py-16 desktop:pb-32 mx-auto max-w-2xl px-4 py-12 pb-24"
+    >
+      <div class="content">
+        <h3>Stack</h3>
+        <p>
+          Elixir / Phoenix, Go, Ruby on Rails, React, TypeScript, .NET Core,
+          PostgreSQL, AWS.
+        </p><p>Can work productively on Linux, macOS, and Windows.</p>
+      </div>
+    </section>
+  </main>
+</RootLayout>

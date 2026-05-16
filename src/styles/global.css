@@ -11,8 +11,8 @@ html {
   --breakpoint-*: initial;
   --breakpoint-desktop: 50rem;
   --breakpoint-xl: 60rem;
+  --font-sans: Inter Variable, Segoe UI, system-ui, sans-serif;
   --font-mono: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
-  --font-heading: "Merriweather Sans Variable", sans-serif;
 }
 
 @custom-variant mobile {
@@ -36,10 +36,6 @@ html {
 body,
 html {
   @apply transition-colors;
-}
-
-h1, h2, h3, h4 {
-  @apply font-heading;
 }
 
 .prose {
