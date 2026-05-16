@@ -10,7 +10,7 @@ html {
 @theme {
   --breakpoint-*: initial;
   --breakpoint-desktop: 50rem;
-  --breakpoint-xl: 60rem;
+  --breakpoint-xl: 65rem;
   --font-sans: Inter Variable, Segoe UI, system-ui, sans-serif;
   --font-mono: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
 }
@@ -38,11 +38,11 @@ html {
   @apply transition-colors;
 }
 
-.prose {
+.prose, .content {
   counter-reset: figure;
 
   pre.astro-code {
-    @apply my-0 rounded-tr-none bg-transparent! p-4 whitespace-pre-wrap dark:border-none;
+    @apply my-0 rounded-tr-none bg-transparent! p-4 whitespace-pre-wrap dark:border-none leading-tight;
   }
 
   .snippet-wrapper {
@@ -59,8 +59,8 @@ html {
   }
 }
 
-.content {
-  @apply prose dark:prose-invert xl:prose-lg;
+:is(.content) {
+  @apply prose dark:prose-invert xl:prose-xl;
 }
 
 .snippet-wrapper {
@@ -81,6 +81,10 @@ html {
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
   }
+}
+
+pre.astro-code {
+  @apply my-0 rounded-t-none;
 }
 
 figure {
