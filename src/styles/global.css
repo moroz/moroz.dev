@@ -10,7 +10,9 @@ html {
 @theme {
   --breakpoint-*: initial;
   --breakpoint-desktop: 50rem;
+  --breakpoint-xl: 60rem;
   --font-mono: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  --font-heading: "Merriweather Sans Variable", sans-serif;
 }
 
 @custom-variant mobile {
@@ -36,6 +38,10 @@ html {
   @apply transition-colors;
 }
 
+h1, h2, h3, h4 {
+  @apply font-heading;
+}
+
 .prose {
   counter-reset: figure;
 
@@ -58,7 +64,7 @@ html {
 }
 
 .content {
-  @apply prose dark:prose-invert mx-auto;
+  @apply prose dark:prose-invert xl:prose-lg;
 }
 
 .snippet-wrapper {

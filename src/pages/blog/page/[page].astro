@@ -1,0 +1,23 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getTotalPageCount, paginatePosts } from "@/lib/blog.ts";
+import BlogPage from "@components/BlogPage.astro";
+const { page: pageNumber } = Astro.params;
+
+const displayDrafts = process.env.NODE_ENV === "development";
+
+export const getStaticPaths = (async () => {
+  const displayDrafts = process.env.NODE_ENV === "development";
+  const pageCount = await getTotalPageCount(displayDrafts);
+  return Array.from({ length: pageCount - 1 }).map((_, i) => ({
+    params: { page: String(i + 2) },
+  }));
+}) satisfies GetStaticPaths;
+
+const { totalPageCount, posts, totalPostCount } = await paginatePosts(
+  Number(pageNumber),
+  displayDrafts,
+);
+---
+
+<BlogPage {totalPageCount} {posts} page={Number(pageNumber)} {totalPostCount} />

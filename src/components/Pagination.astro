@@ -1,0 +1,36 @@
+---
+interface Props {
+  page: number;
+  totalPages: number;
+}
+const { page: currentPage, totalPages } = Astro.props;
+---
+
+{
+  totalPages > 1 && (
+    <ul class="mx-auto flex w-min gap-4">
+      {Array.from({ length: totalPages }).map((_, page) => (
+        <li>
+          <a
+            href={page === 0 ? "/blog" : `/blog/page/${page + 1}/`}
+            class:list={[page + 1 === currentPage && "active"]}
+          >
+            {page + 1}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  @reference "@css/global.css";
+
+  a {
+    @apply inline-flex h-12 w-12 items-center justify-center rounded bg-slate-200 text-center text-lg font-bold transition hover:bg-slate-300 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700;
+  }
+
+  .active {
+    @apply bg-primary hover:bg-primary-hover text-white dark:text-black;
+  }
+</style>

@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Header from "@components/Header.svelte";
 import Footer from "@components/Footer.astro";
+import '@fontsource-variable/merriweather-sans/wght.css';
 
 interface Props {
   title: string;
@@ -29,13 +30,13 @@ const resolvedTitle = title ? `${title} | ${defaultTitle}` : defaultTitle;
     </script>
   </head>
   <body
-    class="flex min-h-screen flex-col bg-white text-black dark:bg-slate-950 dark:text-gray-200"
+    class="flex min-h-screen flex-col bg-white text-black dark:bg-gray-950 dark:text-gray-200"
   >
     <Header client:load />
     <main class="flex-1 py-16">
       <div class="mobile:px-4">
         <h2
-          class="mt-6 mb-4 text-center text-2xl font-bold lg:mt-10 lg:text-4xl"
+          class="mt-6 mb-4 text-center text-2xl font-bold xl:mt-10 xl:text-4xl"
         >
           {title}
         </h2>

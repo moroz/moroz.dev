@@ -1,34 +1,12 @@
 ---
-import Layout from "@layouts/Layout.astro";
-import { getCollection } from "astro:content";
-import { formatDateTime } from "@/lib/datetime.ts";
+import { paginatePosts } from "@/lib/blog.ts";
+import BlogPage from "@components/BlogPage.astro";
 
 const displayDrafts = process.env.NODE_ENV === "development";
-let allBlogPosts = (await getCollection("blog")).sort(
-  (a, b) => -(+a.data.date - +b.data.date),
+const { posts, totalPageCount, totalPostCount } = await paginatePosts(
+  1,
+  displayDrafts,
 );
-if (!displayDrafts) {
-  allBlogPosts = allBlogPosts.filter((p) => !p.data.draft);
-}
 ---
 
-<Layout title="Blog">
-  {
-    allBlogPosts.map((blog) => (
-      <article class="prose dark:prose-invert mx-auto my-12">
-        <a href={`/blog/${blog.id}`} class="no-underline">
-          <h3 class="text-primary hover:text-primary-hover text-2xl font-bold transition-colors">
-            {blog.data.title}
-          </h3>
-        </a>
-        <p class="prose dark:prose-invert my-3!">{blog.data.summary}</p>
-        <span>
-          <strong>Karol Moroz</strong> on
-          <time datetime={blog.data.date.toJSON()}>
-            {formatDateTime(blog.data.date)}
-          </time>
-        </span>
-      </article>
-    ))
-  }
-</Layout>
+<BlogPage page={1} {totalPageCount} {posts} {totalPostCount} />
