@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Hamburger } from "svelte-hamburgers";
   import DarkModeToggle from "./DarkModeToggle.svelte";
+  import Logo from "@components/Logo.svelte";
 
   let open = $state(false);
 </script>
@@ -12,7 +13,7 @@
     class="mobile:pl-4 desktop:mx-auto container flex h-full w-full items-center justify-between"
   >
     <a href="/">
-      <h1 class="text-2xl font-bold">moroz.dev</h1>
+      <Logo/>
     </a>
     <div class="hamburger-wrapper desktop:hidden">
       <Hamburger bind:open />
@@ -22,7 +23,6 @@
         <li><a href="/">Home</a></li>
         <li><a href="/blog/">Blog</a></li>
         <li><a href="/videos/">Videos</a></li>
-        <li><a href="/contact/">Contact</a></li>
         <li><DarkModeToggle /></li>
       </ul>
     </nav>
