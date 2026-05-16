@@ -8,7 +8,12 @@
       ? null
       : localStorage.getItem("theme");
 
-  const preference = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  const preference =
+    stored ??
+    (typeof window !== "undefined" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light");
 
   let mode = $state(preference);
 
@@ -21,7 +26,13 @@
     );
   }
 
-  function cycle() {
+  let lastCycled = 0;
+
+  function cycle(e: MouseEvent) {
+    const now = Date.now();
+    if (now - lastCycled < 200) return;
+    lastCycled = now;
+    e.stopPropagation();
     const next =
       mode === DarkModePreference.Dark
         ? DarkModePreference.Light
@@ -43,6 +54,7 @@
 </script>
 
 <button
+  type="button"
   onclick={cycle}
   title="Toggle dark/light mode"
   class="hover:text-primary mobile:ml-auto grid aspect-square h-full cursor-pointer place-items-center"

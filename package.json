@@ -20,7 +20,7 @@
     "astro": "^6.3.3",
     "rehype-external-links": "^3.0.0",
     "sharp": "^0.34.5",
-    "svelte": "^5.36.10",
+    "svelte": "^5.55.7",
     "svelte-hamburgers": "^5.0.0",
     "tailwindcss": "^4.1.11",
     "typescript": "^6.0.3"
