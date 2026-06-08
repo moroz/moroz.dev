@@ -28,8 +28,8 @@ html {
 
 :root {
   @variant dark {
-    --color-primary: var(--color-amber-500);
-    --color-primary-hover: var(--color-amber-400);
+    --color-primary: var(--color-blue-300);
+    --color-primary-hover: var(--color-blue-200);
   }
 }
 

@@ -10,6 +10,6 @@
   }
 
   strong {
-    @apply text-black bg-amber-500 font-bold inline-block px-1 rounded ml-0.5;
+    @apply bg-primary ml-0.5 inline-block rounded px-1 font-bold text-white dark:text-black;
   }
 </style>
