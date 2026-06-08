@@ -22,8 +22,8 @@ html {
 }
 
 @theme {
-  --color-primary: var(--color-cyan-700);
-  --color-primary-hover: var(--color-cyan-600);
+  --color-primary: var(--color-blue-900);
+  --color-primary-hover: var(--color-blue-800);
 }
 
 :root {
