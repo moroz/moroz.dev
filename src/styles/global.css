@@ -22,14 +22,14 @@ html {
 }
 
 @theme {
-  --color-primary: var(--color-blue-900);
-  --color-primary-hover: var(--color-blue-800);
+  --color-primary: var(--color-cyan-700);
+  --color-primary-hover: var(--color-cyan-600);
 }
 
 :root {
   @variant dark {
-    --color-primary: var(--color-blue-300);
-    --color-primary-hover: var(--color-blue-200);
+    --color-primary: var(--color-green-300);
+    --color-primary-hover: var(--color-green-200);
   }
 }
 
