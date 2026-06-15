@@ -348,7 +348,7 @@ Once you have an active key, you can generate an ephemeral AES-256 key using `aw
 ```shell
 $ aws kms generate-data-key --key-id="$ENCRYPTION_KEY_ARN" --number-of-bytes 32
 {
-    "CiphertextBlob": "/PT/IdPqU18FSOpo5TZmGrhbdTpUR63EXFIUfBLWf4ZOSNq2d1Pp0F4ZpBQZXBJTxi9+6YYS5FaKRiDioVqZZAx/xyKVIvPGCNge/NSrNf7IItdV61NvqvD+nbcFdDRz/9lUzvRWf50pHME17BzEIYpVj6lmx1wH/V1P6Kaxvl1vG/JmILUB4xPDQQCq2KgTLGa1IH2fzM+V0w3w3N2AsocAAcmdo/psH5WWeP19cJdwx4XQvSHGlQ==",
+    "CiphertextBlob": "AQIBAHg2lS0EjL9HUNzk+f0duqFuRva3xcI7b1dYz258CzR1+AFNQA9K53SARGZeDroMo6G4AAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMUy9zc18Yg8Evw3iCAgEQgDt3w+LDX+qX7UH1KDA78oqQGl0ISCse6L5o91L7t/L7i0Ho1Plu6jEV78s3TQwSiCtppjleIz2rfAk/EQ==",
     "Plaintext": "fOO8LDQB0w0nHSXiwdDVN+lEnL0lxBQQb0AGfzF91Fc=",
     "KeyId": "arn:aws:kms:eu-central-1:677884085811:key/ac39f2f4-bf80-415d-a460-de56fc6fd668",
     "KeyMaterialId": "321c6aa24d88273bf1f355d9fe80ecb3b6725c5e1e66f981b843a473ddfaeac9"
@@ -372,7 +372,7 @@ You can decrypt the `CiphertextBlob` using `aws kms decrypt`:
 ```shell
 # Extract the encrypted data key from the GenerateDataKey response
 $ CIPHERTEXT_BLOB="$(echo $RESULT | jq -r .CiphertextBlob)"
-$ DECRYPTION_RESULT="$(aws kms decrypt --key-id="ac39f2f4-bf80-415d-a460-de56fc6fd668" --ciphertext-blob "$CIPHERTEXT_BLOB")"
+$ DECRYPTION_RESULT="$(aws kms decrypt --key-id="$ENCRYPTION_KEY_ARN" --ciphertext-blob "$CIPHERTEXT_BLOB")"
 $ echo $DECRYPTION_RESULT
 {
     "KeyId": "arn:aws:kms:eu-central-1:677884085811:key/ac39f2f4-bf80-415d-a460-de56fc6fd668",
@@ -398,3 +398,92 @@ In order to make requests to AWS in Node.js, you need to install the [AWS SDK](h
 $ pnpm add @aws-sdk/client-kms
 ```
 
+Using this library, calling `GenerateDataKey` is fairly simple:
+
+```ts
+import { GenerateDataKeyCommand, KMSClient } from "@aws-sdk/client-kms";
+
+const keyArn = process.env.ENCRYPTION_KEY_ARN!;
+const kmsClient = new KMSClient();
+
+const generateDataKeyResult = await kmsClient.send(
+  new GenerateDataKeyCommand({
+    KeyId: keyArn,
+    NumberOfBytes: 32,
+  }),
+);
+console.log({ generateDataKeyResult });
+```
+
+The response format matches what we saw in the CLI output, except that both the `CiphertextBlob` and `Plaintext` are `Uint8Array`s rather than Base64-encoded strings:
+
+```shell
+$ pnpm dev
+{
+  generateDataKeyResult: {
+    CiphertextBlob: Uint8Array(184) [
+        1,   2,   1,   0, 120,  54, 149,  45,   4, 140, 191,  71,
+       80, 220, 228, 249, 253,  29, 186, 161, 110,  70, 246, 183,
+      197, 194,  59, 111,  87,  88, 207, 110, 124,  11,  52, 117,
+      248,   1, 173,  63,   2, 172,  21,  11,  53,  55,  48, 140,
+      128,  23, 182, 159,  30, 160,   0,   0,   0, 126,  48, 124,
+        6,   9,  42, 134,  72, 134, 247,  13,   1,   7,   6, 160,
+      111,  48, 109,   2,   1,   0,  48, 104,   6,   9,  42, 134,
+       72, 134, 247,  13,   1,   7,   1,  48,  30,   6,   9,  96,
+      134,  72,   1, 101,
+      ... 84 more items
+    ],
+    Plaintext: Uint8Array(32) [
+      228, 254, 248, 231, 216, 135, 209,  7,
+       44, 238, 228, 101, 122,  60, 174, 89,
+      120, 186, 132, 214, 136, 217, 175, 28,
+      119, 116, 210, 176,  14,   0,  69, 87
+    ],
+    KeyId: 'arn:aws:kms:eu-central-1:677884085811:key/ac39f2f4-bf80-415d-a460-de56fc6fd668',
+    KeyMaterialId: '321c6aa24d88273bf1f355d9fe80ecb3b6725c5e1e66f981b843a473ddfaeac9',
+    '$metadata': {
+      httpStatusCode: 200,
+      requestId: '50a15895-169f-4f76-b222-01dd37d545ff',
+      extendedRequestId: undefined,
+      cfId: undefined,
+      attempts: 1,
+      totalRetryDelay: 0
+    }
+  }
+}
+```
+
+Since the key material is a raw binary, we can no longer rely on `crypto.subtle.generateKey` and need to use `crypto.subtle.importKey` instead:
+
+```ts
+const ephemeralKey = await crypto.subtle.importKey(
+  "raw",
+  Uint8Array.from(generateDataKeyResult.Plaintext!),
+  "AES-GCM",
+  false,
+  ["encrypt"],
+);
+```
+
+We can then proceed to encrypt our data using this ephemeral key.
+
+### Decrypting the key blob
+
+When the time comes to decrypt a file, we can decrypt the encrypted ephemeral key using the `Decrypt` command:
+
+```ts
+const decryptResult = await kmsClient.send(
+  new DecryptCommand({
+    KeyId: keyArn,
+    CiphertextBlob: generateDataKeyResult.CiphertextBlob,
+  }),
+);
+
+const decryptedKey = await crypto.subtle.importKey(
+  "raw",
+  Uint8Array.from(decryptResult.Plaintext!),
+  "AES-GCM",
+  false,
+  ["decrypt"],
+);
+```
