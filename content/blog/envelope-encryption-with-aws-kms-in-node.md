@@ -37,7 +37,7 @@ Pin Node.js and pnpm versions for the project using Mise:
 
 ```shell
 $ mise use node@26.3.0 pnpm@11.6.0
-mise 2026.5.18 by @jdx
+mise 2026.6.10 by @jdx
 pnpm@11.6.0
 node@26.3.0
 mise ~/working/exp/envelope-encryption/mise.toml tools: node@26.3.0, pnpm@11.6.0
@@ -247,16 +247,20 @@ $ pnpm dev
 { decryptedString: 'All work and no play makes Jack a dull boy.' }
 ```
 
-### Setting up a KMS key
+### AWS CLI setup
 
 In this part of the article we are going to create a KMS symmetric encryption key. I will also demonstrate the API calls used to generate key material and the response format.
 
-Make sure you have installed and configured the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html). On macOS and Linux, you can install the AWS CLI using either Homebrew or Mise. In this article, I'm going to use Mise.
+Make sure you have installed and configured the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html). For demonstration purposes, I'm also going to use [`jq`](https://jqlang.org/), which is a lightweight command-line tool for manipulating JSON.
+
+On macOS and Linux, you can install both tools using either Homebrew or Mise. In this article, I'm going to use Mise:
 
 ```shell
-$ mise use aws
-aws@2.35.2
-mise ~/working/exp/envelope-encryption/mise.toml tools: aws@2.35.2
+$ mise use aws jq    
+mise 2026.6.10 by @jdx
+jq@1.8.1
+aws@2.35.4
+mise ~/working/exp/envelope-encryption/mise.toml tools: aws@2.35.4, jq@1.8.1
 ```
 
 You need to configure the AWS CLI to use the correct credentials, for instance using [`aws-vault`](https://github.com/ByteNess/aws-vault). Best practices for secure AWS CLI configuration are beyond the scope of this article. Once you have configured the AWS CLI correctly, you can verify your credentials using `aws sts get-caller-identity` (the credentials and resource IDs in this section have been anonymized):
@@ -269,6 +273,8 @@ $ aws sts get-caller-identity
     "Arn": "arn:aws:iam::677884085811:user/example-user"
 }
 ```
+
+### Create a KMS key
 
 You can create a symmetric key using `aws kms create-key`.
 Please be advised that KMS keys are paid resources. As of this writing, one KMS key [costs US$1/month](https://aws.amazon.com/kms/pricing/).
@@ -298,10 +304,33 @@ $ aws kms create-key
 }
 ```
 
-Note: Once you're done with this tutorial, remember to schedule your key for deletion using `aws kms schedule-key-deletion`:
+Write down the identifier of your KMS key&mdash;you will need to specify the resource identifier in all API calls.
+A good way to inject the ID into your application is using environment variables.
+In development, I usually manage those using Mise.
+In the root of your repository, create a file called `mise.local.toml` with the following contents:
+
+```toml
+[env]
+ENCRYPTION_KEY_ARN = "..." # .KeyMetadata.Arn as returned by CreateKey
+```
+
+If you have configured Mise correctly, the `ENCRYPTION_KEY_ARN` variable should be exposed in your shell:
 
 ```shell
-$ aws kms schedule-key-deletion --key-id "ac39f2f4-bf80-415d-a460-de56fc6fd668" --pending-window-in-days 7
+$ echo $ENCRYPTION_KEY_ARN 
+arn:aws:kms:eu-central-1:677884085811:key/ac39f2f4-bf80-415d-a460-de56fc6fd668
+```
+
+The encryption key ID is a sensitive value, because it exposes your AWS account ID. Do not commit this file into Git and make sure it is listed in your `.gitignore`.
+
+Note: In this tutorial, I consistently use the key identifier in ARN format. You can also call the API with just the key's UUID (`.KeyMetadata.KeyId` as returned by `CreateKey`).
+
+### Deleting a KMS key resource
+
+KMS keys are [paid resources](https://aws.amazon.com/kms/pricing/). Once you're done with this tutorial, remember to schedule your key for deletion using `aws kms schedule-key-deletion`:
+
+```shell
+$ aws kms schedule-key-deletion --key-id "$ENCRYPTION_KEY_ARN" --pending-window-in-days 7
 {
     "KeyId": "arn:aws:kms:eu-central-1:677884085811:key/ac39f2f4-bf80-415d-a460-de56fc6fd668",
     "DeletionDate": "2026-06-21T22:57:27.065000+02:00",
@@ -310,12 +339,16 @@ $ aws kms schedule-key-deletion --key-id "ac39f2f4-bf80-415d-a460-de56fc6fd668" 
 }
 ```
 
+Do not do it yet&mdash;you won't be able to call the KMS API with this key if you do.
+
+### Generate an ephemeral AES key with AWS CLI
+
 Once you have an active key, you can generate an ephemeral AES-256 key using `aws kms generate-data-key`:
 
 ```shell
-$ aws kms generate-data-key --key-id="ac39f2f4-bf80-415d-a460-de56fc6fd668" --number-of-bytes 32
+$ aws kms generate-data-key --key-id="$ENCRYPTION_KEY_ARN" --number-of-bytes 32
 {
-    "CiphertextBlob": "AQIBAHg2lS0EjL9HUNzk+f0duqFuRva3xcI7b1dYz258CzR1+AH48NV21vsO7RVRH3osiAmpAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMSxqqRHjFCjs6GGqUAgEQgDtzQpAtuIvGvp+tLJSaC6T2DC4ohBEgOsK/hLf0+g89t3KOjJ7cM/4jnINcsOycbDWuoRa31rvf8vs1MQ==",
+    "CiphertextBlob": "/PT/IdPqU18FSOpo5TZmGrhbdTpUR63EXFIUfBLWf4ZOSNq2d1Pp0F4ZpBQZXBJTxi9+6YYS5FaKRiDioVqZZAx/xyKVIvPGCNge/NSrNf7IItdV61NvqvD+nbcFdDRz/9lUzvRWf50pHME17BzEIYpVj6lmx1wH/V1P6Kaxvl1vG/JmILUB4xPDQQCq2KgTLGa1IH2fzM+V0w3w3N2AsocAAcmdo/psH5WWeP19cJdwx4XQvSHGlQ==",
     "Plaintext": "fOO8LDQB0w0nHSXiwdDVN+lEnL0lxBQQb0AGfzF91Fc=",
     "KeyId": "arn:aws:kms:eu-central-1:677884085811:key/ac39f2f4-bf80-415d-a460-de56fc6fd668",
     "KeyMaterialId": "321c6aa24d88273bf1f355d9fe80ecb3b6725c5e1e66f981b843a473ddfaeac9"
@@ -324,17 +357,19 @@ $ aws kms generate-data-key --key-id="ac39f2f4-bf80-415d-a460-de56fc6fd668" --nu
 
 The response contains two values that are important to us: `Plaintext` contains the ephemeral symmetric key you can use to encrypt your data; `CiphertextBlob` contains an opaque, encrypted value that we will later store together with the encrypted file.
 
+```shell
+# Generate a data key and store it in the $RESULT variable
+$ RESULT="$(aws kms generate-data-key --key-id="$ENCRYPTION_KEY_ARN" --number-of-bytes 32)"
+
+# Extract the original plaintext ephemeral key from the GenerateDataKey response
+$ PLAINTEXT_KEY="$(echo $RESULT | jq -r .Plaintext)"
+$ echo $PLAINTEXT_KEY
+lneXCfzUy/tZkYOj7P7zZ51Om+PRdo56tEAE/gzyZUk=
+```
+
 You can decrypt the `CiphertextBlob` using `aws kms decrypt`:
 
 ```shell
-# Generate a data key and store it in the $RESULT variable
-$ RESULT="$(aws kms generate-data-key --key-id="ac39f2f4-bf80-415d-a460-de56fc6fd668" --number-of-bytes 32)"
-
-# Extract the original plaintext ephemeral key from the GenerateDataKey response
-$ ORIGINAL_PLAINTEXT="$(echo $RESULT | jq -r .Plaintext)"
-$ echo $ORIGINAL_PLAINTEXT
-lneXCfzUy/tZkYOj7P7zZ51Om+PRdo56tEAE/gzyZUk=
-
 # Extract the encrypted data key from the GenerateDataKey response
 $ CIPHERTEXT_BLOB="$(echo $RESULT | jq -r .CiphertextBlob)"
 $ DECRYPTION_RESULT="$(aws kms decrypt --key-id="ac39f2f4-bf80-415d-a460-de56fc6fd668" --ciphertext-blob "$CIPHERTEXT_BLOB")"
@@ -345,10 +380,21 @@ $ echo $DECRYPTION_RESULT
     "EncryptionAlgorithm": "SYMMETRIC_DEFAULT",
     "KeyMaterialId": "321c6aa24d88273bf1f355d9fe80ecb3b6725c5e1e66f981b843a473ddfaeac9"
 }
+```
 
-# Extract the decrypted plaintext ephemeral key from the Decrypt response
-# and compare it with the original key
+The `Plaintext` property of the response should contain the original ephemeral key, identical to the plaintext key returned by the original call to `GenerateDataKey`:
+
+```shell
 $ ACTUAL_PLAINTEXT="$(echo $DECRYPTION_RESULT | jq -r .Plaintext)"
-$ [[ "$ACTUAL_PLAINTEXT" = "$ORIGINAL_PLAINTEXT" ]] && echo "OK"
+$ [[ "$ACTUAL_PLAINTEXT" = "$PLAINTEXT_KEY" ]] && echo "OK"
 OK
 ```
+
+### Calling KMS APIs in Node.js
+
+In order to make requests to AWS in Node.js, you need to install the [AWS SDK](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-started-nodejs.html). For this project, the only dependency we need is `@aws-sdk/client-kms`:
+
+```shell
+$ pnpm add @aws-sdk/client-kms
+```
+
