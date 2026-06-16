@@ -1,0 +1,30 @@
+---
+title: "Envelope Encryption with AWS KMS in Node.js, Part One: Authenticated Encryption Using `crypto.subtle`"
+date: 2026-06-14
+---
+
+### Introduction
+
+This article is the first in a series of articles discussing a cryptographic technique called _envelope encryption_. In this technique, the plaintext message is first encrypted symmetrically using an ephemeral key called the **D**ata **E**ncryption **K**ey (or DEK for short). The Data Encryption Key is then encrypted ("wrapped") using a different encryption scheme. The wrapped key is stored together with the ciphertext. In order to decrypt the message, you need to first decrypt ("unwrap") the encrypted Data Encryption Key, after which you can decrypt the ciphertext.
+
+In this series, we are going to implement a custom envelope encryption scheme using an authenticated encryption scheme called AES-GCM (**A**dvanced **E**ncryption **S**tandard, **G**alois **C**ounter **M**ode). The symmetric AES key will be generated and encrypted using AWS KMS, a cryptographic cloud service developed by Amazon.
+
+Please note that this is merely a side project built for academic purposes. It has not been audited and as such should not be considered production-ready. That said, feel free to learn from it, incorporate it in your side projects, and provide constructive feedback.
+
+The source code for this project is available on my GitHub at [moroz/envelope-encryption-node](https://github.com/moroz/envelope-encryption-node) and MIT-licensed.
+
+### Rationale
+
+First, let me present a use case for envelope encryption.
+
+Alice is building a fleet management system in Node.js. The system is internal to Alice's organization. The system needs to store user-uploaded files, such as vehicle maintenance reports or insurance policies.
+
+The data may potentially be stored in different places, such as a NAS (Network Accessible Storage), a dedicated Web server, or in a cloud storage system, such as Google Drive, iCloud, or AWS S3 (Simple Storage Service).
+
+All of these locations may at some point be compromised, at which point all unencrypted files would be compromised. Even if nobody breaks into the storage, the data may still be visible to the storage medium provider. Therefore, Alice needs to encrypt the data at rest to prevent the storage provider and any unauthorized third parties from exfiltrating the data.
+
+In a na&iuml;ve first iteration of a DIY encryption scheme, we could simply encrypt the files using an Authenticated Encryption with Associated Data scheme (AEAD), such as AES-GCM or Chacha20-Poly1305. Both AEADs provide good confidentiality and message authenticity guarantees, meaning that one cannot decrypt or modify an encrypted message without the knowledge of the encryption key. Unfortunately, if we use the same key for all files, the key becomes a single point of failure. The moment this key is exfiltrated, all messages ever encrypted with this key are compromised.
+
+This vulnerability can be easily resolved through the use of envelope encryption. In this setup, we no longer maintain our own master key. Instead, we call AWS KMS to create a Key Encryption Key (KEK) for us. For each file to be encrypted, KMS generates a disposable Data Encryption Key and wraps it using the Key Encryption Key. Throughout this process, the Key Encryption Key never leaves Amazon's Hardware Security Modules&mdash;the raw key material cannot be exfiltrated from KMS. That said, if an attacker were to gain access to your AWS account, they could still decrypt your DEKs by making calls to KMS using your credentials.
+
+In this article, we're going to learn how to encrypt data with AES-GCM using the `crypto.subtle` JavaScript APIs, available in all moderns browsers and JS runtimes.

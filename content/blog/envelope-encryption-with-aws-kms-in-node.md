@@ -1,6 +1,7 @@
 ---
 title: Envelope Encryption with AWS KMS in Node.js
 date: 2026-06-14
+draft: true
 ---
 
 THIS IS A DRAFT
@@ -487,3 +488,6 @@ const decryptedKey = await crypto.subtle.importKey(
   ["decrypt"],
 );
 ```
+
+### Encrypting entire files
+
