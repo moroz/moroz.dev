@@ -7,6 +7,7 @@ for (const snippet of snippets) {
   if (!content) continue;
 
   const lang = snippet.dataset.language;
+  const filename = snippet.dataset.filename;
   const isShell = [
     "powershell",
     "plain",
@@ -39,6 +40,6 @@ for (const snippet of snippets) {
   wrapper.prepend(buttonContainer);
   mount(SnippetHeader, {
     target: buttonContainer,
-    props: { code: lines.join("\n"), lang },
+    props: { code: lines.join("\n"), lang, filename },
   });
 }

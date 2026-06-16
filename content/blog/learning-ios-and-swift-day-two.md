@@ -35,7 +35,7 @@ My everyday programming IDE and text editor is [Neovim](https://neovim.io/) with
 The Swift toolkits (both the one bundled with Xcode and the Linux tarball) come with an LSP server called `sourcekit-lsp`. It is compatible with a CoC plugin called [coc-sourcekit](https://github.com/klaaspieter/coc-sourcekit).
 To get it working on Linux, I needed to set the `sourcekit.commandPath` property in `~/.config/nvim/coc-settings.json`:
 
-```json
+```json title="~/.config/nvim/coc-settings.json"
 {
   "sourcekit.commandPath": "~/ios/usr/bin/sourcekit-lsp"
 }

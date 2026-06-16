@@ -1,8 +1,9 @@
 ---
-title: "Envelope Encryption with AWS KMS in Node.js, Part One: Authenticated Encryption Using `crypto.subtle`"
+title: "Envelope Encryption with AWS KMS in Node.js, Part One: Authenticated Encryption Using the Web Crypto API"
 slug: envelope-encryption-with-aws-kms-in-node-part-one
 date: 2026-06-14
 ---
+
 import Figure from "@components/Figure.svelte";
 
 ### Introduction
@@ -15,7 +16,7 @@ In this series, we are going to implement a custom envelope encryption scheme us
 
 Please note that this is merely a side project built for academic purposes. It has not been audited and as such should not be considered production-ready. That said, feel free to learn from it, incorporate it in your side projects, and provide constructive feedback.
 
-The source code for this project is available on my GitHub at [moroz/envelope-encryption-node](https://github.com/moroz/envelope-encryption-node) and MIT-licensed.
+The source code for this project is available on my GitHub at [moroz/envelope-encryption-node](https://github.com/moroz/envelope-encryption-node/tree/part-1), tag `part-1`, and MIT-licensed.
 
 ### Rationale
 
@@ -32,3 +33,185 @@ In a na&iuml;ve first iteration of a DIY encryption scheme, we could simply encr
 This vulnerability can be easily resolved through the use of envelope encryption. In this setup, we no longer maintain our own master key. Instead, we call AWS KMS to create a Key Encryption Key (KEK) for us. For each file to be encrypted, KMS generates a disposable Data Encryption Key and wraps it using the Key Encryption Key. Throughout this process, the Key Encryption Key never leaves Amazon's Hardware Security Modules&mdash;the raw key material cannot be exfiltrated from KMS. That said, if an attacker were to gain access to your AWS account, they could still decrypt your DEKs by making calls to KMS using your credentials.
 
 In this article, we're going to learn how to encrypt data with AES-GCM using the `crypto.subtle` JavaScript APIs, available in all moderns browsers and JS runtimes.
+
+### Project setup
+
+This project was developed using Node.js 26.3.0 and pnpm 11.7.0. In the remaining part of this article, I will assume you manage your tooling using [mise-en-place](https://mise.jdx.dev/).
+
+Start by creating an empty directory for the project:
+
+```shell
+$ mkdir envelope-encryption-node
+$ cd envelope-encryption-node
+```
+
+Install and pin Node.js and pnpm versions using Mise:
+
+```shell
+$ mise use node@26.3.0 pnpm@11.7.0
+mise 2026.6.10 by @jdx
+node@26.3.0
+pnpm@11.7.0
+mise ~/working/exp/envelope-encryption-node/mise.toml tools: node@26.3.0, pnpm@11.7.0
+```
+
+Initialize a Node.js project using pnpm and enable native ESM import syntax:
+
+```shell
+$ pnpm init -y
+$ pnpm pkg set type=module
+```
+
+Create a `.gitignore`:
+
+```shell
+$ echo 'node_modules/' >> .gitignore
+```
+
+Finally, initialize a Git repository and commit the changes:
+
+```shell
+$ git init
+$ git add .
+$ git commit -m "Initial commit"
+```
+
+### Generate an AES-GCM encryption key
+
+Now, let's start writing some code. First, we're going to need some data to encrypt. For now, we can use a simple string:
+
+```ts
+const message = "All your base are belong to us.";
+```
+
+Next, we're going to need an encryption key. In the context of the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API), an AES encryption key is represented as an instance of [`CryptoKey`](https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey). There are two ways you can generate a `CryptoKey`. First, you can use [`crypto.subtle.generateKey`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey):
+
+```ts
+const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
+  "encrypt",
+  "decrypt",
+]);
+```
+
+If you need to use key material coming from another source, (e.g. from the environment or the result of a key derivation function), use [`crypto.subtle.importKey`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey) instead:
+
+```ts
+// Generate 32 random bytes (using a cryptographically secure PRNG)
+const keyMaterial = crypto.getRandomValues(new Uint8Array(32));
+
+const key = await crypto.subtle.importKey("raw", keyMaterial, "AES-GCM", true, [
+  "encrypt",
+  "decrypt",
+]);
+```
+
+For each message encrypted with AES-GCM, you need to provide a unique initialization vector (IV).
+Make this a random value, 12 bytes long:
+
+```ts
+const iv = crypto.getRandomValues(new Uint8Array(12));
+```
+
+An IV is sometimes called a _nonce_ (short for _number once_). This term is rarely used in Europe due to negative connotations in British English.
+
+Finally, encrypt `message` using [`crypto.subtle.encrypt`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt):
+
+```ts
+const ciphertext = await crypto.subtle.encrypt(
+  { name: "AES-GCM", iv },
+  key,
+  new TextEncoder().encode(message),
+);
+```
+
+Put it all together in `src/index.mts` (create a new directory and file):
+
+```ts filename="src/index.mts"
+const message = "All your base are belong to us.";
+const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
+  "encrypt",
+  "decrypt",
+]);
+const iv = crypto.getRandomValues(new Uint8Array(12));
+
+const ciphertext = await crypto.subtle.encrypt(
+  { name: "AES-GCM", iv },
+  key,
+  new TextEncoder().encode(message),
+);
+console.log({ key, iv, ciphertext });
+```
+
+When you run it, the program should print the respective objects to the terminal:
+
+```shell
+$ node src/index.mts
+{
+  key: CryptoKey {
+    type: 'secret',
+    extractable: true,
+    algorithm: { name: 'AES-GCM', length: 256 },
+    usages: [ 'encrypt', 'decrypt' ]
+  },
+  iv: Uint8Array(12) [
+    111, 236,  88, 210,  18,
+    155,  64, 119,  47, 240,
+    141, 180
+  ],
+  ciphertext: ArrayBuffer {
+    [Uint8Contents]: <08 46 96 69 8a 1f 75 30 54 54 ce 19 f8 17 27 2e 61 20 bc 2c e7 af bb 0f 48 5e fb 92 ff d7 bc a9 ed 7e 7d bf 73 ab 92 1e 38 8d c6 d5 85 9a b3>,
+    [byteLength]: 47
+  }
+}
+```
+
+### Decrypt an AES-GCM ciphertext
+
+Decrypting `ciphertext` is as easy as calling [`crypto.subtle.decrypt`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/decrypt):
+
+```ts
+const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+```
+
+This method returns a `Promise<ArrayBuffer>`, which can in turn be converted to a string using `TextDecoder`:
+
+```ts
+const asString = new TextDecoder().decode(decrypted);
+```
+
+Let's put it all together:
+
+```ts filename="src/index.mts"
+const message = "All your base are belong to us.";
+const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
+  "encrypt",
+  "decrypt",
+]);
+const iv = crypto.getRandomValues(new Uint8Array(12));
+
+const ciphertext = await crypto.subtle.encrypt(
+  { name: "AES-GCM", iv },
+  key,
+  new TextEncoder().encode(message),
+);
+
+const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+const asString = new TextDecoder().decode(decrypted);
+console.log({ asString });
+```
+
+The script should now print the plaintext message to the terminal:
+
+```shell
+$ node src/index.mts
+{ asString: 'All your base are belong to us.' }
+```
+
+### Learnings
+
+1. In the context of the Web Crypto API, AES-GCM encryption and decryption is performed using the methods `crypto.subtle.encrypt` and `crypto.subtle.decrypt`, respectively.
+2. Both operations require a symmetric key, which is an instance of `CryptoKey`, as well as a 12-byte unique initialization vector (IV).
+3. An AES-GCM key can be generated using `crypto.subtle.generateKey` or instantiated from key material using `crypto.subtle.importKey`.
+4. You can generate cryptographically secure random values using `crypto.getRandomValues`, which you should call with a newly instantiated `Uint8Array`.
+
+In the next part of this series, I'm going to discuss generating Data Encryption Keys using AWS KMS.

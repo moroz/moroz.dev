@@ -4,9 +4,10 @@
   interface Props {
     lang?: string;
     code: string;
+    filename?: string;
   }
 
-  const { lang, code } = $props();
+  const { lang, code, filename } = $props();
 
   const displayName = (() => {
     if (!lang) return "";
@@ -14,7 +15,7 @@
     switch (lang) {
       case "plain":
       case "text":
-        return "";
+        return "Plaintext";
       case "powershell":
         return "PowerShell";
       case "js":
@@ -34,8 +35,12 @@
   })();
 </script>
 
-<header>
-  <span class="lang text-sm">{displayName}</span>
+<header class="text-sm">
+  {#if filename}
+    <span class="font-mono">{filename} ({displayName})</span>
+  {:else}
+    <span>{displayName}</span>
+  {/if}
   <CopyToClipboardButton {code} />
 </header>
 
@@ -44,5 +49,9 @@
 
   header {
     @apply flex items-center justify-between overflow-hidden border-b border-solid border-slate-400 pl-4;
+  }
+
+  .filename {
+    @apply font-mono;
   }
 </style>

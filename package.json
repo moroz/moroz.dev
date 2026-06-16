@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.8.0",
+    "oxfmt": "^0.55.0",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-svelte": "^3.4.0",
