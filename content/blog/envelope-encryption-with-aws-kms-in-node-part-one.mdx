@@ -1,18 +1,18 @@
 ---
 title: "Envelope Encryption with AWS KMS in Node.js, Part One: Authenticated Encryption Using the Web Crypto API"
 slug: envelope-encryption-with-aws-kms-in-node-part-one
-date: 2026-06-14
+date: 2026-06-16
 ---
 
 import Figure from "@components/Figure.svelte";
 
 ### Introduction
 
-This article is the first in a series of articles discussing a cryptographic technique called _envelope encryption_. In this technique, the plaintext message is first encrypted symmetrically using an ephemeral key called the **D**ata **E**ncryption **K**ey (or DEK for short). The Data Encryption Key is then encrypted ("wrapped") using a different encryption scheme. The wrapped key is stored together with the ciphertext. In order to decrypt the message, you need to first decrypt ("unwrap") the encrypted Data Encryption Key, after which you can decrypt the ciphertext.
+This article is the first in a series of articles discussing a cryptographic technique called _envelope encryption_. In this technique, the plaintext message is first encrypted symmetrically using an ephemeral key called the **D**ata **E**ncryption **K**ey (or DEK for short). The Data Encryption Key is then encrypted ("wrapped") with another key or key pair, called a **K**ey **E**ncryption **K**ey (KEK). The wrapped key is stored alongside the ciphertext. In order to decrypt the message, you need to first decrypt ("unwrap") the encrypted Data Encryption Key, after which you can decrypt the ciphertext.
 
 In this series, we are going to implement a custom envelope encryption scheme using an authenticated encryption scheme called AES-GCM (**A**dvanced **E**ncryption **S**tandard, **G**alois **C**ounter **M**ode). The symmetric AES key will be generated and encrypted using AWS KMS, a cryptographic cloud service developed by Amazon.
 
-<Figure src="/images/envelope/gcm.png">AES in Gauloises Counter Mode.</Figure>
+{/* @oxfmt-ignore */}<Figure src="/images/envelope/gcm.png">AES in Gauloises Counter Mode: Évariste Galois counting Galoises.</Figure>
 
 Please note that this is merely a side project built for academic purposes. It has not been audited and as such should not be considered production-ready. That said, feel free to learn from it, incorporate it in your side projects, and provide constructive feedback.
 
@@ -28,7 +28,7 @@ The data may potentially be stored in different places, such as a NAS (Network A
 
 All of these locations may at some point be compromised, at which point all unencrypted files would be compromised. Even if nobody breaks into the storage, the data may still be visible to the storage medium provider. Therefore, Alice needs to encrypt the data at rest to prevent the storage provider and any unauthorized third parties from exfiltrating the data.
 
-In a na&iuml;ve first iteration of a DIY encryption scheme, we could simply encrypt the files using an Authenticated Encryption with Associated Data scheme (AEAD), such as AES-GCM or Chacha20-Poly1305. Both AEADs provide good confidentiality and message authenticity guarantees, meaning that one cannot decrypt or modify an encrypted message without the knowledge of the encryption key. Unfortunately, if we use the same key for all files, the key becomes a single point of failure. The moment this key is exfiltrated, all messages ever encrypted with this key are compromised.
+In a naïve first iteration of a DIY encryption scheme, we could simply encrypt the files using an Authenticated Encryption with Associated Data scheme (AEAD), such as AES-GCM or Chacha20-Poly1305. Both AEADs provide good confidentiality and message authenticity guarantees, meaning that the plaintext cannot be recovered without the knowledge of the encryption key, and any tampering with the ciphertext will cause decryption to fail. Unfortunately, if we use the same key for all files, the key becomes a single point of failure. The moment this key is exfiltrated, all messages ever encrypted with this key are compromised.
 
 This vulnerability can be easily resolved through the use of envelope encryption. In this setup, we no longer maintain our own master key. Instead, we call AWS KMS to create a Key Encryption Key (KEK) for us. For each file to be encrypted, KMS generates a disposable Data Encryption Key and wraps it using the Key Encryption Key. Throughout this process, the Key Encryption Key never leaves Amazon's Hardware Security Modules&mdash;the raw key material cannot be exfiltrated from KMS. That said, if an attacker were to gain access to your AWS account, they could still decrypt your DEKs by making calls to KMS using your credentials.
 
@@ -36,7 +36,7 @@ In this article, we're going to learn how to encrypt data with AES-GCM using the
 
 ### Project setup
 
-This project was developed using Node.js 26.3.0 and pnpm 11.7.0. In the remaining part of this article, I will assume you manage your tooling using [mise-en-place](https://mise.jdx.dev/).
+This project was developed using Node.js 26.3.0 and pnpm 11.7.0. In the remaining part of this article, I will assume you manage your tooling using [mise-en-place](https://mise.jdx.dev/). The following setup is minimal&mdash;the Web Crypto API is a built-in global in Node.js, therefore the program does not require any dependencies.
 
 Start by creating an empty directory for the project:
 
@@ -55,17 +55,10 @@ pnpm@11.7.0
 mise ~/working/exp/envelope-encryption-node/mise.toml tools: node@26.3.0, pnpm@11.7.0
 ```
 
-Initialize a Node.js project using pnpm and enable native ESM import syntax:
+Initialize a Node.js project using pnpm:
 
 ```shell
-$ pnpm init -y
-$ pnpm pkg set type=module
-```
-
-Create a `.gitignore`:
-
-```shell
-$ echo 'node_modules/' >> .gitignore
+$ pnpm init --init-type=module
 ```
 
 Finally, initialize a Git repository and commit the changes:
@@ -80,13 +73,13 @@ $ git commit -m "Initial commit"
 
 Now, let's start writing some code. First, we're going to need some data to encrypt. For now, we can use a simple string:
 
-```ts
+```typescript
 const message = "All your base are belong to us.";
 ```
 
 Next, we're going to need an encryption key. In the context of the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API), an AES encryption key is represented as an instance of [`CryptoKey`](https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey). There are two ways you can generate a `CryptoKey`. First, you can use [`crypto.subtle.generateKey`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey):
 
-```ts
+```typescript
 const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
   "encrypt",
   "decrypt",
@@ -95,7 +88,7 @@ const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, tr
 
 If you need to use key material coming from another source, (e.g. from the environment or the result of a key derivation function), use [`crypto.subtle.importKey`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey) instead:
 
-```ts
+```typescript
 // Generate 32 random bytes (using a cryptographically secure PRNG)
 const keyMaterial = crypto.getRandomValues(new Uint8Array(32));
 
@@ -108,7 +101,7 @@ const key = await crypto.subtle.importKey("raw", keyMaterial, "AES-GCM", true, [
 For each message encrypted with AES-GCM, you need to provide a unique initialization vector (IV).
 Make this a random value, 12 bytes long:
 
-```ts
+```typescript
 const iv = crypto.getRandomValues(new Uint8Array(12));
 ```
 
@@ -116,7 +109,7 @@ An IV is sometimes called a _nonce_ (short for _number once_). This term is rare
 
 Finally, encrypt `message` using [`crypto.subtle.encrypt`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt):
 
-```ts
+```typescript
 const ciphertext = await crypto.subtle.encrypt(
   { name: "AES-GCM", iv },
   key,
@@ -124,9 +117,9 @@ const ciphertext = await crypto.subtle.encrypt(
 );
 ```
 
-Put it all together in `src/index.mts` (create a new directory and file):
+Put it all together in `src/index.mts` (create a new directory and file). Even though we are using a TypeScript extension, we do not need to install the TypeScript compiler yet unless we want to use advanced TypeScript syntax, such as enums:
 
-```ts filename="src/index.mts"
+```typescript filename="src/index.mts"
 const message = "All your base are belong to us.";
 const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
   "encrypt",
@@ -169,19 +162,19 @@ $ node src/index.mts
 
 Decrypting `ciphertext` is as easy as calling [`crypto.subtle.decrypt`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/decrypt):
 
-```ts
+```typescript
 const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
 ```
 
 This method returns a `Promise<ArrayBuffer>`, which can in turn be converted to a string using `TextDecoder`:
 
-```ts
+```typescript
 const asString = new TextDecoder().decode(decrypted);
 ```
 
 Let's put it all together:
 
-```ts filename="src/index.mts"
+```typescript filename="src/index.mts"
 const message = "All your base are belong to us.";
 const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
   "encrypt",
