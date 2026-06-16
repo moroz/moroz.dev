@@ -1,13 +1,17 @@
 ---
 title: "Envelope Encryption with AWS KMS in Node.js, Part One: Authenticated Encryption Using `crypto.subtle`"
+slug: envelope-encryption-with-aws-kms-in-node-part-one
 date: 2026-06-14
 ---
+import Figure from "@components/Figure.svelte";
 
 ### Introduction
 
 This article is the first in a series of articles discussing a cryptographic technique called _envelope encryption_. In this technique, the plaintext message is first encrypted symmetrically using an ephemeral key called the **D**ata **E**ncryption **K**ey (or DEK for short). The Data Encryption Key is then encrypted ("wrapped") using a different encryption scheme. The wrapped key is stored together with the ciphertext. In order to decrypt the message, you need to first decrypt ("unwrap") the encrypted Data Encryption Key, after which you can decrypt the ciphertext.
 
 In this series, we are going to implement a custom envelope encryption scheme using an authenticated encryption scheme called AES-GCM (**A**dvanced **E**ncryption **S**tandard, **G**alois **C**ounter **M**ode). The symmetric AES key will be generated and encrypted using AWS KMS, a cryptographic cloud service developed by Amazon.
+
+<Figure src="/images/envelope/gcm.png">AES in Gauloises Counter Mode.</Figure>
 
 Please note that this is merely a side project built for academic purposes. It has not been audited and as such should not be considered production-ready. That said, feel free to learn from it, incorporate it in your side projects, and provide constructive feedback.
 
