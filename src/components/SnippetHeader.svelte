@@ -27,6 +27,9 @@
       case "xml":
       case "html":
       case "json":
+      case "toml":
+      case "yaml":
+      case "ini":
         return lang.toUpperCase();
       default: {
         return lang.slice(0, 1).toUpperCase() + lang.slice(1);

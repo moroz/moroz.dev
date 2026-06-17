@@ -1,0 +1,181 @@
+---
+title: "Envelope Encryption with AWS KMS in Node.js, Part Two: Generating DEKs with AWS KMS"
+slug: "envelope-encryption-with-aws-kms-in-node-part-two"
+date: 2026-06-17
+summary: ""
+---
+
+This is the second instalment of a series of articles discussing a cryptographic technique called _envelope encryption_. A more detailed description of this technique is provided in [part one](/blog/envelope-encryption-with-aws-kms-in-node-part-one) of this series.
+
+In this article I'm going to introduce the AWS KMS API. In order to proceed with this part of the tutorial, you're going to need an active [AWS account](https://aws.amazon.com/).
+
+We will continue working on the project we created in part one. You can find the source code on my GitHub at [moroz/envelope-encryption-node](https://github.com/moroz/envelope-encryption-node/tree/tutorial/part-1), branch `tutorial/part-1`. The code is MIT-licensed.
+
+In this series, I use [mise-en-place](https://mise.jdx.dev/) to install and manage tool versions, so make sure you have it installed and configured if you intend to follow along:
+
+```shell
+$ mise version --json
+{
+  "version": "2026.6.11 macos-arm64 (2026-06-16)",
+  "latest": "2026.6.11",
+  "os": "macos",
+  "arch": "arm64",
+  "build_time": "2026-06-16 23:02:34 +00:00"
+}
+```
+
+### Clone the project
+
+If you haven't followed along the first part, clone the project onto your local machine:
+
+```shell
+$ git clone https://github.com/moroz/envelope-encryption-node -b tutorial/part-1
+```
+
+Change to the project directory. Install [AWS CLI](https://aws.amazon.com/cli/) and [`aws-vault`](https://github.com/ByteNess/aws-vault) using Mise:
+
+```shell
+$ cd envelope-encryption-node
+$ mise trust
+$ mise install
+$ mise use aws@2.35.6 aws-vault@7.12.2
+mise 2026.5.18 by @jdx
+aws-vault@7.12.2
+aws@2.35.6
+mise ~/working/exp/envelope-encryption-node/mise.toml tools: aws@2.35.6, aws-vault@7.12.2
+```
+
+### Set up AWS CLI
+
+The easiest way to set up AWS credentials in development is using [static access keys](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
+
+Sign in to the AWS Web console. In the IAM dashboard, create a user with at least the `AWSKeyManagementServicePowerUser` policy attached. Then, create an access key for this user. Add this access key to `aws-vault`:
+
+```shell
+$ aws-vault add kms-tutorial
+Enter Access Key ID: AKIAIOSFODNN7EXAMPLE
+Enter Secret Access Key: *****************************************
+Enter MFA Device ARN (If MFA is not enabled, leave this blank): [Enter]
+Added credentials to profile "kms-tutorial" in vault
+```
+
+Create a configuration section for the newly created profile in `~/.aws/config`. You may want to swap `eu-central-1` (Frankfurt) for another [AWS region](https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html). Pick the one which is closest to you.
+
+```ini filename="~/.aws/config"
+[profile kms-tutorial]
+credential_process=aws-vault exec kms-tutorial --json --prompt=terminal
+region=eu-central-1
+```
+
+When editing this file, make sure you did not leave out a duplicate section header (`[profile kms-tutorial]`). The file will not parse correctly if you do.
+
+Verify the configuration using `aws sts get-caller-identity`. If you have configured the credential flow correctly, the command should return a JSON response similar to the one below:
+
+```shell
+$ aws sts get-caller-identity --profile=kms-tutorial
+{
+    "UserId": "AIDASAMPLEUSERID",
+    "Account": "123456789012",
+    "Arn": "arn:aws:iam::123456789012:user/kms-tutorial"
+}
+```
+
+### Create a KMS key
+
+Next, we're going to create a KMS key. This resource is going to act as our Key Encryption Key (KEK) going forward. Please note that KMS keys are paid resources. As of this writing, one KMS key [costs US$1/month](https://aws.amazon.com/kms/pricing/). You should delete this key as soon as you have finished experimenting.
+
+```shell
+$ aws kms create-key --profile=kms-tutorial
+{
+    "KeyMetadata": {
+        "AWSAccountId": "123456789012",
+        "KeyId": "63dd51d2-4b2d-44d1-9e96-e69c88af10fd",
+        "Arn": "arn:aws:kms:eu-central-1:123456789012:key/63dd51d2-4b2d-44d1-9e96-e69c88af10fd",
+        "CreationDate": "2026-06-17T15:22:47.786000+02:00",
+        "Enabled": true,
+        "Description": "",
+        "KeyUsage": "ENCRYPT_DECRYPT",
+        "KeyState": "Enabled",
+        "Origin": "AWS_KMS",
+        "KeyManager": "CUSTOMER",
+        "CustomerMasterKeySpec": "SYMMETRIC_DEFAULT",
+        "KeySpec": "SYMMETRIC_DEFAULT",
+        "EncryptionAlgorithms": [
+            "SYMMETRIC_DEFAULT"
+        ],
+        "MultiRegion": false,
+        "CurrentKeyMaterialId": "db152ed46fa52367eb584bdb00cd2cd89f3bd680bb18db90eaede38a3153e0e2"
+    }
+}
+```
+
+### Inject environment variables using Mise
+
+Write down the `KeyId` or `Arn`&mdash;you will need to specify the resource identifier in all API calls.
+A good way to inject the ID into your application is using environment variables.
+In the project root, create a file called `mise.local.toml`:
+
+```toml filename="mise.local.toml"
+[env]
+AWS_PROFILE = "kms-tutorial"
+
+# .KeyMetadata.KeyId or .KeyMetadata.Arn, as returned by CreateKey
+ENCRYPTION_KEY_ID = "..."
+```
+
+With this configuration file, your shell should now have access to both variables:
+
+```shell
+$ echo $ENCRYPTION_KEY_ID $AWS_PROFILE
+63dd51d2-4b2d-44d1-9e96-e69c88af10fd kms-tutorial
+```
+
+You should treat `mise.local.toml` just like any other environment (dotenv) file&mdash;assume it may contain sensitive values and should not be committed to version control.
+
+Create a `.gitignore`:
+
+```shell filename=".gitignore"
+# NPM packages
+node_modules/
+
+# TypeScript artifacts
+dist/
+
+mise.local.toml
+```
+
+Verify that `mise.local.toml` is ignored:
+
+```shell
+$ git check-ignore -v mise.local.toml
+.gitignore:7:mise.local.toml    mise.local.toml
+```
+
+### Create an example configuration file
+
+It's good practice to provide an example configuration file if your project relies on an ignored file. In the project root, create a file called `mise.local.toml.example`:
+
+```toml filename="mise.local.toml.example"
+[env]
+AWS_PROFILE = "kms-tutorial"
+
+# .KeyMetadata.KeyId or .KeyMetadata.Arn, as returned by CreateKey
+ENCRYPTION_KEY_ID = ""
+```
+
+Now is probably a good moment to commit the changes:
+
+```shell
+$ git add .
+
+$ git status -s
+M  .gitignore
+M  mise.toml
+M  package.json
+
+$ git commit -m "Set up AWS CLI"
+[tutorial/part-1 25aec7a] Set up AWS CLI
+ 3 files changed, 9 insertions(+), 1 deletion(-)
+```
+
+### Install AWS SDK for JavaScript
