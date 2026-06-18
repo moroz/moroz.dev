@@ -13,7 +13,7 @@ We will continue working on the project we created in part one. You can find the
 
 In this series, I use [mise-en-place](https://mise.jdx.dev/) to install and manage tool versions, so make sure you have it installed and configured if you intend to follow along:
 
-```shell
+```bash
 $ mise version --json
 {
   "version": "2026.6.11 macos-arm64 (2026-06-16)",
@@ -28,13 +28,13 @@ $ mise version --json
 
 If you haven't followed along the first part, clone the project onto your local machine:
 
-```shell
+```bash
 $ git clone https://github.com/moroz/envelope-encryption-node -b tutorial/part-1
 ```
 
 Change to the project directory. Install [AWS CLI](https://aws.amazon.com/cli/) and [`aws-vault`](https://github.com/ByteNess/aws-vault) using Mise:
 
-```shell
+```bash
 $ cd envelope-encryption-node
 $ mise trust
 $ mise install
@@ -51,7 +51,7 @@ The easiest way to set up AWS credentials in development is using [static access
 
 Sign in to the AWS Web console. In the IAM dashboard, create a user with at least the `AWSKeyManagementServicePowerUser` policy attached. Then, create an access key for this user. Add this access key to `aws-vault`:
 
-```shell
+```bash
 $ aws-vault add kms-tutorial
 Enter Access Key ID: AKIAIOSFODNN7EXAMPLE
 Enter Secret Access Key: *****************************************
@@ -71,7 +71,7 @@ When editing this file, make sure you did not leave out a duplicate section head
 
 Verify the configuration using `aws sts get-caller-identity`. If you have configured the credential flow correctly, the command should return a JSON response similar to the one below:
 
-```shell
+```bash
 $ aws sts get-caller-identity --profile=kms-tutorial
 {
     "UserId": "AIDASAMPLEUSERID",
@@ -84,7 +84,7 @@ $ aws sts get-caller-identity --profile=kms-tutorial
 
 Next, we're going to create a KMS key. This resource is going to act as our Key Encryption Key (KEK) going forward. Please note that KMS keys are paid resources. As of this writing, one KMS key [costs US$1/month](https://aws.amazon.com/kms/pricing/). You should delete this key as soon as you have finished experimenting.
 
-```shell
+```bash
 $ aws kms create-key --profile=kms-tutorial
 {
     "KeyMetadata": {
@@ -125,7 +125,7 @@ ENCRYPTION_KEY_ID = "..."
 
 With this configuration file, your shell should now have access to both variables:
 
-```shell
+```bash
 $ echo $ENCRYPTION_KEY_ID $AWS_PROFILE
 63dd51d2-4b2d-44d1-9e96-e69c88af10fd kms-tutorial
 ```
@@ -134,7 +134,7 @@ You should treat `mise.local.toml` just like any other environment (dotenv) file
 
 Create a `.gitignore`:
 
-```shell filename=".gitignore"
+```bash filename=".gitignore"
 # NPM packages
 node_modules/
 
@@ -146,7 +146,7 @@ mise.local.toml
 
 Verify that `mise.local.toml` is ignored:
 
-```shell
+```bash
 $ git check-ignore -v mise.local.toml
 .gitignore:7:mise.local.toml    mise.local.toml
 ```
@@ -165,7 +165,7 @@ ENCRYPTION_KEY_ID = ""
 
 Now is probably a good moment to commit the changes:
 
-```shell
+```bash
 $ git add .
 
 $ git status -s
@@ -178,4 +178,81 @@ $ git commit -m "Set up AWS CLI"
  3 files changed, 9 insertions(+), 1 deletion(-)
 ```
 
-### Install AWS SDK for JavaScript
+### Install and configure AWS SDK for JavaScript
+
+In order to call AWS APIs in Node.js, we need to install the [AWS SDK for JavaScript](https://aws.amazon.com/sdk-for-javascript/). In this part, we're only going to need one package, [`@aws-sdk/client-kms`](https://www.npmjs.com/package/@aws-sdk/client-kms). Add it to the project using pnpm:
+
+```bash
+$ pnpm add @aws-sdk/client-kms
+```
+
+First, let's set up a KMS client instance. Create a new file named `src/kms.ts`:
+
+```typescript filename="src/kms.ts"
+import { KMSClient } from "@aws-sdk/client-kms";
+
+const kmsClient = new KMSClient();
+```
+
+With the AWS CLI and the `AWS_PROFILE` environment variable correctly set up, the SDK should pick up the correct credentials implicitly.
+
+### Read the Key Encryption Key ID from environment variables
+
+Before we make any calls to the KMS API, we need to first inject the key ID from the environment. We can use a helper function called `mustGetenv` (inspired by Go conventions):
+
+```ts filename="src/kms.ts"
+function mustGetenv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    console.error(`FATAL: Environment variable ${name} is not set!`);
+    process.exit(1);
+  }
+  return value as string;
+}
+
+const ENCRYPTION_KEY_ID = mustGetenv("ENCRYPTION_KEY_ID");
+```
+
+### Install TypeScript compiler
+
+At this point, Node.js can still execute the code just fine without transpilation, but the TypeScript LSP complaints about the `process` global. It's time to add the TypeScript compiler as a development dependency:
+
+```bash
+$ pnpm add -D typescript @types/node
+```
+
+Create a `tsconfig.json` file in the project root:
+
+```json filename="tsconfig.json"
+{
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    "module": "nodenext",
+    "target": "esnext",
+    "lib": ["esnext"],
+    "types": ["node"],
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Recommended Options
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  }
+}
+```
+
+Verify that the TypeScript compiler is happy:
+
+```bash
+$ pnpm exec tsc --noEmit && echo "OK"
+OK
+```

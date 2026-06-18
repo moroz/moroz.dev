@@ -4,9 +4,9 @@
   import SunIcon from "../icons/SunIcon.svelte";
 
   const stored =
-    typeof window === "undefined" || !("localStorage" in window)
+    typeof window === "undefined" || !("sessionStorage" in window)
       ? null
-      : localStorage.getItem("theme");
+      : sessionStorage.getItem("theme");
 
   const preference =
     stored ??
@@ -20,14 +20,15 @@
   function apply() {
     document.documentElement.classList.toggle(
       "dark",
-      localStorage.theme === "dark" ||
-        (!("theme" in localStorage) &&
+      sessionStorage.theme === "dark" ||
+        (!("theme" in sessionStorage) &&
           window.matchMedia("(prefers-color-scheme: dark)").matches),
     );
   }
 
   let lastCycled = 0;
 
+  // Debouncing for faulty mouse switches
   function cycle(e: MouseEvent) {
     const now = Date.now();
     if (now - lastCycled < 200) return;
@@ -39,7 +40,7 @@
         : DarkModePreference.Dark;
 
     mode = next;
-    localStorage.setItem("theme", next);
+    sessionStorage.setItem("theme", next);
     apply();
   }
 

@@ -8,14 +8,7 @@ for (const snippet of snippets) {
 
   const lang = snippet.dataset.language;
   const filename = snippet.dataset.filename;
-  const isShell = [
-    "powershell",
-    "plain",
-    "text",
-    "json",
-    "bash",
-    "shell",
-  ].includes(lang as string);
+  const isShell = ["powershell", "plain", "text", "json", "bash", "shell"].includes(lang as string);
   const prompt = lang === "powershell" ? "> " : "$ ";
   let lines = content.split("\n");
   const hasPrompt = lines.some((line) => line.startsWith(prompt));
@@ -40,6 +33,6 @@ for (const snippet of snippets) {
   wrapper.prepend(buttonContainer);
   mount(SnippetHeader, {
     target: buttonContainer,
-    props: { code: lines.join("\n"), lang, filename },
+    props: { code: lines.join("\n"), lang, filename, isCommands: isShell && hasPrompt },
   });
 }

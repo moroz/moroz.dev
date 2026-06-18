@@ -5,9 +5,10 @@
     lang?: string;
     code: string;
     filename?: string;
+    isCommands: boolean;
   }
 
-  const { lang, code, filename } = $props();
+  const { lang, code, filename, isCommands } = $props();
 
   const displayName = (() => {
     if (!lang) return "";
@@ -24,6 +25,9 @@
         return "TypeScript";
       case "cs":
         return "C#";
+      case "bash":
+      case "shell":
+        return "Shell";
       case "xml":
       case "html":
       case "json":
@@ -44,7 +48,7 @@
   {:else}
     <span>{displayName}</span>
   {/if}
-  <CopyToClipboardButton {code} />
+  <CopyToClipboardButton {code} {isCommands} />
 </header>
 
 <style>

@@ -42,14 +42,14 @@ This project was developed using Node.js 26.3.0 and pnpm 11.7.0. In the remainin
 
 Start by creating an empty directory for the project:
 
-```shell
+```bash
 $ mkdir envelope-encryption-node
 $ cd envelope-encryption-node
 ```
 
 Install and pin Node.js and pnpm versions using Mise:
 
-```shell
+```bash
 $ mise use node@26.3.0 pnpm@11.7.0
 mise 2026.6.10 by @jdx
 node@26.3.0
@@ -59,13 +59,13 @@ mise ~/working/exp/envelope-encryption-node/mise.toml tools: node@26.3.0, pnpm@1
 
 Initialize a Node.js project using pnpm:
 
-```shell
+```bash
 $ pnpm init --init-type=module
 ```
 
 Finally, initialize a Git repository and commit the changes:
 
-```shell
+```bash
 $ git init
 $ git add .
 $ git commit -m "Initial commit"
@@ -119,9 +119,9 @@ const ciphertext = await crypto.subtle.encrypt(
 );
 ```
 
-Put it all together in `src/index.mts` (create a new directory and file). Even though we are using a TypeScript extension, we do not need to install the TypeScript compiler yet unless we want to use advanced TypeScript syntax, such as enums:
+Put it all together in `src/index.ts` (create a new directory and file). Even though we are using a TypeScript extension, we do not need to install the TypeScript compiler yet unless we want to use advanced TypeScript syntax, such as enums:
 
-```typescript filename="src/index.mts"
+```typescript filename="src/index.ts"
 const message = "All your base are belong to us.";
 const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
   "encrypt",
@@ -139,8 +139,8 @@ console.log({ key, iv, ciphertext });
 
 When you run it, the program should print the respective objects to the terminal:
 
-```shell
-$ node src/index.mts
+```bash
+$ node src/index.ts
 {
   key: CryptoKey {
     type: 'secret',
@@ -176,7 +176,7 @@ const asString = new TextDecoder().decode(decrypted);
 
 Let's put it all together:
 
-```typescript filename="src/index.mts"
+```typescript filename="src/index.ts"
 const message = "All your base are belong to us.";
 const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
   "encrypt",
@@ -197,8 +197,8 @@ console.log({ asString });
 
 The script should now print the plaintext message to the terminal:
 
-```shell
-$ node src/index.mts
+```bash
+$ node src/index.ts
 { asString: 'All your base are belong to us.' }
 ```
 
