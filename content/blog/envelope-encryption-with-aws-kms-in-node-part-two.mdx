@@ -1,9 +1,11 @@
 ---
 title: "Envelope Encryption with AWS KMS in Node.js, Part Two: Generating DEKs with AWS KMS"
 slug: "envelope-encryption-with-aws-kms-in-node-part-two"
-date: 2026-06-17
+date: 2026-06-18
 summary: ""
 ---
+
+import Figure from "@components/Figure.svelte";
 
 This is the second instalment of a series of articles discussing a cryptographic technique called _envelope encryption_. A more detailed description of this technique is provided in [part one](/blog/envelope-encryption-with-aws-kms-in-node-part-one) of this series.
 
@@ -47,9 +49,66 @@ mise ~/working/exp/envelope-encryption-node/mise.toml tools: aws@2.35.6, aws-vau
 
 ### Set up AWS CLI
 
-The easiest way to set up AWS credentials in development is using [static access keys](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
+In order to call the AWS API, we need to first obtain some API credentials.
+The easiest way to set it up in development is using [static access keys](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
 
-Sign in to the AWS Web console. In the IAM dashboard, create a user with at least the `AWSKeyManagementServicePowerUser` policy attached. Then, create an access key for this user. Add this access key to `aws-vault`:
+Sign in to the AWS Web console. In the IAM dashboard, go to _IAM users_, then click _Create user_.
+Under _User details_, in _User name_, type `kms-tutorial-user`.
+
+<Figure src="/images/envelope/create-user.png">Create user: Step 1, Specify user details</Figure>
+
+Skip the permissions step for now. In the _Review and create_ view, you should get the following settings:
+
+<Figure src="/images/envelope/create-user-2.png">Create user: Step 3, Review and create</Figure>
+
+After you have created the user, go to the detailed view for this user:
+
+<Figure src="/images/envelope/user-view.png">User view</Figure>
+
+Click _Add permissions > Create inline policy_. In the _Specify permissions_ view, switch to the JSON editor and paste the following policy document:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kms:CreateKey",
+        "kms:Get*",
+        "kms:List*",
+        "kms:GenerateDataKey",
+        "kms:Encrypt",
+        "kms:Decrypt"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+In the next step, name the policy `kms-tutorial-policy` and click _Create policy_:
+
+<Figure src="/images/envelope/review-policy.png">Review and create policy</Figure>
+
+Next, go to the user's _Security credentials_ tab and click _Create access key_:
+
+<Figure src="/images/envelope/security-credentials-tab.png">Security credentials tab</Figure>
+
+Under _Use case_, choose _Command Line Interface (CLI)_. Tick the checkbox labeled _I&nbsp;understand the above recommendation and want to proceed to create an access key._ Click _Next_, then _Create access key_. You should now see a view named _Retrieve access keys_:
+
+<Figure src="/images/envelope/access-keys.png">Retrieve access keys</Figure>
+
+Next, let's set an AWS CLI profile. Add a new configuration section in `~/.aws/config`.
+You may want to swap `eu-central-1` (Frankfurt) for another [AWS region](https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html). Pick the one which is closest to you.
+
+```ini filename="~/.aws/config"
+[profile kms-tutorial]
+credential_process=aws-vault exec kms-tutorial --json --prompt=terminal
+region=eu-central-1
+```
+
+Paste the access key ID and secret access key from your browser to `aws-vault`:
 
 ```bash
 $ aws-vault add kms-tutorial
@@ -59,16 +118,6 @@ Enter MFA Device ARN (If MFA is not enabled, leave this blank): [Enter]
 Added credentials to profile "kms-tutorial" in vault
 ```
 
-Create a configuration section for the newly created profile in `~/.aws/config`. You may want to swap `eu-central-1` (Frankfurt) for another [AWS region](https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html). Pick the one which is closest to you.
-
-```ini filename="~/.aws/config"
-[profile kms-tutorial]
-credential_process=aws-vault exec kms-tutorial --json --prompt=terminal
-region=eu-central-1
-```
-
-When editing this file, make sure you did not leave out a duplicate section header (`[profile kms-tutorial]`). The file will not parse correctly if you do.
-
 Verify the configuration using `aws sts get-caller-identity`. If you have configured the credential flow correctly, the command should return a JSON response similar to the one below:
 
 ```bash
@@ -76,7 +125,7 @@ $ aws sts get-caller-identity --profile=kms-tutorial
 {
     "UserId": "AIDASAMPLEUSERID",
     "Account": "123456789012",
-    "Arn": "arn:aws:iam::123456789012:user/kms-tutorial"
+    "Arn": "arn:aws:iam::123456789012:user/kms-tutorial-user"
 }
 ```
 
@@ -172,6 +221,7 @@ $ git status -s
 M  .gitignore
 M  mise.toml
 M  package.json
+A  mise.local.toml.example
 
 $ git commit -m "Set up AWS CLI"
 [tutorial/part-1 25aec7a] Set up AWS CLI
@@ -180,13 +230,13 @@ $ git commit -m "Set up AWS CLI"
 
 ### Install and configure AWS SDK for JavaScript
 
-In order to call AWS APIs in Node.js, we need to install the [AWS SDK for JavaScript](https://aws.amazon.com/sdk-for-javascript/). In this part, we're only going to need one package, [`@aws-sdk/client-kms`](https://www.npmjs.com/package/@aws-sdk/client-kms). Add it to the project using pnpm:
+In order to call AWS APIs in Node.js, we need to install the [AWS SDK for JavaScript](https://aws.amazon.com/sdk-for-javascript/). Install the package [`@aws-sdk/client-kms`](https://www.npmjs.com/package/@aws-sdk/client-kms) using pnpm:
 
 ```bash
 $ pnpm add @aws-sdk/client-kms
 ```
 
-First, let's set up a KMS client instance. Create a new file named `src/kms.ts`:
+Create a new file named `src/kms.ts`. Import and instantiate a KMS client:
 
 ```typescript filename="src/kms.ts"
 import { KMSClient } from "@aws-sdk/client-kms";
@@ -198,7 +248,9 @@ With the AWS CLI and the `AWS_PROFILE` environment variable correctly set up, th
 
 ### Read the Key Encryption Key ID from environment variables
 
-Before we make any calls to the KMS API, we need to first inject the key ID from the environment. We can use a helper function called `mustGetenv` (inspired by Go conventions):
+Before we make any calls to the KMS API, we need to know the key identifier in our code. Using [`process.env`](https://nodejs.org/learn/command-line/how-to-read-environment-variables-from-nodejs), we can inject the key ID from environment variables.
+
+For that, I like to use a helper function called `mustGetenv`:
 
 ```ts filename="src/kms.ts"
 function mustGetenv(name: string): string {
@@ -256,3 +308,104 @@ Verify that the TypeScript compiler is happy:
 $ pnpm exec tsc --noEmit && echo "OK"
 OK
 ```
+
+Now is probably a good time to commit:
+
+```bash
+$ git add .
+
+$ git status -s
+M  package.json
+M  pnpm-lock.yaml
+A  src/kms.ts
+A  tsconfig.json
+
+$ git commit -m "Install TypeScript and AWS SDK"
+[tutorial/part-2 ec7ad92] Install TypeScript and AWS SDK
+ 4 files changed, 728 insertions(+), 1 deletion(-)
+ create mode 100644 src/kms.ts
+ create mode 100644 tsconfig.json
+```
+
+### Generate a Data Encryption Key
+
+In this section, we are going to generate a Data Encryption Key (DEK) using the [`GenerateDataKey`](https://docs.aws.amazon.com/kms/latest/APIReference/API_GenerateDataKey.html) API.
+The command has two required parameters: `KeyId`, which is the identifier of the Key Encryption Key; and either `KeySpec` or `NumberOfBytes`.
+
+Let's make the call in `src/kms.ts`:
+
+```typescript
+import { GenerateDataKeyCommand, KMSClient } from "@aws-sdk/client-kms";
+
+function mustGetenv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    console.error(`FATAL: Environment variable ${name} is not set!`);
+    process.exit(1);
+  }
+  return value as string;
+}
+
+const ENCRYPTION_KEY_ID = mustGetenv("ENCRYPTION_KEY_ID");
+
+const kmsClient = new KMSClient();
+
+const generateDataKeyResponse = await kmsClient.send(
+  new GenerateDataKeyCommand({
+    KeyId: ENCRYPTION_KEY_ID,
+    KeySpec: "AES_256",
+  }),
+);
+console.log({ generateDataKeyResponse });
+```
+
+If everything goes well, the script should now print out an API response:
+
+```bash
+$ node src/kms.ts
+{
+  generateDataKeyResponse: {
+    CiphertextBlob: Uint8Array(184) [
+        1,   2,   3,   0, 120, 169, 223,  29, 243,  11, 222, 236,
+      161, 143,  53,  35, 247,  55, 184,  58,  78, 208,  83, 112,
+       19, 248,  32, 146, 223,  90, 222,  82, 192, 186, 195,   9,
+      154,   1, 189,  52, 200, 247, 149, 134,  63,  98, 117,  92,
+      118, 165,  48,  33, 137,  63,   0,   0,   0, 126,  48, 124,
+        6,   9,  42, 134,  72, 134, 247,  13,   1,   7,   6, 160,
+      111,  48, 109,   2,   1,   0,  48, 104,   6,   9,  42, 134,
+       72, 134, 247,  13,   1,   7,   1,  48,  30,   6,   9,  96,
+      134,  72,   1, 101,
+      ... 84 more items
+    ],
+    Plaintext: Uint8Array(32) [
+      162, 198, 176,  98, 107,  89, 150, 246,
+       15, 215, 110, 175, 115, 196, 112, 156,
+      144,  71, 203,  98,  97, 101,  93, 217,
+      165,  43,  28,   9, 126,  73,  62,  43
+    ],
+    KeyId: 'arn:aws:kms:eu-central-1:123456789012:key/63dd51d2-4b2d-44d1-9e96-e69c88af10fd',
+    KeyMaterialId: 'db152ed46fa52367eb584bdb00cd2cd89f3bd680bb18db90eaede38a3153e0e2',
+    '$metadata': {
+      httpStatusCode: 200,
+      requestId: 'b255061e-7cd8-459e-86f7-128392c3dd41',
+      extendedRequestId: undefined,
+      cfId: undefined,
+      attempts: 1,
+      totalRetryDelay: 0
+    }
+  }
+}
+```
+
+The response contains two fields that are of interest to us: `Plaintext`, which is a 256-bit Data Encryption Key; and `CiphertextBlob`, which encodes the same key in an encrypted format. We can use the `Plaintext` key to encrypt data, then store the `CiphertextBlob` alongside the encrypted file.
+
+### Encrypt an actual file
+
+Let's try to encrypt an actual file. In the project root, create a directory called `files` and add it to `.gitignore`:
+
+```bash
+$ mkdir -p files
+$ echo 'files/' >> .gitignore
+```
+
+Download [this PDF file](/images/envelope/input.pdf) and
