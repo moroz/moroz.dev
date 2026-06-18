@@ -3,6 +3,7 @@ import Layout from "@layouts/Layout.astro";
 import { formatDateTime } from "@/lib/datetime.ts";
 import { type BlogPost, PER_PAGE } from "@/lib/blog.ts";
 import Pagination from "@components/Pagination.astro";
+import { marked } from "marked";
 
 interface Props {
   posts: BlogPost[];
@@ -33,7 +34,7 @@ const endIndex = startIndex + posts.length - 1;
             {post.data.title}
           </h3>
         </a>
-        <p class="content my-3!">{post.data.summary}</p>
+        <div class="content my-3!" set:html={marked.parse(post.data.summary ?? "")} />
         <span>
           <strong>Karol Moroz</strong> on
           <time datetime={post.data.date.toJSON()}>
