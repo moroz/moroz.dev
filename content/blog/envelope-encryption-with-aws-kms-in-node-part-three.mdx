@@ -1,6 +1,6 @@
 ---
 title: "Envelope Encryption with AWS KMS in Node.js, Part Two: Generating DEKs with AWS KMS"
-slug: "envelope-encryption-with-aws-kms-in-node-part-two"
+slug: "envelope-encryption-with-aws-kms-in-node-part-three"
 date: 2026-06-19
 draft: true
 summary: ""
@@ -9,3 +9,21 @@ summary: ""
 This is the third installment of a series of articles discussing a cryptographic technique called _envelope encryption_. A more detailed description of this technique is provided in [part one](/blog/envelope-encryption-with-aws-kms-in-node-part-one/) of this series.
 
 In [part two](/blog/envelope-encryption-with-aws-kms-in-node-part-two/), we introduced the AWS KMS API, created an IAM user, and set up local credentials. In this article, we are going to put it all together by writing a CLI tool to encrypt and decrypt files at will.
+
+### File format description
+
+In the previous parts, we have discussed ways to encrypt a file using a symmetric key. However, we have not yet discussed the exact binary format we're going to use for data storage. Let's quickly discuss the requirements for our bespoke format.
+
+1. We need to store the **wrapped Data Encryption Key**. Based on my experiments, the wrapped key returned by `GenerateDataKey` is 168 bytes for AES-128 and 184 bytes for AES-256.
+   Although all my requests these few days have returned ciphertexts of this length, it is _not_ guaranteed to have a constant length, as the ciphertext format is proprietary.
+   In fact, the [example response](https://docs.aws.amazon.com/kms/latest/APIReference/API_GenerateDataKey.html#API_GenerateDataKey_Examples) provided in the AWS KMS documentation for `GenerateDataKey` has a `CiphertextBlob` just 167 bytes long, and that's for AES-256!
+
+   To play it safe, we should also store...
+
+2. ...the **length of the key**. Based on my experiments, the length does not _usually_ exceed 255 bytes, so _technically_ this could just be an 8-bit unsigned integer.
+   That said, the [response syntax documentation](https://docs.aws.amazon.com/kms/latest/APIReference/API_GenerateDataKey.html#API_GenerateDataKey_ResponseSyntax) specifies the maximum length as 6144 bytes, Base64-encoded.
+   That equals 4608 bytes after decoding. Either way, we need 2 bytes to safely store the length of the key. Let's make it a **16-bit unsigned integer, big endian**.
+
+3. An **initialization vector (IV)**, also known as a _nonce_ (but not in the UK, where the term is reserved for sexual predators). In AES-GCM, the IV is always **12 bytes**. The IV is not a secret, and can be stored in plaintext alongside the encrypted message.
+
+4. The **ciphertext** along with the **authentication tag** generated at the encryption stage.
