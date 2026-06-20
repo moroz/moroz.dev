@@ -1,5 +1,5 @@
 ---
-title: "Envelope Encryption with AWS KMS in Node.js, Part Two: Generating DEKs with AWS KMS"
+title: "Envelope Encryption with AWS KMS in Node.js, Part Three: Encrypting and Decrypting Files"
 slug: "envelope-encryption-with-aws-kms-in-node-part-three"
 date: 2026-06-19
 draft: true
@@ -9,6 +9,21 @@ summary: ""
 This is the third installment of a series of articles discussing a cryptographic technique called _envelope encryption_. A more detailed description of this technique is provided in [part one](/blog/envelope-encryption-with-aws-kms-in-node-part-one/) of this series.
 
 In [part two](/blog/envelope-encryption-with-aws-kms-in-node-part-two/), we introduced the AWS KMS API, created an IAM user, and set up local credentials. In this article, we are going to put it all together by writing a CLI tool to encrypt and decrypt files at will.
+
+We will continue working on the project we created in part two. You can find the source code on my GitHub at [moroz/envelope-encryption-node](https://github.com/moroz/envelope-encryption-node/tree/tutorial/part-2), branch `tutorial/part-2`. The code is MIT-licensed.
+
+In this series, I use [mise-en-place](https://mise.jdx.dev/) to install and manage tool versions, so make sure you have it installed and configured if you intend to follow along:
+
+```bash
+$ mise version --json
+{
+  "version": "2026.6.11 macos-arm64 (2026-06-16)",
+  "latest": "2026.6.11",
+  "os": "macos",
+  "arch": "arm64",
+  "build_time": "2026-06-16 23:02:34 +00:00"
+}
+```
 
 ### File format description
 
@@ -27,3 +42,277 @@ In the previous parts, we have discussed ways to encrypt a file using a symmetri
 3. An **initialization vector (IV)**, also known as a _nonce_ (but not in the UK, where the term is reserved for sexual predators). In AES-GCM, the IV is always **12 bytes**. The IV is not a secret, and can be stored in plaintext alongside the encrypted message.
 
 4. The **ciphertext** along with the **authentication tag** generated at the encryption stage.
+
+5. On top of that, it might be a good idea to also store a **version marker** to give ourselves space to introduce breaking changes in a later revision.
+
+Based on the above, I came up with the following file format:
+
+<dl>
+  <dt>Byte 0</dt>
+  <dd>Version marker (`0x01`)</dd>
+
+<dt>Bytes 1&ndash;2</dt>
+<dd>
+  Wrapped key length (16-bit unsigned integer, big endian). Assuming a key length of 184: `0x00
+  0xB8`.
+</dd>
+
+<dt>Bytes 3&ndash;186</dt>
+<dd>Wrapped key (assuming a key length of 184).</dd>
+
+<dt>Bytes 187&ndash;198</dt>
+<dd>Initialization Vector (IV) &mdash; 12 bytes.</dd>
+
+  <dt>Bytes 199&ndash;EOF</dt>
+  <dd>Ciphertext and authentication tag (appended automatically at the end of the ciphertext by `crypto.subtle.encrypt`).</dd>
+</dl>
+
+### Reading the input file
+
+For the sake of simplicity, the program only supports encrypting files coming from the standard input. In order to encrypt a whole file, we first need to load the entire file into RAM. The easiest way to read from standard input until EOF seems to be using `fs.readFile`. Unfortunately, only the older, callback-based module `node:fs` supports reading directly from standard input. In order to use the callback-based implementation with `async`/`await`, we need to `promisify` it. Create a new file called `src/encrypt.ts`:
+
+```typescript filename="src/encrypt.ts"
+import { promisify } from "node:util";
+import { readFile } from "node:fs";
+
+const readFilePromise = promisify(readFile);
+const plaintext = await readFilePromise(process.stdin.fd);
+console.log({ plaintext });
+```
+
+We can test it using shell pipes:
+
+```bash
+$ echo -n test | node src/encrypt.ts
+{ plaintext: <Buffer 74 65 73 74> }
+```
+
+Let's try it with a longer input:
+
+```bash
+$ cat pnpm-lock.yaml | node src/encrypt.ts
+{
+  plaintext: <Buffer 2d 2d 2d 0a 6c 6f 63 6b 66 69 6c 65 56 65 72 73 69 6f 6e 3a 20 27 39 2e 30 27 0a 0a 69 6d 70 6f 72 74 65 72 73 3a 0a 0a 20 20 2e 3a 0a 20 20 20 20 63 ... 28810 more bytes>
+}
+```
+
+### Generate a key using AWS KMS
+
+Once we have successfully read the file contents, we can call the AWS KMS `GenerateDataKey` API to generate a Data Encryption Key. First, we need to inject the KMS key ID from environment variables:
+
+```typescript
+const ENCRYPTION_KEY_ID = process.env.ENCRYPTION_KEY_ID!;
+```
+
+Next, import the AWS SDK and generate a Data Encryption Key:
+
+```typescript
+import { GenerateDataKeyCommand, KMSClient } from "@aws-sdk/client-kms";
+
+const kmsClient = new KMSClient();
+
+const generateKeyResponse = await kmsClient.send(
+  new GenerateDataKeyCommand({
+    KeyId: ENCRYPTION_KEY_ID,
+    KeySpec: "AES_256",
+  }),
+);
+```
+
+Convert the key material returned by KMS to a `CryptoKey`:
+
+```typescript
+const encryptionKey = await crypto.subtle.importKey(
+  "raw",
+  generateKeyResponse.Plaintext as Uint8Array<ArrayBuffer>,
+  "AES-GCM",
+  false,
+  ["encrypt"],
+);
+```
+
+### Encrypt the plaintext
+
+Before we can perform the actual encryption step, we need to generate an initialization vector (IV):
+
+```typescript
+const iv = crypto.getRandomValues(new Uint8Array(12));
+```
+
+Finally, we can encrypt the plaintext using AES-GCM:
+
+```typescript
+const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, encryptionKey, plaintext);
+```
+
+### Build a file header
+
+Now we can start outputting data. First, let's build a file header &mdash; a constant version marker of `0x01`, followed by the length of the wrapped DEK in bytes. Allocate a `Buffer` just big enough to store the header:
+
+```typescript
+const header = Buffer.alloc(3);
+header.writeUint8(1);
+
+// Write the length of the wrapped key as 16-bit unsigned integer,
+// big endian, at offset 1
+header.writeUint16BE(generateKeyResponse.CiphertextBlob!.byteLength, 1);
+```
+
+Let's test that the logic works. Put everything together in `src/encrypt.ts`:
+
+```typescript filename="src/encrypt.ts"
+import { promisify } from "node:util";
+import { readFile } from "node:fs";
+import { GenerateDataKeyCommand, KMSClient } from "@aws-sdk/client-kms";
+
+const readFilePromise = promisify(readFile);
+const plaintext = await readFilePromise(process.stdin.fd);
+
+const ENCRYPTION_KEY_ID = process.env.ENCRYPTION_KEY_ID!;
+const kmsClient = new KMSClient();
+
+const generateKeyResponse = await kmsClient.send(
+  new GenerateDataKeyCommand({
+    KeyId: ENCRYPTION_KEY_ID,
+    KeySpec: "AES_256",
+  }),
+);
+
+const encryptionKey = await crypto.subtle.importKey(
+  "raw",
+  generateKeyResponse.Plaintext as Uint8Array<ArrayBuffer>,
+  "AES-GCM",
+  false,
+  ["encrypt"],
+);
+
+const iv = crypto.getRandomValues(new Uint8Array(12));
+
+const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, encryptionKey, plaintext);
+
+const header = Buffer.alloc(3);
+header.writeUint8(1);
+header.writeUint16BE(generateKeyResponse.CiphertextBlob!.byteLength, 1);
+
+console.log({ header });
+```
+
+Check the contents of the `header` variable:
+
+```bash
+$ cat pnpm-lock.yaml | node src/encrypt.ts
+{ header: <Buffer 01 00 b8> }
+```
+
+The header turned out just as expected: `0x01` followed by the number 184, encoded as two bytes big endian.
+
+### Draw the rest of the owl
+
+Now we can print the entire file structure in order. But first, let's make sure we don't wind up printing binary data to the terminal. In fact, we can do it right at the top of the file, so we don't waste precious resources in case the file cannot eb :
+
+```typescript
+if (process.stdout.isTTY) {
+  console.error("Error: cannot write binary output to a terminal. Pipe the output to a file.");
+  process.exit(2);
+}
+```
+
+Put the chunks in order and pipe them to standard output:
+
+```typescript
+const chunks = [
+  header,
+  generateKeyResponse.CiphertextBlob as Uint8Array<ArrayBuffer>,
+  iv,
+  ciphertext,
+];
+
+for (const chunk of chunks) {
+  process.stdout.write(new Uint8Array(chunk));
+}
+```
+
+Put it all together in `src/encrypt.ts`:
+
+```typescript filename="src/encrypt.ts"
+import { promisify } from "node:util";
+import { readFile } from "node:fs";
+import { GenerateDataKeyCommand, KMSClient } from "@aws-sdk/client-kms";
+
+if (process.stdout.isTTY) {
+  console.error("Error: cannot write binary output to a terminal. Pipe the output to a file.");
+  process.exit(2);
+}
+
+const readFilePromise = promisify(readFile);
+const plaintext = await readFilePromise(process.stdin.fd);
+
+const ENCRYPTION_KEY_ID = process.env.ENCRYPTION_KEY_ID!;
+const kmsClient = new KMSClient();
+
+const generateKeyResponse = await kmsClient.send(
+  new GenerateDataKeyCommand({
+    KeyId: ENCRYPTION_KEY_ID,
+    KeySpec: "AES_256",
+  }),
+);
+
+const encryptionKey = await crypto.subtle.importKey(
+  "raw",
+  generateKeyResponse.Plaintext as Uint8Array<ArrayBuffer>,
+  "AES-GCM",
+  false,
+  ["encrypt"],
+);
+
+const iv = crypto.getRandomValues(new Uint8Array(12));
+
+const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, encryptionKey, plaintext);
+
+const header = Buffer.alloc(3);
+header.writeUint8(1);
+header.writeUint16BE(generateKeyResponse.CiphertextBlob!.byteLength, 1);
+
+const chunks = [
+  header,
+  generateKeyResponse.CiphertextBlob as Uint8Array<ArrayBuffer>,
+  iv,
+  ciphertext,
+];
+
+for (const chunk of chunks) {
+  process.stdout.write(new Uint8Array(chunk));
+}
+```
+
+Let's test the program. First, let's try printing output directly to the terminal:
+
+```bash
+$ cat pnpm-lock.yaml | node src/encrypt.ts
+Error: cannot write binary output to a terminal. Pipe the output to a file.
+```
+
+Now, try piping the output to a file:
+
+```bash
+$ echo -n "All your base are belong to us." | node src/encrypt.ts > ../message.bin
+$ echo $?
+0
+```
+
+We can inspect the output file using `xxd`:
+
+```bash
+$ xxd -p ../message.bin
+0100b80102030078a9df1df30bdeeca18f3523f737b83a4ed0537013f820
+92df5ade52c0bac3099a013cfb58a658fc58ada994f1e1653bcca2000000
+7e307c06092a864886f70d010706a06f306d020100306806092a864886f7
+0d010701301e060960864801650304012e3011040cc8becc0e1baa1c9856
+16d495020110803b3606db995f8f7470bb3a05ffc2b399f998d82cca8f0c
+aaad9351237a45750a084f8c58d4570f951f926466bf76635b5e7cf11e7b
+94a22babf07e11872215f22edfc3517bff047ca7719c5b01877aeb4f36e4
+fc1de3d430d804ee97c378383e91174730753361b51b6b086b4b60c074b2
+bfef4d1b806e
+```
+
+We can see the header: `0x01 0x00 0xB8`, followed by an impressive string of gibberish.
