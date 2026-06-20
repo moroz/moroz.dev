@@ -1,9 +1,9 @@
 ---
 title: "Envelope Encryption with AWS KMS in Node.js, Part Three: Encrypting and Decrypting Files"
 slug: "envelope-encryption-with-aws-kms-in-node-part-three"
-date: 2026-06-19
-draft: true
-summary: ""
+date: 2026-06-20
+summary: |
+  The final part of the envelope encryption triptych combines all of our learnings together in two CLI programs &mdash; an encryptor and a decryptor.
 ---
 
 This is the third installment of a series of articles discussing a cryptographic technique called _envelope encryption_. A more detailed description of this technique is provided in [part one](/blog/envelope-encryption-with-aws-kms-in-node-part-one/) of this series.
@@ -39,7 +39,7 @@ In the previous parts, we have discussed ways to encrypt a file using a symmetri
    That said, the [response syntax documentation](https://docs.aws.amazon.com/kms/latest/APIReference/API_GenerateDataKey.html#API_GenerateDataKey_ResponseSyntax) specifies the maximum length as 6144 bytes, Base64-encoded.
    That equals 4608 bytes after decoding. Either way, we need 2 bytes to safely store the length of the key. Let's make it a **16-bit unsigned integer, big endian**.
 
-3. An **initialization vector (IV)**, also known as a _nonce_ (but not in the UK, where the term is reserved for sexual predators). In AES-GCM, the IV is always **12 bytes**. The IV is not a secret, and can be stored in plaintext alongside the encrypted message.
+3. An **initialization vector (IV)**, also known as a _nonce_. In AES-GCM, the IV is always **12 bytes**. The IV is not a secret, and can be stored in plaintext alongside the encrypted message.
 
 4. The **ciphertext** along with the **authentication tag** generated at the encryption stage.
 
@@ -71,7 +71,7 @@ Based on the above, I came up with the following file format:
 
 For the sake of simplicity, the program only supports encrypting files coming from the standard input. In order to encrypt a whole file, we first need to load the entire file into RAM. The easiest way to read from standard input until EOF seems to be using `fs.readFile`. Unfortunately, only the older, callback-based module `node:fs` supports reading directly from standard input. In order to use the callback-based implementation with `async`/`await`, we need to `promisify` it. Create a new file called `src/encrypt.ts`:
 
-```typescript filename="src/encrypt.ts"
+```ts filename="src/encrypt.ts"
 import { promisify } from "node:util";
 import { readFile } from "node:fs";
 
@@ -98,15 +98,26 @@ $ cat pnpm-lock.yaml | node src/encrypt.ts
 
 ### Generate a key using AWS KMS
 
-Once we have successfully read the file contents, we can call the AWS KMS `GenerateDataKey` API to generate a Data Encryption Key. First, we need to inject the KMS key ID from environment variables:
+Once we have successfully read the file contents, we can call the AWS KMS `GenerateDataKey` API to generate a Data Encryption Key. First, we need to inject the KMS key ID from environment variables.
 
-```typescript
-const ENCRYPTION_KEY_ID = process.env.ENCRYPTION_KEY_ID!;
+This part of the configuration will be identical for both the encryptor and the decryptor programs, therefore it makes sense to put it in a shared module. Create `src/config.ts`:
+
+```ts filename="src/config.ts"
+export function mustGetenv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    console.error(`FATAL: Environment variable ${name} is not set!`);
+    process.exit(1);
+  }
+  return value;
+}
+
+export const ENCRYPTION_KEY_ID = mustGetenv("ENCRYPTION_KEY_ID");
 ```
 
 Next, import the AWS SDK and generate a Data Encryption Key:
 
-```typescript
+```ts
 import { GenerateDataKeyCommand, KMSClient } from "@aws-sdk/client-kms";
 
 const kmsClient = new KMSClient();
@@ -121,7 +132,7 @@ const generateKeyResponse = await kmsClient.send(
 
 Convert the key material returned by KMS to a `CryptoKey`:
 
-```typescript
+```ts
 const encryptionKey = await crypto.subtle.importKey(
   "raw",
   generateKeyResponse.Plaintext as Uint8Array<ArrayBuffer>,
@@ -135,13 +146,13 @@ const encryptionKey = await crypto.subtle.importKey(
 
 Before we can perform the actual encryption step, we need to generate an initialization vector (IV):
 
-```typescript
+```ts
 const iv = crypto.getRandomValues(new Uint8Array(12));
 ```
 
 Finally, we can encrypt the plaintext using AES-GCM:
 
-```typescript
+```ts
 const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, encryptionKey, plaintext);
 ```
 
@@ -149,7 +160,7 @@ const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, encrypti
 
 Now we can start outputting data. First, let's build a file header &mdash; a constant version marker of `0x01`, followed by the length of the wrapped DEK in bytes. Allocate a `Buffer` just big enough to store the header:
 
-```typescript
+```ts
 const header = Buffer.alloc(3);
 header.writeUint8(1);
 
@@ -160,15 +171,15 @@ header.writeUint16BE(generateKeyResponse.CiphertextBlob!.byteLength, 1);
 
 Let's test that the logic works. Put everything together in `src/encrypt.ts`:
 
-```typescript filename="src/encrypt.ts"
+```ts filename="src/encrypt.ts"
 import { promisify } from "node:util";
 import { readFile } from "node:fs";
 import { GenerateDataKeyCommand, KMSClient } from "@aws-sdk/client-kms";
+import { ENCRYPTION_KEY_ID } from "./config.ts";
 
 const readFilePromise = promisify(readFile);
 const plaintext = await readFilePromise(process.stdin.fd);
 
-const ENCRYPTION_KEY_ID = process.env.ENCRYPTION_KEY_ID!;
 const kmsClient = new KMSClient();
 
 const generateKeyResponse = await kmsClient.send(
@@ -208,9 +219,9 @@ The header turned out just as expected: `0x01` followed by the number 184, encod
 
 ### Draw the rest of the owl
 
-Now we can print the entire file structure in order. But first, let's make sure we don't wind up printing binary data to the terminal. In fact, we can do it right at the top of the file, so we don't waste precious resources in case the file cannot eb :
+Now we can print the entire file structure in order. But first, let's make sure we don't wind up printing binary data to the terminal. In fact, we can do it right at the top of the file, so we don't waste precious resources in case the file cannot be written to a terminal:
 
-```typescript
+```ts
 if (process.stdout.isTTY) {
   console.error("Error: cannot write binary output to a terminal. Pipe the output to a file.");
   process.exit(2);
@@ -219,7 +230,7 @@ if (process.stdout.isTTY) {
 
 Put the chunks in order and pipe them to standard output:
 
-```typescript
+```ts
 const chunks = [
   header,
   generateKeyResponse.CiphertextBlob as Uint8Array<ArrayBuffer>,
@@ -234,10 +245,11 @@ for (const chunk of chunks) {
 
 Put it all together in `src/encrypt.ts`:
 
-```typescript filename="src/encrypt.ts"
+```ts filename="src/encrypt.ts"
 import { promisify } from "node:util";
 import { readFile } from "node:fs";
 import { GenerateDataKeyCommand, KMSClient } from "@aws-sdk/client-kms";
+import { ENCRYPTION_KEY_ID } from "./config.ts";
 
 if (process.stdout.isTTY) {
   console.error("Error: cannot write binary output to a terminal. Pipe the output to a file.");
@@ -247,7 +259,6 @@ if (process.stdout.isTTY) {
 const readFilePromise = promisify(readFile);
 const plaintext = await readFilePromise(process.stdin.fd);
 
-const ENCRYPTION_KEY_ID = process.env.ENCRYPTION_KEY_ID!;
 const kmsClient = new KMSClient();
 
 const generateKeyResponse = await kmsClient.send(
@@ -315,4 +326,185 @@ fc1de3d430d804ee97c378383e91174730753361b51b6b086b4b60c074b2
 bfef4d1b806e
 ```
 
-We can see the header: `0x01 0x00 0xB8`, followed by an impressive string of gibberish.
+We can see the header: `0x01 0x00 0xB8`, followed by an impressive amount of random-looking gibberish. Next, let's write another program to decode it.
+
+### The decryptor program
+
+The decryptor program needs to read the input file and split the binary into chunks, analogously to the encryption process. Let's start by reading from standard input until we reach EOF. Create `src/decrypt.ts`:
+
+```ts filename="src/decrypt.ts"
+import { readFile } from "node:fs";
+import { promisify } from "node:util";
+
+const readFilePromise = promisify(readFile);
+const input = await readFilePromise(process.stdin.fd);
+```
+
+Verify that the returned buffer is not empty.
+
+```ts
+if (input.length === 0) {
+  console.error("Failed to read from standard input.");
+  process.exit(1);
+}
+```
+
+Next, validate the version marker, stored in the first byte of the file. It must equal `0x01`, otherwise abort the decryption:
+
+```ts
+const versionMarker = input.readUint8();
+if (versionMarker !== 0x01) {
+  const versionMarkerHex = versionMarker.toString(16).padStart(2, "0");
+  console.error(`Unsupported version 0x${versionMarkerHex}.`);
+  process.exit(1);
+}
+```
+
+Read the length of the wrapped Data Encryption Key from bytes 1&ndash;2 of the input (16-bit unsigned integer, big endian):
+
+```ts
+const keyLength = input.readUint16BE(1);
+```
+
+Next, read `keyLength` bytes from the buffer, starting from index 3 (the fourth byte of the input buffer).
+
+```ts
+const wrappedKey = input.subarray(3, 3 + keyLength);
+```
+
+If the resulting buffer is shorter than expected, it means that the input file is too short and we should abort the operation:
+
+```ts
+if (wrappedKey.byteLength !== keyLength) {
+  console.error(
+    `Failed to read wrapped key from input: Want ${keyLength} bytes, got ${wrappedKey.byteLength}.`,
+  );
+  process.exit(1);
+}
+```
+
+Next, read the IV, which is the following 12 bytes, starting right after byte `3 + keyLength`. If the resulting binary is shorter than 12 bytes, abort the operation:
+
+```ts
+const iv = input.subarray(3 + keyLength, 3 + keyLength + 12);
+if (iv.byteLength !== 12) {
+  console.error("Input too short.");
+  process.exit(1);
+}
+```
+
+The remaining part of the file is the ciphertext and authentication tag:
+
+```ts
+const ciphertext = input.subarray(3 + keyLength + 12);
+```
+
+Next, call the AWS KMS API to unwrap the Data Encryption Key:
+
+```ts
+import { DecryptCommand, KMSClient } from "@aws-sdk/client-kms";
+import { ENCRYPTION_KEY_ID } from "./config.ts";
+
+const kmsClient = new KMSClient();
+const unwrappedKey = await kmsClient.send(
+  new DecryptCommand({
+    CiphertextBlob: wrappedKey,
+    KeyId: ENCRYPTION_KEY_ID,
+  }),
+);
+```
+
+Convert the unwrapped key to a `CryptoKey`:
+
+```ts
+const decryptionKey = await crypto.subtle.importKey(
+  "raw",
+  unwrappedKey.Plaintext as Uint8Array<ArrayBuffer>,
+  "AES-GCM",
+  false,
+  ["decrypt"],
+);
+```
+
+With the last part in place, we can decrypt the ciphertext and print it out to standard output:
+
+```ts
+const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, decryptionKey, ciphertext);
+process.stdout.write(new Uint8Array(plaintext));
+```
+
+Let's put it all together in `src/decrypt.ts`
+
+```ts filename="src/decrypt.ts"
+import { DecryptCommand, KMSClient } from "@aws-sdk/client-kms";
+import { readFile } from "node:fs";
+import { promisify } from "node:util";
+import { ENCRYPTION_KEY_ID } from "./config.ts";
+
+const readFilePromise = promisify(readFile);
+const input = await readFilePromise(process.stdin.fd);
+
+if (input.length === 0) {
+  console.error("Failed to read from standard input.");
+  process.exit(1);
+}
+
+const versionMarker = input.readUint8();
+if (versionMarker !== 0x01) {
+  const versionMarkerHex = versionMarker.toString(16).padStart(2, "0");
+  console.error(`Unsupported version 0x${versionMarkerHex}.`);
+  process.exit(1);
+}
+
+const keyLength = input.readUint16BE(1);
+const wrappedKey = input.subarray(3, 3 + keyLength);
+if (wrappedKey.byteLength !== keyLength) {
+  console.error(
+    `Failed to read wrapped key from input: Want ${keyLength} bytes, got ${wrappedKey.byteLength}.`,
+  );
+  process.exit(1);
+}
+
+const iv = input.subarray(3 + keyLength, 3 + keyLength + 12);
+if (iv.byteLength !== 12) {
+  console.error("Input too short.");
+  process.exit(1);
+}
+
+const ciphertext = input.subarray(3 + keyLength + 12);
+
+const kmsClient = new KMSClient();
+const unwrappedKey = await kmsClient.send(
+  new DecryptCommand({
+    CiphertextBlob: wrappedKey,
+    KeyId: ENCRYPTION_KEY_ID,
+  }),
+);
+
+const decryptionKey = await crypto.subtle.importKey(
+  "raw",
+  unwrappedKey.Plaintext as Uint8Array<ArrayBuffer>,
+  "AES-GCM",
+  false,
+  ["decrypt"],
+);
+
+const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, decryptionKey, ciphertext);
+
+process.stdout.write(new Uint8Array(plaintext));
+```
+
+If we call the program with the ciphertext generated by `src/encrypt.ts`, we should obtain the original message:
+
+```bash
+$ cat ../message.bin | node src/decrypt.ts
+All your base are belong to us.
+```
+
+### Learnings
+
+1. Use `fs.readFile` to read from the standard input. Use `promisify` to convert the callback-based implementation to one returning a `Promise`.
+
+2. You can access the standard output directly as `process.stdout`. Since it is a [writable stream](https://nodejs.org/api/stream.html), you can write binary data to it using the [`write`](https://nodejs.org/api/stream.html#writablewritechunk-encoding-callback) method.
+
+3. Use [`TypedArray.prototype.subarray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/subarray) to create a slice of an existing `Buffer` or `TypedArray`.
