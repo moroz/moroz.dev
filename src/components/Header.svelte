@@ -12,9 +12,7 @@
   <div
     class="mobile:pl-4 desktop:mx-auto container flex h-full w-full items-center justify-between"
   >
-    <a href="/">
-      <Logo/>
-    </a>
+    <Logo />
     <div class="hamburger-wrapper desktop:hidden">
       <Hamburger bind:open />
     </div>

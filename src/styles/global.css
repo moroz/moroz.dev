@@ -28,8 +28,8 @@ html {
 
 :root {
   @variant dark {
-    --color-primary: var(--color-green-300);
-    --color-primary-hover: var(--color-green-200);
+    --color-primary: var(--color-amber-500);
+    --color-primary-hover: var(--color-amber-600);
   }
 }
 
@@ -38,7 +38,8 @@ html {
   @apply transition-colors;
 }
 
-.prose, .content {
+.prose,
+.content {
   counter-reset: figure;
 
   pre.astro-code {
