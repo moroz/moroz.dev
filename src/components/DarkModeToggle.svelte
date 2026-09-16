@@ -2,6 +2,7 @@
   import { DarkModePreference } from "./types.ts";
   import MoonIcon from "../icons/MoonIcon.svelte";
   import SunIcon from "../icons/SunIcon.svelte";
+  import { onMount } from "svelte";
 
   const stored =
     typeof window === "undefined" || !("sessionStorage" in window)
