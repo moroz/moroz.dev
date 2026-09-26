@@ -1,6 +1,7 @@
 ---
 title: How to Set Up an ASP.NET Core MVC Application with PostgreSQL
 date: 2025-07-19
+slug: asp-net-setup-with-ef-core
 lang: en
 summary: |
     In this article you will learn how to set up an ASP.NET Core MVC project with a PostgreSQL database using Entity Framework Core and Npgsql.

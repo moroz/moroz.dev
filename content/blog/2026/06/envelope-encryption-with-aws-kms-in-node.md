@@ -1,6 +1,7 @@
 ---
 title: Envelope Encryption with AWS KMS in Node.js
 date: 2026-06-14
+slug: envelope-encryption-with-aws-kms-in-node
 draft: true
 ---
 

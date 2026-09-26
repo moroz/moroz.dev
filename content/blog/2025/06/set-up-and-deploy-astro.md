@@ -1,6 +1,7 @@
 ---
 title: How to set up and deploy an Astro website to Github Pages
 date: 2025-06-08
+slug: set-up-and-deploy-astro
 summary: This post describes the steps necessary to deploy an Astro project to Github Pages.
 ---
 

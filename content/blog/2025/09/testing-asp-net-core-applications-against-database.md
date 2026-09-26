@@ -1,6 +1,7 @@
 ---
 title: Testing ASP.NET Core Applications Against a Real Database
 date: 2025-09-29
+slug: testing-asp-net-core-applications-against-database
 summary: |
     In this post, I briefly explain how to set up integration tests in an ASP.NET Core application, using Entity Framework Core, PostgreSQL, Npgsql, and gRPC.
 ---
