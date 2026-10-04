@@ -27,9 +27,9 @@ highlights:
   - Secure Enclave device keys
 links:
   - label: Technical write-up (PDF, dark)
-    href: https://github.com/moroz/codeshare-writeup/releases/latest/download/codeshare.pdf
+    href: https://github.com/moroz/codeshare-writeup/releases/download/v2026.10.04/codeshare.pdf
   - label: Technical write-up (PDF, light)
-    href: https://github.com/moroz/codeshare-writeup/releases/latest/download/codeshare-light.pdf
+    href: https://github.com/moroz/codeshare-writeup/releases/download/v2026.10.04/codeshare-light.pdf
   - label: Typst source
     href: https://github.com/moroz/codeshare-writeup
 order: 1
