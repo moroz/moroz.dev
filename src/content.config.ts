@@ -33,4 +33,32 @@ const videos = defineCollection({
   }),
 });
 
-export const collections = { blog, videos };
+const projects = defineCollection({
+  loader: glob({
+    pattern: ["**/*.{md,mdx}"],
+    base: "./content/projects",
+  }),
+
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      slug: z.string(),
+      tagline: z.string(),
+      year: z.number(),
+      role: z.string(),
+      status: z.string(),
+      icon: image().optional(),
+      cover: image(),
+      coverAlt: z.string(),
+      stack: z.array(z.string()),
+      highlights: z.array(z.string()).default([]),
+      links: z
+        .array(z.object({ label: z.string(), href: z.string().url() }))
+        .default([]),
+      order: z.number().default(100),
+      featured: z.boolean().default(false),
+      draft: z.boolean().default(false),
+    }),
+});
+
+export const collections = { blog, videos, projects };
