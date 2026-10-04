@@ -33,7 +33,6 @@ links:
   - label: Typst source
     href: https://github.com/moroz/codeshare-writeup
 order: 1
-featured: true
 ---
 
 ## What?

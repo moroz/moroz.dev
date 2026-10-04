@@ -5,6 +5,8 @@ tagline: A self-hosted HTTP tunnelling service in the manner of ngrok. A local w
 started: "2026-06"
 role: Design and implementation (hackathon project)
 status: Hackathon project; superseded
+cover: ./screens.png
+coverAlt: The Pindakaas tunnel list with two tunnels online and two inactive, and a terminal running the SSH command for one tunnel, which streams the forwarded requests with their HTTP status codes. Demo data.
 stack:
   - Go
   - x/crypto/ssh

@@ -5,6 +5,8 @@ tagline: The website of a centre for laser therapy, aesthetic medicine and weigh
 started: "2026-10"
 role: Development, content migration
 status: Built; launch pending
+cover: ./screens.png
+coverAlt: The new home page of the centre on a desktop screen and on a phone, showing the list of therapies, the line drawing used as the header illustration and the online booking button.
 stack:
   - Astro
   - Svelte

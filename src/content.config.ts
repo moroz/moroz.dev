@@ -51,21 +51,17 @@ const projects = defineCollection({
       role: z.string(),
       status: z.string(),
       icon: image().optional(),
-      cover: image().optional(),
-      coverAlt: z.string().optional(),
+      // Thumbnail on the portfolio list and the project page; required.
+      cover: image(),
+      coverAlt: z.string(),
       stack: z.array(z.string()),
       highlights: z.array(z.string()).default([]),
       links: z
         .array(z.object({ label: z.string(), href: z.string().url() }))
         .default([]),
       order: z.number().default(100),
-      featured: z.boolean().default(false),
       draft: z.boolean().default(false),
-    })
-      .refine((p) => !p.cover || p.coverAlt, {
-        message: "coverAlt is required when cover is set",
-        path: ["coverAlt"],
-      }),
+    }),
 });
 
 export const collections = { blog, videos, projects };

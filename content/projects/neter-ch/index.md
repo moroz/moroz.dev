@@ -5,6 +5,8 @@ tagline: The website of a gynaecology and obstetrics practice in Aarau, Switzerl
 started: "2025-08"
 role: Development, content migration, infrastructure
 status: In production; content maintained with the practice
+cover: ./screens.png
+coverAlt: The neter.ch home page on a desktop screen and on a phone, showing the navigation, the portrait of the practice owner with quick links, and the appointment booking button.
 stack:
   - Astro
   - Svelte
