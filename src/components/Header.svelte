@@ -19,6 +19,7 @@
     <nav class={["h-full", open && "open"]}>
       <ul class="flex h-full items-stretch">
         <li><a href="/">Home</a></li>
+        <li><a href="/portfolio/">Portfolio</a></li>
         <li><a href="/blog/">Blog</a></li>
         <li><a href="/videos/">Videos</a></li>
         <li><DarkModeToggle /></li>

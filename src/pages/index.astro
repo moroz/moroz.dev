@@ -2,12 +2,16 @@
 import { Image } from "astro:assets";
 import RootLayout from "@layouts/RootLayout.astro";
 import karolLouvre from "@/assets/karol-louvre.webp";
+import ProjectCard from "@components/ProjectCard.astro";
+import { getFeaturedProject } from "@/lib/projects";
+
+const featured = await getFeaturedProject();
 ---
 
 <RootLayout title="">
-  <main class="flex-1 grid place-items-center pt-16">
+  <main class="flex-1 pt-16">
     <section
-      class="mx-auto max-w-5xl mobile:px-4 mobile:py-10"
+      class="desktop:py-24 mx-auto max-w-5xl mobile:px-4 mobile:py-10"
     >
       <div
         class="desktop:grid desktop:grid-cols-[1fr_auto] desktop:items-center desktop:gap-16"
@@ -31,6 +35,7 @@ import karolLouvre from "@/assets/karol-louvre.webp";
           <ul
             class="text-primary flex flex-wrap gap-x-6 gap-y-2 text-base font-semibold xl:text-lg"
           >
+            <li><a href="/portfolio/" class="hover:underline">Portfolio</a></li>
             <li><a href="/blog/" class="hover:underline">Blog</a></li>
             <li><a href="/videos/" class="hover:underline">Videos</a></li>
             <li>
@@ -70,5 +75,19 @@ import karolLouvre from "@/assets/karol-louvre.webp";
         </div>
       </div>
     </section>
+
+    {
+      featured && (
+        <section class="desktop:pb-24 mx-auto max-w-5xl pb-16 mobile:px-4">
+          <div class="mb-6 flex items-baseline justify-between gap-4">
+            <h2 class="text-2xl font-bold xl:text-3xl">Selected work</h2>
+            <a href="/portfolio/" class="text-primary font-semibold hover:underline">
+              All projects <span aria-hidden="true">→</span>
+            </a>
+          </div>
+          <ProjectCard project={featured} />
+        </section>
+      )
+    }
   </main>
 </RootLayout>

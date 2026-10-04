@@ -1,0 +1,18 @@
+---
+import Layout from "@layouts/Layout.astro";
+import ProjectCard from "@components/ProjectCard.astro";
+import { getProjects } from "@/lib/projects";
+
+const projects = await getProjects();
+---
+
+<Layout title="Portfolio">
+  <p
+    class="mx-auto mb-10 max-w-2xl text-center text-lg leading-relaxed text-slate-700 xl:text-xl dark:text-slate-300"
+  >
+    Selected projects, with notes on their design and implementation.
+  </p>
+  <div class="container mx-auto grid max-w-5xl gap-10">
+    {projects.map((project) => <ProjectCard project={project} headingLevel="h2" />)}
+  </div>
+</Layout>
