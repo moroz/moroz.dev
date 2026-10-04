@@ -1,11 +1,11 @@
-# Temporary: captures portfolio thumbnails (neter.ch live, Pindakaas running
-# locally) and commits them to this branch. Lives only on screenshots-tmp.
+# Temporary: photographs the PR #5 deploy preview for review. Lives only on
+# screenshots-tmp, which is deleted afterwards.
 name: Screenshots (temporary)
 
 on:
   push:
     branches: [screenshots-tmp]
-    paths: [".github/workflows/screenshots.yml", ".shots/*.py", ".shots/pindakaas-seed/*"]
+    paths: [".github/workflows/screenshots.yml", ".shots/*.py"]
 
 permissions:
   contents: write
@@ -14,108 +14,25 @@ jobs:
   shoot:
     runs-on: ubuntu-latest
     env:
-      # Pindakaas, production build with throwaway local settings.
-      GO_ENV: prod
-      DATABASE_URL: ./screens.db
-      SSH_SERVER_KEY_FILE: ./priv/id_ed25519
-      TLS_CERT_FILE: ./priv/cert.pem
-      TLS_KEY_FILE: ./priv/key.pem
-      BASE_DOMAIN: pindakaas.localhost
-      PROXY_DOMAIN: pindakaas.localhost
-      PUBLIC_URL: https://pindakaas.localhost:8081
-      GOOGLE_CLIENT_ID: unused
-      GOOGLE_CLIENT_SECRET: unused
-      # The development value from pindakaas's mise.toml; not a secret.
-      SECRET_KEY_BASE: 3V0DSIZp5596foaWQqsSCw6xkK3Q44SRBBsBTq2+zu6+tkIjLu2MrdqVwKKxRQLRVfvECiuBg07Yc8eS8hLRPQ==
+      PREVIEW: https://deploy-preview-5--cosmic-mooncake-4731c8.netlify.app
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install Playwright
+      - name: Screenshot the preview
         run: |
           pip install playwright
           python -m playwright install --with-deps chromium
-          mkdir -p out
-
-      - name: neter.ch
-        run: python .shots/shoot.py https://www.neter.ch/ out/neter
-
-      - uses: actions/checkout@v4
-        with:
-          repository: moroz/pindakaas
-          path: pindakaas
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: pindakaas/go.mod
-          cache-dependency-path: pindakaas/go.sum
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Build Pindakaas
-        working-directory: pindakaas
-        run: |
-          npm install -g pnpm@11
-          (cd assets && pnpm install --frozen-lockfile && pnpm build)
-          go build -tags PROD -o server .
-          mkdir -p cmd/screenseed priv
-          cp ../.shots/pindakaas-seed/main.go cmd/screenseed/
-          go build -o screenseed ./cmd/screenseed
-          go run github.com/pressly/goose/v3/cmd/goose@v3.27.1 -dir db/migrations sqlite3 "$DATABASE_URL" up
-          ssh-keygen -q -t ed25519 -N "" -f "$SSH_SERVER_KEY_FILE"
-          openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
-            -keyout "$TLS_KEY_FILE" -out "$TLS_CERT_FILE" -days 2 -subj "/CN=$BASE_DOMAIN" \
-            -addext "subjectAltName=DNS:$BASE_DOMAIN,DNS:*.$BASE_DOMAIN"
-          ./screenseed > seed.json
-          jq '.tunnels' seed.json
-
-      - name: Run Pindakaas with two connected tunnels
-        working-directory: pindakaas
-        run: |
-          nohup ./server > ../out/pindakaas-server.log 2>&1 &
-          for i in $(seq 1 30); do curl -sk -o /dev/null https://127.0.0.1:8081/ && break; sleep 1; done
-
-          # The local app behind the tunnels.
-          mkdir -p demo
-          echo '<!doctype html><title>Demo</title><h1>Hello from localhost:3000</h1>' > demo/index.html
-          echo '<!doctype html><title>About</title><p>About</p>' > demo/about.html
-          nohup python3 -m http.server 3000 -d demo > /dev/null 2>&1 &
-
-          # Two of the four tunnels connect; the dashboard shows both states.
-          for i in 0 1; do
-            user=$(jq -r ".tunnels[$i].username" seed.json)
-            pass=$(jq -r ".tunnels[$i].password" seed.json)
-            (sleep 900 | script -qfc "ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-              -o LogLevel=ERROR -p 42069 -R 0:localhost:3000 $user:$pass@127.0.0.1" ../out/ssh-$i.log > /dev/null 2>&1 &)
-          done
-          sleep 4
-
-          sub=$(jq -r '.tunnels[0].subdomain' seed.json)
-          for path in / /about.html /missing /index.html /about.html; do
-            curl -sk -o /dev/null -w "%{http_code} $path\n" \
-              --resolve "$sub.$BASE_DOMAIN:8081:127.0.0.1" "https://$sub.$BASE_DOMAIN:8081$path"
-            sleep 0.4
-          done
-          sleep 1
-          cat ../out/ssh-0.log
-
-      - name: Screenshot Pindakaas
-        working-directory: pindakaas
-        run: |
-          name=$(jq -r .cookie_name seed.json); value=$(jq -r .cookie seed.json)
-          python ../.shots/shoot.py "https://$BASE_DOMAIN:8081/" ../out/pindakaas \
-            --cookie "$name=$value" --wait-until load --settle 3000
-          user=$(jq -r '.tunnels[0].username' seed.json)
-          python ../.shots/terminal.py ../out/ssh-0.log \
-            "ssh -tt -p 42069 -R 0:localhost:3000 $user:••••••••••••••••@$BASE_DOMAIN" ../out/pindakaas-terminal.png
-
+          rm -rf out && mkdir -p out
+          python .shots/shoot.py "$PREVIEW/" out/review-home
+          python .shots/shoot.py "$PREVIEW/portfolio/" out/review-portfolio --only desktop
+          python .shots/shoot.py "$PREVIEW/portfolio/pindakaas/" out/review-pindakaas --only mobile
       - name: Commit screenshots
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f out
-          git commit -m "Screenshots from run ${{ github.run_id }}" || exit 0
+          git add -A -f out
+          git commit -m "Review screenshots from run ${{ github.run_id }}" || exit 0
           git push
