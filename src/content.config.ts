@@ -44,12 +44,15 @@ const projects = defineCollection({
       title: z.string(),
       slug: z.string(),
       tagline: z.string(),
-      year: z.number(),
+      // Month the project began, as YYYY-MM.
+      started: z
+        .string()
+        .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "started must be YYYY-MM"),
       role: z.string(),
       status: z.string(),
       icon: image().optional(),
-      cover: image(),
-      coverAlt: z.string(),
+      cover: image().optional(),
+      coverAlt: z.string().optional(),
       stack: z.array(z.string()),
       highlights: z.array(z.string()).default([]),
       links: z
@@ -58,7 +61,11 @@ const projects = defineCollection({
       order: z.number().default(100),
       featured: z.boolean().default(false),
       draft: z.boolean().default(false),
-    }),
+    })
+      .refine((p) => !p.cover || p.coverAlt, {
+        message: "coverAlt is required when cover is set",
+        path: ["coverAlt"],
+      }),
 });
 
 export const collections = { blog, videos, projects };

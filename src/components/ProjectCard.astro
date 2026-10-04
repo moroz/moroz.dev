@@ -1,6 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
+import { formatStarted } from "@/lib/projects";
 
 interface Props {
   project: CollectionEntry<"projects">;
@@ -16,15 +17,19 @@ const Heading = headingLevel;
 <article
   class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
 >
-  <div class="overflow-hidden bg-slate-100 dark:bg-slate-950">
-    <Image
-      src={data.cover}
-      alt={data.coverAlt}
-      widths={[640, 960, 1440]}
-      sizes="(min-width: 65rem) 64rem, 100vw"
-      class="w-full transition duration-500 group-hover:scale-[1.02]"
-    />
-  </div>
+  {
+    data.cover && (
+      <div class="overflow-hidden bg-slate-100 dark:bg-slate-950">
+        <Image
+          src={data.cover}
+          alt={data.coverAlt ?? ""}
+          widths={[640, 960, 1440]}
+          sizes="(min-width: 65rem) 64rem, 100vw"
+          class="w-full transition duration-500 group-hover:scale-[1.02]"
+        />
+      </div>
+    )
+  }
   <div class="desktop:p-8 grid gap-4 p-5">
     <div class="flex items-center gap-4">
       {
@@ -45,7 +50,7 @@ const Heading = headingLevel;
           </a>
         </Heading>
         <p class="text-sm text-slate-600 dark:text-slate-400">
-          {data.year} · {data.status}
+          Started {formatStarted(data.started)} · {data.status}
         </p>
       </div>
     </div>
