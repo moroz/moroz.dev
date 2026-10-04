@@ -29,13 +29,17 @@ const { Content } = await render(project);
 
       <header class="container mx-auto mt-6 max-w-5xl">
         <div class="flex items-center gap-5">
-          <Image
-            src={data.icon}
-            alt=""
-            width={96}
-            height={96}
-            class="desktop:h-24 desktop:w-24 h-16 w-16 shrink-0 rounded-[22%] shadow-md"
-          />
+          {
+            data.icon && (
+              <Image
+                src={data.icon}
+                alt=""
+                width={96}
+                height={96}
+                class="desktop:h-24 desktop:w-24 h-16 w-16 shrink-0 rounded-[22%] shadow-md"
+              />
+            )
+          }
           <div>
             <h1 class="text-4xl leading-tight font-bold xl:text-6xl">{data.title}</h1>
             <p class="mt-1 text-slate-600 dark:text-slate-400">{data.year} · {data.status}</p>

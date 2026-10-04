@@ -47,7 +47,7 @@ const projects = defineCollection({
       year: z.number(),
       role: z.string(),
       status: z.string(),
-      icon: image(),
+      icon: image().optional(),
       cover: image(),
       coverAlt: z.string(),
       stack: z.array(z.string()),
