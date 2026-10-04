@@ -1,7 +1,0 @@
-Script started on 2026-10-04 13:25:15+00:00 [COMMAND="ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null     -o LogLevel=ERROR -p 42069 -R 0:localhost:3000 6dd52a6d:645d71f4996afa2b@127.0.0.1" <not executed on terminal>]
-Streaming forwarding logs for "https://pensive-dingo.pindakaas.localhost:8081". Disconnect with Ctrl-C.
-GET / -> 200
-GET /about.html -> 200
-GET /missing -> 404
-GET /index.html -> 200
-GET /about.html -> 200
