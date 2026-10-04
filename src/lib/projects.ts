@@ -19,11 +19,6 @@ export async function getProjects() {
   );
 }
 
-export async function getFeaturedProject() {
-  const projects = await getProjects();
-  return projects.find((p) => p.data.featured) ?? projects[0];
-}
-
 // "2026-06" -> "June 2026"
 export function formatStarted(started: string) {
   const [year, month] = started.split("-").map(Number);

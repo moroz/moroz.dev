@@ -115,7 +115,7 @@ const closingLinks = pdfLinks.length > 0 ? pdfLinks : data.links.slice(0, 1);
           <div class="container mx-auto mt-10 max-w-6xl">
             <Image
               src={data.cover}
-              alt={data.coverAlt ?? ""}
+              alt={data.coverAlt}
               widths={[640, 1280, 1920]}
               sizes="(min-width: 72rem) 72rem, 100vw"
               class="w-full rounded-xl shadow-lg"
