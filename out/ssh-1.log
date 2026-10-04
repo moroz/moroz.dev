@@ -1,0 +1,2 @@
+Script started on 2026-10-04 13:25:15+00:00 [COMMAND="ssh -tt -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null     -o LogLevel=ERROR -p 42069 -R 0:localhost:3000 5060be22:4cb56f2237a05936@127.0.0.1" <not executed on terminal>]
+Streaming forwarding logs for "https://cranky-blobfish.pindakaas.localhost:8081". Disconnect with Ctrl-C.
