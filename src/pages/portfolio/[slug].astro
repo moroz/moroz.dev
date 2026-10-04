@@ -2,7 +2,7 @@
 import { Image } from "astro:assets";
 import { render } from "astro:content";
 import RootLayout from "@layouts/RootLayout.astro";
-import { getProjects } from "@/lib/projects";
+import { checkSections, formatStarted, getProjects } from "@/lib/projects";
 
 export async function getStaticPaths() {
   const projects = await getProjects();
@@ -14,7 +14,8 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { data } = project;
-const { Content } = await render(project);
+const { Content, headings } = await render(project);
+checkSections(project, headings);
 // Documents (PDFs) are repeated after the text; otherwise the first link is.
 const pdfLinks = data.links.filter((link) => link.href.endsWith(".pdf"));
 const closingLinks = pdfLinks.length > 0 ? pdfLinks : data.links.slice(0, 1);
@@ -44,7 +45,7 @@ const closingLinks = pdfLinks.length > 0 ? pdfLinks : data.links.slice(0, 1);
           }
           <div>
             <h1 class="text-4xl leading-tight font-bold xl:text-6xl">{data.title}</h1>
-            <p class="mt-1 text-slate-600 dark:text-slate-400">{data.year} · {data.status}</p>
+            <p class="mt-1 text-slate-600 dark:text-slate-400">Started {formatStarted(data.started)} · {data.status}</p>
           </div>
         </div>
         <p
@@ -109,15 +110,19 @@ const closingLinks = pdfLinks.length > 0 ? pdfLinks : data.links.slice(0, 1);
         }
       </header>
 
-      <div class="container mx-auto mt-10 max-w-6xl">
-        <Image
-          src={data.cover}
-          alt={data.coverAlt}
-          widths={[640, 1280, 1920]}
-          sizes="(min-width: 72rem) 72rem, 100vw"
-          class="w-full rounded-xl shadow-lg"
-        />
-      </div>
+      {
+        data.cover && (
+          <div class="container mx-auto mt-10 max-w-6xl">
+            <Image
+              src={data.cover}
+              alt={data.coverAlt ?? ""}
+              widths={[640, 1280, 1920]}
+              sizes="(min-width: 72rem) 72rem, 100vw"
+              class="w-full rounded-xl shadow-lg"
+            />
+          </div>
+        )
+      }
 
       <div class="content mx-auto my-12">
         <Content />
