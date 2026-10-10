@@ -1,0 +1,55 @@
+---
+title: HMAC-SHA-256 from Scratch in Go
+date: 2026-10-10
+slug: hmac-sha-256-from-scratch-in-go
+draft: true
+---
+
+The Key-Hashed Message Authentication Code algorithm, first standardized as RFC 2104 all the way back in February 1997, is a cornerstone of modern cryptography.
+It is used by everyday software that billions of people around the world rely on in everyday life.
+TLS uses it to ensure message and generate encryption keys (through HKDF).
+TOTP, or the Time-based One-Time Passwords standard, uses HMAC-SHA-1 with a shared secret to generate single-use numeric codes for two-factor authentication.
+HMAC is also the most popular authentication algorithm in JSON Web Tokens, or JWTs.
+
+Therefore, it is with greatest regret that I must now admit that I have never really understood how HMAC worked under the hood.
+I have used it in numerous ways, and I have oven tried to read through the RFC one time, but the true meaning of all of these arcane formulae has eluded me for many years.
+
+There is no better way to understand an algorithm than to implement it yourself, therefore in this post I'm going to implement HMAC-SHA-256 in Go.
+I will not be implementing SHA-256 myself, but will use the `sha256.Sum256(data []byte)` function from the `crypto/sha256` package instead.
+
+A very concise, general definition of HMAC is as follows:
+
+```
+HMAC(K, text) = H(
+    (K XOR opad) || H(
+        (K XOR ipad) || text
+    )
+)
+```
+
+In this formula, `H` represents the hash function (in our case, SHA-256), and the `||` operator concatenates binary strings.
+
+`XOR` is the bitwise _exclusive OR_ operation, which returns 1 if and only if its two operands are not equal:
+
+```
+1 XOR 1 = 0
+1 XOR 0 = 1
+0 XOR 1 = 1
+0 XOR 0 = 0
+```
+
+Let's start by defining a few constants:
+
+```go
+const (
+    BlockLength = 64    // defined as B in RFC 2104
+    InnerPad    = 0x36  // pattern for inner padding
+    OuterPad    = 0x5C  // pattern for outer padding
+)
+```
+
+We will implement the algorithm as a single function,
+
+```go
+func HmacSha256(key [])
+```
