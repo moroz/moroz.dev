@@ -62,7 +62,6 @@ const SERIES = [
     name: "Learning iOS and Swift",
     prefix: /^Learning iOS and Swift\. (?=Day)/,
   },
-  { name: "Go 入門", prefix: /^Go 入門：/ },
 ];
 
 export interface SeriesPart {

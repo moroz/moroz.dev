@@ -3,6 +3,7 @@ title: Go 入門：軟體包、宣告變數
 date: 2023-11-04
 slug: go-rumen-bao-bianshu-hanshu
 lang: zh-Hant
+draft: true
 
 summary: 此篇為編程的初學者介紹了 Go 程式語言的基本概念，初始化專案的方法，以及宣告變數的兩種語法。
 ---
