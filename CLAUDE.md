@@ -1,7 +1,8 @@
 # moroz.dev
 
 Karol Moroz's website: Astro 6, Svelte 5, Tailwind 4, deployed by Netlify (deploy previews
-on pull requests). Main font IBM Plex Sans (`@fontsource-variable/ibm-plex-sans`).
+on pull requests). Main font IBM Plex Sans (`@fontsource-variable/ibm-plex-sans`), monospace
+IBM Plex Mono (`@fontsource/ibm-plex-mono`); fallback stacks in `src/styles/global.css`.
 
 ## Portfolio (`content/projects/<slug>/index.md`)
 
