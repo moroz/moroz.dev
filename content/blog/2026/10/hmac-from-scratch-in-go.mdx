@@ -8,11 +8,15 @@ draft: true
 import XorBytes from "@components/XorBytes.svelte";
 import XorTruthTable from "@components/XorTruthTable.svelte";
 
-The Key-Hashed Message Authentication Code algorithm, first standardized as [RFC&nbsp;2104](https://datatracker.ietf.org/doc/html/rfc2104) all the way back in February 1997, is a cornerstone of modern cryptography.
+The **Key-Hashed Message Authentication Code** algorithm, first standardized in 1997 as [RFC&nbsp;2104](https://datatracker.ietf.org/doc/html/rfc2104), is a cornerstone of modern cryptography.
 It is widely used in software that billions of people around the world rely on in everyday life.
-[TLS](https://datatracker.ietf.org/doc/html/rfc8446) uses HMAC to verify message authenticity, and, via [HKDF](https://www.rfc-editor.org/info/rfc5869/), to derive encryption keys.
-[TOTP](https://www.rfc-editor.org/info/rfc6238/), or the Time-based One-Time Password algorithm, uses HMAC (traditionally with SHA-1) to generate single-use numeric codes for two-factor authentication. You may have used TOTP with Google Authenticator, Microsoft Authenticator, or similar apps.
-HMAC is also the most popular authentication algorithm in [JSON Web Tokens](https://datatracker.ietf.org/doc/html/rfc7519) (JWT).
+
+[TLS version 1.3](https://datatracker.ietf.org/doc/html/rfc8446) uses HMAC to authenticate handshakes, and, via [HKDF](https://www.rfc-editor.org/info/rfc5869/), to derive encryption keys.
+The previous version of the protocol, [TLS&nbsp;1.2](https://www.rfc-editor.org/info/rfc5246/), which is still in widespread use as of this writing, also uses HMAC for message authentication.
+
+HMAC is also widely used in **JSON Web Tokens** (JWT). In fact, HMAC with SHA-256 (`HS256`) is the only signing algorithm that a JWT implementation MUST implement, as per [RFC&nbsp;7519](https://datatracker.ietf.org/doc/html/rfc7519#section-8).
+
+Last but not least, [TOTP](https://www.rfc-editor.org/info/rfc6238/), or the **Time-based One-Time Password** algorithm, uses HMAC (traditionally with SHA-1) to generate single-use numeric codes for two-factor authentication. You may have used TOTP with Google Authenticator, Microsoft Authenticator, or similar mobile apps. For an in-depth explanation of TOTP, refer to my YouTube video [Implementing 2FA Codes (TOTP) in C](https://youtu.be/TNAXkPI7JBc).
 
 Therefore, it is with greatest regret that I admit that, until today, I have never really understood how HMAC worked.
 I have used it in numerous ways, and I have even tried to read through the RFC one time, but the true meaning of all of these arcane formulae has eluded me for many years.
@@ -22,11 +26,53 @@ I will not be implementing SHA-256 myself, but will use the `sha256.Sum256(data 
 
 The general definition of HMAC, as defined in RFC 2104, is as follows:
 
-```
-H(K XOR opad, H(K XOR ipad, text))
+{/* @oxfmt-ignore */}<p class="text-center"><var>H</var>(<var>K</var> XOR <var>opad</var>, <var>H</var>(<var>K</var> XOR <var>ipad</var>, <var>text</var>))</p>
+
+In this formula, <var>H</var> represents the hash function (in our case, SHA-256) and <var>K</var> represents the secret key.
+
+We can break the HMAC calculation into the following steps:
+
+1. Calculate the inner padding of the key <var>K</var> (explained in the next section), and store the resulting binary string in the variable `innerKey`.
+2. Hash `innerKey`, concatenated with the message, and store the resulting hash in the variable `innerHash`.
+3. Calculate the outer padding of the key <var>K</var>, and store the resulting binary string in the variable `outerKey`.
+4. Hash `outerKey`, concatenated with `innerHash`.
+5. ???
+6. Profit
+
+### Padding the key
+
+This section explains the steps necessary to calculate the inner and outer padding of the key. For both the inner and the outer padding, the steps are exactly the same, except for the binary values that the key is combined with.
+
+1. Allocate a buffer of exactly <var>B</var> bytes and fill it with zeroes. For HMAC-SHA-256, <var>B</var>&nbsp;=&nbsp;64.
+   In Go, a new byte slice will be filled with zeroes by default.
+
+```go
+const B = 64
+buffer := make([]byte, B)
 ```
 
-In this formula, `H` represents the hash function (in our case, SHA-256) and `K` represents the secret key.
+2. If the key <var>K</var> is longer than <var>B</var>, hash it first using <var>H</var> (i. e. SHA-256). Since `sha256.Sum256` returns `[32]byte`, not a byte slice, we need to allocate a variable first to slice it:
+
+```go
+if len(K) > B {
+    hashed := sha256.Sum256(K)
+    K = hashed[:]
+}
+```
+
+3. `XOR` each byte in the buffer with the value `0x36` (`0b00110110`):
+
+```go
+for i := range buffer {
+    buffer[i] ^= 0x36
+}
+```
+
+4. Return the buffer.
+
+Pad the key <var>K</var> to <var>B</var> bytes of length. Append zeroes at the end if the key is shorter than <var>B</var>. If the key is longer than <var>B</var> bytes, hash the key with <var>H</var> first. Then, `XOR` each byte in the buffer with the value `0x36`. An in-depth explanation of `XOR` will follow.
+
+2. Allocate a buffer
 
 `XOR` is the bitwise _exclusive OR_ operation, which returns 1 if and only if its two operands are not equal:
 
