@@ -32,6 +32,7 @@ export type BlogPost = Omit<CollectionEntry<"blog">, "data"> & {
   data: Omit<CollectionEntry<"blog">["data"], "date"> & {
     date: Temporal.PlainDate;
   };
+  readingMinutes: number;
 };
 
 export function transformPost(post: CollectionEntry<"blog">): BlogPost {
@@ -47,5 +48,79 @@ export function transformPost(post: CollectionEntry<"blog">): BlogPost {
       ...post.data,
       date,
     },
+    readingMinutes: readingMinutes(post.body),
   };
+}
+
+// Series are recognised by title prefix; the rest of the title names the part.
+const SERIES = [
+  {
+    name: "Envelope Encryption with AWS KMS in Node.js",
+    prefix: /^Envelope Encryption with AWS KMS in Node\.js, (?=Part)/,
+  },
+  {
+    name: "Learning iOS and Swift",
+    prefix: /^Learning iOS and Swift\. (?=Day)/,
+  },
+  { name: "Go 入門", prefix: /^Go 入門：/ },
+];
+
+export interface SeriesPart {
+  id: string;
+  title: string;
+}
+
+export interface Series {
+  name: string;
+  parts: SeriesPart[];
+}
+
+export interface YearEntry {
+  year: number;
+  count: number;
+  // First page of the paginated list that holds a post from this year.
+  page: number;
+}
+
+// Posts per year and series, both newest first; series parts oldest first.
+export async function getBlogIndex(drafts = false) {
+  const posts = (await getAllPosts(drafts)).map(transformPost);
+
+  const years: YearEntry[] = [];
+  posts.forEach((post, i) => {
+    const year = post.data.date.year;
+    const last = years.at(-1);
+    if (last?.year === year) {
+      last.count++;
+    } else {
+      years.push({ year, count: 1, page: Math.floor(i / PER_PAGE) + 1 });
+    }
+  });
+
+  const series: Series[] = [];
+  for (const { name, prefix } of SERIES) {
+    const parts = posts
+      .filter((post) => prefix.test(post.data.title))
+      .map((post) => ({
+        id: post.id,
+        title: post.data.title.replace(prefix, ""),
+      }))
+      .reverse();
+    if (parts.length) series.push({ name, parts });
+  }
+  const latest = (s: Series) =>
+    posts.findIndex((p) => p.id === s.parts.at(-1)!.id);
+  series.sort((a, b) => latest(a) - latest(b));
+
+  return { years, series };
+}
+
+const CJK =
+  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
+
+// About 230 words or 300 CJK characters a minute.
+export function readingMinutes(body = ""): number {
+  const cjk = body.match(CJK)?.length ?? 0;
+  const words = body.replace(CJK, " ").match(/\S+/g)?.length ?? 0;
+  return Math.max(1, Math.round(words / 230 + cjk / 300));
 }
