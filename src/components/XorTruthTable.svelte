@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import XorBit from "./XorBit.svelte";
+  import XorResult from "./XorResult.svelte";
 
   interface Props {
     children?: Snippet;
@@ -24,33 +26,17 @@
     <div class="flex items-end gap-4">
       <div class="operand">
         <span aria-hidden="true">A</span>
-        <button
-          type="button"
-          class={["bit", a === 1 && "on"]}
-          aria-label="A"
-          aria-pressed={a === 1}
-          onclick={() => (a ^= 1)}
-        >
-          {a}
-        </button>
+        <XorBit value={a} size="lg" aria-label="A" onclick={() => (a ^= 1)} />
       </div>
       <span class="operator" aria-hidden="true">XOR</span>
       <div class="operand">
         <span aria-hidden="true">B</span>
-        <button
-          type="button"
-          class={["bit", b === 1 && "on"]}
-          aria-label="B"
-          aria-pressed={b === 1}
-          onclick={() => (b ^= 1)}
-        >
-          {b}
-        </button>
+        <XorBit value={b} size="lg" aria-label="B" onclick={() => (b ^= 1)} />
       </div>
       <span class="operator text-2xl" aria-hidden="true">=</span>
       <div class="operand" aria-hidden="true">
         <span>result</span>
-        <span class={["result", result === 1 && "on"]}>{result}</span>
+        <XorResult value={result} size="lg" />
       </div>
     </div>
 
@@ -94,30 +80,6 @@
 
   .operator {
     @apply pb-5 text-lg text-slate-600 dark:text-slate-300;
-  }
-
-  .bit,
-  .result {
-    @apply grid size-18 place-items-center rounded-sm border text-3xl motion-safe:transition-colors;
-  }
-
-  .bit {
-    @apply cursor-pointer border-slate-600 bg-white text-slate-600 dark:border-slate-300 dark:bg-transparent dark:text-slate-300;
-    @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:focus-visible:outline-amber-400;
-
-    /* amber-400 rather than the dark-mode primary (amber-500): 7:1 against the widget */
-    &.on {
-      @apply border-primary bg-primary text-white dark:border-amber-400 dark:bg-amber-400 dark:text-slate-900;
-    }
-  }
-
-  /* A double border tells the result apart from the buttons without relying on colour */
-  .result {
-    @apply border-4 border-double border-slate-600 text-slate-900 dark:border-slate-300 dark:text-slate-100;
-
-    &.on {
-      @apply border-slate-900 bg-amber-400 font-semibold text-slate-900 dark:border-slate-100 dark:bg-sky-300;
-    }
   }
 
   table {

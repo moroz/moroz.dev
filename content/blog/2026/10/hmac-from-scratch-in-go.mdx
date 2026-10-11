@@ -5,6 +5,7 @@ slug: hmac-sha-256-from-scratch-in-go
 draft: true
 ---
 
+import XorBytes from "@components/XorBytes.svelte";
 import XorTruthTable from "@components/XorTruthTable.svelte";
 
 The Key-Hashed Message Authentication Code algorithm, first standardized as [RFC&nbsp;2104](https://datatracker.ietf.org/doc/html/rfc2104) all the way back in February 1997, is a cornerstone of modern cryptography.
@@ -33,11 +34,7 @@ In this formula, `H` represents the hash function (in our case, SHA-256) and `K`
 
 Applied on the level of a byte:
 
-```
-0x00 XOR 0x5C = 0x5C
-0xFF XOR 0x5C = 0xA3
-0x5C XOR 0x5C = 0x00
-```
+{/* @oxfmt-ignore */}<XorBytes client:visible>Bitwise XOR of two bytes. Toggle the bits of A and B, or pick a preset.</XorBytes>
 
 Let's start by defining a few constants:
 
