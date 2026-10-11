@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 15: Optionals are syntax sugar for Rust-like enums; presenting case study"
+title: "Optionals are syntax sugar for Rust-like enums; presenting case study"
+series: "Learning iOS and Swift"
+part: "Day 15"
 date: 2022-06-02
 slug: learning-ios-and-swift-day-fifteen
 lang: en-US

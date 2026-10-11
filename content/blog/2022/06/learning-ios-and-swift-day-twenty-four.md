@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 24: Building a carousel using UIKit interop"
+title: "Building a carousel using UIKit interop"
+series: "Learning iOS and Swift"
+part: "Day 24"
 date: 2022-06-11
 slug: learning-ios-and-swift-day-twenty-four
 lang: en-US

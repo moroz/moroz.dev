@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 4: A thing on dictionaries"
+title: "A thing on dictionaries"
+series: "Learning iOS and Swift"
+part: "Day 4"
 date: 2022-05-22
 slug: learning-ios-and-swift-day-four
 lang: en-US

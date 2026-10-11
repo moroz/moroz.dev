@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 12: Observable objects, environment objects"
+title: "Observable objects, environment objects"
+series: "Learning iOS and Swift"
+part: "Day 12"
 date: 2022-05-30
 slug: learning-ios-and-swift-day-twelve
 lang: en-US

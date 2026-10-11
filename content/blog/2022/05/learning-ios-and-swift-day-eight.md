@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 8: Starting off a SwiftUI app"
+title: "Starting off a SwiftUI app"
+series: "Learning iOS and Swift"
+part: "Day 8"
 date: 2022-05-26
 slug: learning-ios-and-swift-day-eight
 lang: en-US

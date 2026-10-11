@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 28: Signing in over API"
+title: "Signing in over API"
+series: "Learning iOS and Swift"
+part: "Day 28"
 date: 2022-06-15
 slug: learning-ios-and-swift-day-twenty-eight
 lang: en-US

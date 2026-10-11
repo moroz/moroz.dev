@@ -4,33 +4,60 @@ interface Props {
   totalPages: number;
 }
 const { page: currentPage, totalPages } = Astro.props;
+const href = (page: number) => (page === 1 ? "/blog/" : `/blog/page/${page}/`);
 ---
 
 {
   totalPages > 1 && (
-    <ul class="mx-auto flex w-min gap-4">
-      {Array.from({ length: totalPages }).map((_, page) => (
-        <li>
-          <a
-            href={page === 0 ? "/blog" : `/blog/page/${page + 1}/`}
-            class:list={[page + 1 === currentPage && "active"]}
-          >
-            {page + 1}
+    <nav aria-label="Pagination">
+      <ul class="mobile:hidden mx-auto flex w-min gap-4">
+        {Array.from({ length: totalPages }).map((_, page) => (
+          <li>
+            <a
+              href={href(page + 1)}
+              class:list={["number", page + 1 === currentPage && "active"]}
+              aria-current={page + 1 === currentPage ? "page" : undefined}
+            >
+              {page + 1}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="desktop:hidden flex items-center justify-between gap-2">
+        {currentPage > 1 ? (
+          <a href={href(currentPage - 1)} class="step">
+            ← Newer
           </a>
-        </li>
-      ))}
-    </ul>
+        ) : (
+          <span />
+        )}
+        <span class="text-sm text-slate-600 dark:text-gray-400">
+          Page {currentPage} of {totalPages}
+        </span>
+        {currentPage < totalPages ? (
+          <a href={href(currentPage + 1)} class="step">
+            Older →
+          </a>
+        ) : (
+          <span />
+        )}
+      </div>
+    </nav>
   )
 }
 
 <style>
   @reference "@css/global.css";
 
-  a {
+  .number {
     @apply inline-flex h-12 w-12 items-center justify-center rounded bg-slate-200 text-center text-lg font-bold transition hover:bg-slate-300 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700;
   }
 
   .active {
     @apply bg-primary hover:bg-primary-hover text-white dark:text-black;
+  }
+
+  .step {
+    @apply inline-flex min-h-11 items-center rounded-md border-2 border-slate-900 px-4 font-bold dark:border-gray-300;
   }
 </style>

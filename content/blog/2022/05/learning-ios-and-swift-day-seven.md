@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 7: UIKit primitives, Hello SwiftUI"
+title: "UIKit primitives, Hello SwiftUI"
+series: "Learning iOS and Swift"
+part: "Day 7"
 date: 2022-05-25
 slug: learning-ios-and-swift-day-seven
 lang: en-US

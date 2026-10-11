@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 1: Strings"
+title: "Strings"
+series: "Learning iOS and Swift"
+part: "Day 1"
 date: 2022-05-20
 slug: learning-ios-and-swift-day-one
 lang: en-US

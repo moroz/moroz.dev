@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 6: Structs and classes"
+title: "Structs and classes"
+series: "Learning iOS and Swift"
+part: "Day 6"
 date: 2022-05-24
 slug: learning-ios-and-swift-day-six
 lang: en-US

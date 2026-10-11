@@ -14,10 +14,10 @@ export const getStaticPaths = (async () => {
   }));
 }) satisfies GetStaticPaths;
 
-const { totalPageCount, posts, totalPostCount } = await paginatePosts(
+const { totalPageCount, posts } = await paginatePosts(
   Number(pageNumber),
   displayDrafts,
 );
 ---
 
-<BlogPage {totalPageCount} {posts} page={Number(pageNumber)} {totalPostCount} />
+<BlogPage {totalPageCount} {posts} page={Number(pageNumber)} />

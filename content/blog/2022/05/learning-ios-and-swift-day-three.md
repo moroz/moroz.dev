@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 3: Similarities to Rust"
+title: "Similarities to Rust"
+series: "Learning iOS and Swift"
+part: "Day 3"
 date: 2022-05-21
 slug: learning-ios-and-swift-day-three
 lang: en-US

@@ -1,7 +1,7 @@
 ---
-import Layout from "@layouts/Layout.astro";
+import RootLayout from "@layouts/RootLayout.astro";
 import { formatDateTime } from "@/lib/datetime.ts";
-import { type BlogPost, PER_PAGE } from "@/lib/blog.ts";
+import { type BlogPost, type YearEntry, getBlogIndex } from "@/lib/blog.ts";
 import Pagination from "@components/Pagination.astro";
 import { marked } from "marked";
 
@@ -9,40 +9,286 @@ interface Props {
   posts: BlogPost[];
   page: number;
   totalPageCount: number;
-  totalPostCount: number;
 }
 
-const { page, posts, totalPageCount, totalPostCount } = Astro.props;
+const { page, posts, totalPageCount } = Astro.props;
 
-const startIndex = (page - 1) * PER_PAGE + 1;
-const endIndex = startIndex + posts.length - 1;
+const displayDrafts = process.env.NODE_ENV === "development";
+const { years, series } = await getBlogIndex(displayDrafts);
+const [currentSeries, ...moreSeries] = series;
+const yearCounts = new Map(years.map((y) => [y.year, y.count]));
+
+const yearHref = ({ year, page }: YearEntry) =>
+  `${page === 1 ? "/blog/" : `/blog/page/${page}/`}#y${year}`;
+const plural = (n: number, noun: string) => `${n} ${noun}${n === 1 ? "" : "s"}`;
+
+const groups: { year: number; posts: BlogPost[] }[] = [];
+for (const post of posts) {
+  const year = post.data.date.year;
+  const last = groups.at(-1);
+  if (last?.year === year) last.posts.push(post);
+  else groups.push({ year, posts: [post] });
+}
 ---
 
-<Layout title="Blog">
-  <div class="content mx-auto">
-    <p>
-      Displaying posts <strong>{startIndex}&ndash;{endIndex}</strong> out of <strong
-        >{totalPostCount}</strong
-      >.
-    </p>
-  </div>
-  {
-    posts.map((post) => (
-      <article class="content mx-auto my-12">
-        <a href={`/blog/${post.id}`} class="!no-underline">
-          <h3 class="!text-primary hover:!text-primary-hover text-2xl font-bold transition-colors">
-            {post.data.title}
-          </h3>
-        </a>
-        <div class="content my-3!" set:html={marked.parse(post.data.summary ?? "")} />
-        <span>
-          <strong>Karol Moroz</strong> on
-          <time datetime={post.data.date.toJSON()}>
-            {formatDateTime(post.data.date)}
-          </time>
-        </span>
-      </article>
-    ))
+<RootLayout title="Blog">
+  <main class="desktop:pt-28 flex-1 pt-24 pb-16">
+    <div
+      class="desktop:px-5 mx-auto flex max-w-295 flex-col gap-14 px-4 xl:grid xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start"
+    >
+      <div class="flex min-w-0 flex-col gap-8">
+        <h1
+          class="desktop:pb-5 desktop:text-5xl border-b-3 border-slate-900 pb-4 text-4xl font-bold tracking-tight dark:border-gray-300"
+        >
+          Blog
+        </h1>
+
+        <nav
+          aria-label="Jump to year"
+          class="desktop:hidden -mx-4 -mt-2 flex gap-2 overflow-x-auto px-4 pb-1"
+        >
+          {
+            years.map((y) => (
+              <a href={yearHref(y)} class="chip">
+                {y.year}
+              </a>
+            ))
+          }
+        </nav>
+
+        {
+          currentSeries && (
+            <details class="series-box desktop:hidden">
+              <summary class="flex min-h-14 items-center justify-between gap-3 px-4 py-3">
+                <span class="flex flex-col gap-0.5">
+                  <span class="label">
+                    Series · {plural(currentSeries.parts.length, "part")}
+                  </span>
+                  <span class="leading-snug font-bold">
+                    {currentSeries.name}
+                  </span>
+                </span>
+                <svg
+                  class="chevron shrink-0 text-amber-400"
+                  aria-hidden="true"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </summary>
+              <ol class="series-parts px-4 pb-4 pl-9">
+                {currentSeries.parts.map((p) => (
+                  <li>
+                    <a href={`/blog/${p.id}`}>{p.title}</a>
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )
+        }
+
+        {
+          groups.map(({ year, posts }) => (
+            <section aria-labelledby={`y${year}`}>
+              <h2 id={`y${year}`} class="year-heading">
+                <span class="text-2xl font-bold text-slate-900 dark:text-gray-100">
+                  {year}
+                </span>
+                {plural(yearCounts.get(year)!, "post")}
+              </h2>
+              {posts.map((post) => (
+                <article class="post-row">
+                  <div class="mobile:order-last mobile:flex mobile:gap-2 desktop:pt-1 meta">
+                    <time datetime={post.data.date.toJSON()}>
+                      {formatDateTime(post.data.date)}
+                    </time>
+                    <span class="desktop:hidden" aria-hidden="true">
+                      ·
+                    </span>
+                    <span class="desktop:hidden">
+                      {post.readingMinutes} min read
+                    </span>
+                  </div>
+                  <div
+                    class="flex min-w-0 flex-col gap-1.5"
+                    lang={post.data.lang}
+                  >
+                    {post.data.series && (
+                      <p class="desktop:text-sm text-[0.8125rem] leading-snug text-slate-600 dark:text-gray-400">
+                        {post.data.series}
+                        {post.data.part && ` · ${post.data.part}`}
+                      </p>
+                    )}
+                    <h3 class="desktop:text-[1.3125rem] text-lg leading-snug font-semibold">
+                      <a href={`/blog/${post.id}`} class="post-title">
+                        {post.data.title}
+                      </a>
+                    </h3>
+                    {post.data.summary && (
+                      <p
+                        class="summary mobile:hidden leading-relaxed text-slate-600 dark:text-gray-400"
+                        set:html={marked.parseInline(post.data.summary)}
+                      />
+                    )}
+                    <span class="mobile:hidden text-sm text-slate-600 dark:text-gray-400">
+                      {post.readingMinutes} min read
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </section>
+          ))
+        }
+
+        <Pagination totalPages={totalPageCount} page={page} />
+
+        {
+          moreSeries.length > 0 && (
+            <section class="desktop:hidden flex flex-col gap-2 border-t border-slate-200 pt-5 dark:border-gray-800">
+              <h2 class="label text-slate-600 dark:text-gray-400">
+                More series
+              </h2>
+              {moreSeries.map((s) => (
+                <a href={`/blog/${s.parts[0].id}`} class="side-link">
+                  {s.name} — {plural(s.parts.length, "part")}
+                </a>
+              ))}
+            </section>
+          )
+        }
+      </div>
+
+      <aside
+        aria-label="Blog navigation"
+        class="mobile:hidden flex flex-col gap-7"
+      >
+        {
+          currentSeries && (
+            <section class="series-box flex flex-col gap-3 p-5">
+              <h2 class="label">Series</h2>
+              <p class="text-lg leading-snug font-bold">{currentSeries.name}</p>
+              <ol class="series-parts pl-5">
+                {currentSeries.parts.map((p) => (
+                  <li>
+                    <a href={`/blog/${p.id}`}>{p.title}</a>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+
+        {
+          moreSeries.length > 0 && (
+            <section class="flex flex-col gap-2 rounded-xl border border-slate-200 p-5 dark:border-gray-800">
+              <h2 class="label text-slate-600 dark:text-gray-400">
+                More series
+              </h2>
+              {moreSeries.map((s) => (
+                <a href={`/blog/${s.parts[0].id}`} class="side-link">
+                  {s.name} — {plural(s.parts.length, "part")}
+                </a>
+              ))}
+            </section>
+          )
+        }
+
+        <section class="flex flex-col gap-2">
+          <h2 class="label text-slate-600 dark:text-gray-400">Archive</h2>
+          <ul class="grid grid-cols-2 gap-x-4 gap-y-1.5 font-mono text-sm">
+            {
+              years.map((y) => (
+                <li>
+                  <a
+                    href={yearHref(y)}
+                    class="text-primary hover:text-primary-hover"
+                  >
+                    {y.year}
+                  </a>{" "}
+                  <span class="text-slate-600 dark:text-gray-400">
+                    {y.count}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+      </aside>
+    </div>
+  </main>
+</RootLayout>
+
+<style>
+  @reference "@css/global.css";
+
+  .label {
+    @apply font-mono text-[0.8125rem] font-medium tracking-wider uppercase;
   }
-  <Pagination totalPages={totalPageCount} page={page} />
-</Layout>
+
+  .chip {
+    @apply inline-flex min-h-10 shrink-0 items-center rounded-full bg-slate-100 px-3.5 font-mono text-sm text-slate-900 transition hover:bg-slate-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700;
+  }
+
+  .series-box {
+    @apply rounded-xl bg-slate-900 text-slate-50 dark:border dark:border-gray-700 dark:bg-gray-900;
+
+    .label {
+      @apply text-amber-400;
+    }
+  }
+
+  summary {
+    @apply cursor-pointer list-none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  details[open] .chevron {
+    @apply rotate-180;
+  }
+
+  .series-parts {
+    @apply flex list-decimal flex-col gap-1.5 leading-snug;
+
+    a {
+      @apply text-slate-200 transition hover:text-amber-300 dark:text-gray-300;
+    }
+  }
+
+  .year-heading {
+    @apply desktop:border-none mb-1 flex scroll-mt-20 items-baseline gap-3 border-b-3 border-slate-900 pb-1.5 font-mono text-sm text-slate-600 dark:border-gray-300 dark:text-gray-400;
+  }
+
+  .post-row {
+    @apply desktop:-mx-3 desktop:grid-cols-[9rem_minmax(0,1fr)] desktop:rounded-lg desktop:border-t desktop:border-b-0 desktop:px-3 desktop:hover:bg-slate-50 desktop:dark:hover:bg-gray-900 grid gap-x-5 gap-y-1.5 border-b border-slate-200 py-4 transition-colors dark:border-gray-800;
+  }
+
+  .meta {
+    @apply font-mono text-[0.8125rem] text-slate-600 dark:text-gray-400;
+  }
+
+  .post-title {
+    @apply text-slate-900 transition-colors dark:text-gray-100;
+  }
+
+  .post-row:hover .post-title {
+    @apply text-primary underline underline-offset-4;
+  }
+
+  .summary :global(code) {
+    @apply rounded-sm bg-slate-100 px-1 font-mono text-[0.9em] text-blue-900 dark:bg-[#24273a] dark:text-blue-300;
+  }
+
+  .side-link {
+    @apply text-primary hover:text-primary-hover flex min-h-8 items-center font-semibold;
+  }
+</style>

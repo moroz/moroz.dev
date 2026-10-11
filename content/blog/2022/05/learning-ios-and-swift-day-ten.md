@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 10: Internationalization, round images"
+title: "Internationalization, round images"
+series: "Learning iOS and Swift"
+part: "Day 10"
 date: 2022-05-28
 slug: learning-ios-and-swift-day-ten
 lang: en-US

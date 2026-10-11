@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 21: Project update, Decodable protocol"
+title: "Project update, Decodable protocol"
+series: "Learning iOS and Swift"
+part: "Day 21"
 date: 2022-06-08
 slug: learning-ios-and-swift-day-twenty-one
 lang: en-US

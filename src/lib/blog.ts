@@ -52,21 +52,10 @@ export function transformPost(post: CollectionEntry<"blog">): BlogPost {
   };
 }
 
-// Series are recognised by title prefix; the rest of the title names the part.
-const SERIES = [
-  {
-    name: "Envelope Encryption with AWS KMS in Node.js",
-    prefix: /^Envelope Encryption with AWS KMS in Node\.js, (?=Part)/,
-  },
-  {
-    name: "Learning iOS and Swift",
-    prefix: /^Learning iOS and Swift\. (?=Day)/,
-  },
-];
-
 export interface SeriesPart {
   id: string;
   title: string;
+  part?: string;
 }
 
 export interface Series {
@@ -96,22 +85,19 @@ export async function getBlogIndex(drafts = false) {
     }
   });
 
-  const series: Series[] = [];
-  for (const { name, prefix } of SERIES) {
-    const parts = posts
-      .filter((post) => prefix.test(post.data.title))
-      .map((post) => ({
-        id: post.id,
-        title: post.data.title.replace(prefix, ""),
-      }))
-      .reverse();
-    if (parts.length) series.push({ name, parts });
+  // Map keeps insertion order: the series with the newest post comes first.
+  const series = new Map<string, SeriesPart[]>();
+  for (const post of posts) {
+    const { series: name, title, part } = post.data;
+    if (!name) continue;
+    if (!series.has(name)) series.set(name, []);
+    series.get(name)!.unshift({ id: post.id, title, part });
   }
-  const latest = (s: Series) =>
-    posts.findIndex((p) => p.id === s.parts.at(-1)!.id);
-  series.sort((a, b) => latest(a) - latest(b));
 
-  return { years, series };
+  return {
+    years,
+    series: [...series].map(([name, parts]): Series => ({ name, parts })),
+  };
 }
 
 const CJK =

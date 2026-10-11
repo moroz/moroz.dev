@@ -3,10 +3,7 @@ import { paginatePosts } from "@/lib/blog.ts";
 import BlogPage from "@components/BlogPage.astro";
 
 const displayDrafts = process.env.NODE_ENV === "development";
-const { posts, totalPageCount, totalPostCount } = await paginatePosts(
-  1,
-  displayDrafts,
-);
+const { posts, totalPageCount } = await paginatePosts(1, displayDrafts);
 ---
 
-<BlogPage page={1} {totalPageCount} {posts} {totalPostCount} />
+<BlogPage page={1} {totalPageCount} {posts} />

@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 13: Persistent storage APIs, SQLite3"
+title: "Persistent storage APIs, SQLite3"
+series: "Learning iOS and Swift"
+part: "Day 13"
 date: 2022-05-31
 slug: learning-ios-and-swift-day-thirteen
 lang: en-US

@@ -3,16 +3,30 @@ import RootLayout from "@layouts/RootLayout.astro";
 
 interface Props {
   title: string;
+  // Small line above the heading, e.g. a post's series and part.
+  kicker?: string;
+  // Document title when it should differ from the heading.
+  documentTitle?: string;
 }
 
-const { title } = Astro.props;
+const { title, kicker, documentTitle = title } = Astro.props;
 ---
 
-<RootLayout {title}>
+<RootLayout title={documentTitle}>
   <main class="flex-1 py-16">
     <div class="mobile:px-4">
+      {
+        kicker && (
+          <p class="container mx-auto mt-6 max-w-180 text-center text-slate-600 xl:mt-10 dark:text-gray-400">
+            {kicker}
+          </p>
+        )
+      }
       <h2
-        class="container mx-auto mt-6 mb-4 max-w-180 text-center text-2xl leading-tight font-bold xl:mt-10 xl:text-4xl"
+        class:list={[
+          "container mx-auto mb-4 max-w-180 text-center text-2xl leading-tight font-bold xl:text-4xl",
+          kicker ? "mt-2" : "mt-6 xl:mt-10",
+        ]}
       >
         {title}
       </h2>

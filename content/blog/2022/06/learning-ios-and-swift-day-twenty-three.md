@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 23: Project update: saving data in settings view"
+title: "Project update: saving data in settings view"
+series: "Learning iOS and Swift"
+part: "Day 23"
 date: 2022-06-10
 slug: learning-ios-and-swift-day-twenty-three
 lang: en-US
