@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 9: Neovim configuration, ExerciseView"
+title: "Neovim configuration, ExerciseView"
+series: "Learning iOS and Swift"
+part: "Day 9"
 date: 2022-05-27
 slug: learning-ios-and-swift-day-nine
 lang: en-US

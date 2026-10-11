@@ -16,13 +16,17 @@ export async function getStaticPaths() {
 const post = await getEntry("blog", slug)!;
 
 const { Content } = await render(post);
+
+const { title, series, part } = post.data;
+const kicker = series && [series, part].filter(Boolean).join(" · ");
+const documentTitle = series ? `${title} – ${kicker}` : title;
 ---
 
 <script>
   import "@/lib/snippets.ts";
 </script>
 
-<Layout title={post.data.title}>
+<Layout {title} {kicker} {documentTitle}>
   <p class="text-center">
     <strong>Karol Moroz</strong> on <time datetime={post.data.date.toJSON()}
       >{formatDateTime(post.data.date)}</time

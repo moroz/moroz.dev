@@ -12,6 +12,9 @@ const blog = defineCollection({
     title: z.string(),
     date: z.date(),
     summary: z.string().optional(),
+    // Series name and the part's label within it ("Part Two", "Day 12").
+    series: z.string().optional(),
+    part: z.string().optional(),
     lang: z.string().default("en"),
     draft: z.boolean().default(false),
   }),

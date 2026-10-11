@@ -1,0 +1,26 @@
+---
+import { type BlogPost, plural } from "@/lib/blog.ts";
+import PostRow from "./post-row.astro";
+
+interface Props {
+  year: number;
+  // Posts that year across all pages, not only this one.
+  count: number;
+  posts: BlogPost[];
+}
+
+const { year, count, posts } = Astro.props;
+---
+
+<section aria-labelledby={`y${year}`}>
+  <h2
+    id={`y${year}`}
+    class="desktop:border-none mb-1 flex scroll-mt-20 items-baseline gap-3 border-b-3 border-slate-900 pb-1.5 font-mono text-sm text-slate-600 dark:border-gray-300 dark:text-gray-400"
+  >
+    <span class="text-2xl font-bold text-slate-900 dark:text-gray-100"
+      >{year}</span
+    >
+    {plural(count, "post")}
+  </h2>
+  {posts.map((post) => <PostRow {post} />)}
+</section>

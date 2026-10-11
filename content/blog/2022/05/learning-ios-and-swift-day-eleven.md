@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 11: Essential state management, modals"
+title: "Essential state management, modals"
+series: "Learning iOS and Swift"
+part: "Day 11"
 date: 2022-05-29
 slug: learning-ios-and-swift-day-eleven
 lang: en-US

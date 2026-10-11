@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 2: Setting up environment and Vim"
+title: "Setting up environment and Vim"
+series: "Learning iOS and Swift"
+part: "Day 2"
 date: 2022-05-20
 slug: learning-ios-and-swift-day-two
 lang: en-US

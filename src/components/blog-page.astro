@@ -1,0 +1,73 @@
+---
+import RootLayout from "@layouts/RootLayout.astro";
+import { type BlogPost, getBlogIndex, groupByYear } from "@/lib/blog.ts";
+import Pagination from "@components/pagination.astro";
+import MoreSeries from "@components/blog/more-series.astro";
+import SeriesBox from "@components/blog/series-box.astro";
+import YearArchive from "@components/blog/year-archive.astro";
+import YearSection from "@components/blog/year-section.astro";
+import YearShortcuts from "@components/blog/year-shortcuts.astro";
+
+interface Props {
+  posts: BlogPost[];
+  page: number;
+  totalPageCount: number;
+}
+
+const { page, posts, totalPageCount } = Astro.props;
+
+const displayDrafts = process.env.NODE_ENV === "development";
+const { years, series } = await getBlogIndex(displayDrafts);
+const [currentSeries, ...moreSeries] = series;
+const yearCounts = new Map(years.map((y) => [y.year, y.count]));
+---
+
+<RootLayout title="Blog">
+  <main class="desktop:pt-28 flex-1 pt-24 pb-16">
+    <div
+      class="desktop:px-5 mx-auto flex max-w-295 flex-col gap-14 px-4 xl:grid xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start"
+    >
+      <div class="flex min-w-0 flex-col gap-8">
+        <h1
+          class="desktop:pb-5 desktop:text-5xl border-b-3 border-slate-900 pb-4 text-4xl font-bold tracking-tight dark:border-gray-300"
+        >
+          Blog
+        </h1>
+
+        <YearShortcuts {years} class="desktop:hidden" />
+        {
+          currentSeries && (
+            <SeriesBox
+              series={currentSeries}
+              collapsible
+              class="desktop:hidden"
+            />
+          )
+        }
+
+        {
+          groupByYear(posts).map(({ year, posts }) => (
+            <YearSection {year} count={yearCounts.get(year)!} {posts} />
+          ))
+        }
+
+        <Pagination totalPages={totalPageCount} {page} />
+
+        <MoreSeries
+          series={moreSeries}
+          variant="ruled"
+          class="desktop:hidden"
+        />
+      </div>
+
+      <aside
+        aria-label="Blog navigation"
+        class="mobile:hidden flex flex-col gap-7"
+      >
+        {currentSeries && <SeriesBox series={currentSeries} />}
+        <MoreSeries series={moreSeries} variant="box" />
+        <YearArchive {years} />
+      </aside>
+    </div>
+  </main>
+</RootLayout>

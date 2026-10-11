@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 20: Apple's tutorial on Defense Against the Dark Arts"
+title: "Apple's tutorial on Defense Against the Dark Arts"
+series: "Learning iOS and Swift"
+part: "Day 20"
 date: 2022-06-07
 slug: learning-ios-and-swift-day-twenty
 lang: en-US

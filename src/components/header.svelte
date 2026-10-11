@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Hamburger } from "svelte-hamburgers";
-  import DarkModeToggle from "./DarkModeToggle.svelte";
-  import Logo from "@components/Logo.svelte";
+  import DarkModeToggle from "./dark-mode-toggle.svelte";
+  import Logo from "@components/logo.svelte";
 
   let open = $state(false);
 </script>

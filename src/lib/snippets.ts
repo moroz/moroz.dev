@@ -1,5 +1,5 @@
 import { mount } from "svelte";
-import SnippetHeader from "@components/SnippetHeader.svelte";
+import SnippetHeader from "@components/snippet-header.svelte";
 
 const snippets = document.querySelectorAll<HTMLPreElement>("pre.astro-code");
 for (const snippet of snippets) {

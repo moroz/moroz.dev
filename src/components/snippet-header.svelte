@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CopyToClipboardButton from "@components/CopyToClipboardButton.svelte";
+  import CopyToClipboardButton from "@components/copy-to-clipboard-button.svelte";
 
   interface Props {
     lang?: string;

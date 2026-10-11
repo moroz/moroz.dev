@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 14: More SQLite3 C APIs, dark mode detection"
+title: "More SQLite3 C APIs, dark mode detection"
+series: "Learning iOS and Swift"
+part: "Day 14"
 date: 2022-06-01
 slug: learning-ios-and-swift-day-fourteen
 lang: en-US

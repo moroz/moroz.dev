@@ -1,0 +1,16 @@
+---
+// Small monospace heading for sidebar boxes.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<h2
+  class:list={[
+    "font-mono text-[0.8125rem] font-medium tracking-wider uppercase",
+    className ?? "text-slate-600 dark:text-gray-400",
+  ]}
+>
+  <slot />
+</h2>

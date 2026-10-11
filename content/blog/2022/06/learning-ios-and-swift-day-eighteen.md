@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 18: Project update, more on tutorial"
+title: "Project update, more on tutorial"
+series: "Learning iOS and Swift"
+part: "Day 18"
 date: 2022-06-05
 slug: learning-ios-and-swift-day-eighteen
 lang: en-US

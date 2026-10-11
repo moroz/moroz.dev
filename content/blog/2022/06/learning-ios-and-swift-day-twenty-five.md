@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 25: Adding dots to a page view, watchOS 101"
+title: "Adding dots to a page view, watchOS 101"
+series: "Learning iOS and Swift"
+part: "Day 25"
 date: 2022-06-12
 slug: learning-ios-and-swift-day-twenty-five
 lang: en-US

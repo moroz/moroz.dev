@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 26: Keychain storage, MVVM architecture"
+title: "Keychain storage, MVVM architecture"
+series: "Learning iOS and Swift"
+part: "Day 26"
 date: 2022-06-13
 slug: learning-ios-and-swift-day-twenty-six
 lang: en-US

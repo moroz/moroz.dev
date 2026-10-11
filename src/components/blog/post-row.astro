@@ -1,0 +1,68 @@
+---
+import type { BlogPost } from "@/lib/blog.ts";
+import { formatDateTime } from "@/lib/datetime.ts";
+import { marked } from "marked";
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+const { date, lang, series, part, title, summary } = post.data;
+---
+
+<article class="row">
+  <div class="meta mobile:order-last mobile:flex mobile:gap-2 desktop:pt-1">
+    <time datetime={date.toJSON()}>{formatDateTime(date)}</time>
+    <span class="desktop:hidden" aria-hidden="true">·</span>
+    <span class="desktop:hidden">{post.readingMinutes} min read</span>
+  </div>
+  <div class="flex min-w-0 flex-col gap-1.5" {lang}>
+    {
+      series && (
+        <p class="desktop:text-sm text-[0.8125rem] leading-snug text-slate-600 dark:text-gray-400">
+          {series}
+          {part && ` · ${part}`}
+        </p>
+      )
+    }
+    <h3 class="desktop:text-[1.3125rem] text-lg leading-snug font-semibold">
+      <a href={`/blog/${post.id}`} class="title">{title}</a>
+    </h3>
+    {
+      summary && (
+        <p
+          class="summary mobile:hidden leading-relaxed text-slate-600 dark:text-gray-400"
+          set:html={marked.parseInline(summary)}
+        />
+      )
+    }
+    <span class="mobile:hidden text-sm text-slate-600 dark:text-gray-400">
+      {post.readingMinutes} min read
+    </span>
+  </div>
+</article>
+
+<style>
+  @reference "@css/global.css";
+
+  .row {
+    @apply desktop:-mx-3 desktop:grid-cols-[9rem_minmax(0,1fr)] desktop:rounded-lg desktop:border-t desktop:border-b-0 desktop:px-3 desktop:hover:bg-slate-50 desktop:dark:hover:bg-gray-900 grid gap-x-5 gap-y-1.5 border-b border-slate-200 py-4 transition-colors dark:border-gray-800;
+  }
+
+  .meta {
+    @apply font-mono text-[0.8125rem] text-slate-600 dark:text-gray-400;
+  }
+
+  .title {
+    @apply text-slate-900 transition-colors dark:text-gray-100;
+  }
+
+  .row:hover .title {
+    @apply text-primary underline underline-offset-4;
+  }
+
+  .summary :global(code) {
+    @apply rounded-sm bg-slate-100 px-1 font-mono text-[0.9em] text-blue-900 dark:bg-[#24273a] dark:text-blue-300;
+  }
+</style>

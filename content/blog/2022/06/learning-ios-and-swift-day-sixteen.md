@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 16: Side project update"
+title: "Side project update"
+series: "Learning iOS and Swift"
+part: "Day 16"
 date: 2022-06-03
 slug: learning-ios-and-swift-day-sixteen
 lang: en-US

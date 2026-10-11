@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 17: Apple's tutorial"
+title: "Apple's tutorial"
+series: "Learning iOS and Swift"
+part: "Day 17"
 date: 2022-06-04
 slug: learning-ios-and-swift-day-seventeen
 lang: en-US

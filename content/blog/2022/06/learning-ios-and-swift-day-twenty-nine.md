@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 29: Customizing view for signed in user"
+title: "Customizing view for signed in user"
+series: "Learning iOS and Swift"
+part: "Day 29"
 date: 2022-06-16
 slug: learning-ios-and-swift-day-twenty-nine
 lang: en-US

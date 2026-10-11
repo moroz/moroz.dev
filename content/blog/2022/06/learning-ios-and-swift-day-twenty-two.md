@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 22: Generic input field, toolbar"
+title: "Generic input field, toolbar"
+series: "Learning iOS and Swift"
+part: "Day 22"
 date: 2022-06-09
 slug: learning-ios-and-swift-day-twenty-two
 lang: en-US

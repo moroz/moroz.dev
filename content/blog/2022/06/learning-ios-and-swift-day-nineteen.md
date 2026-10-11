@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 19: Adding custom amounts in Ngöndro Tracker"
+title: "Adding custom amounts in Ngöndro Tracker"
+series: "Learning iOS and Swift"
+part: "Day 19"
 date: 2022-06-06
 slug: learning-ios-and-swift-day-nineteen
 lang: en-US

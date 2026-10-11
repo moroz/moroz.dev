@@ -1,5 +1,7 @@
 ---
-title: "Learning iOS and Swift. Day 5: Enums"
+title: "Enums"
+series: "Learning iOS and Swift"
+part: "Day 5"
 date: 2022-05-23
 slug: learning-ios-and-swift-day-five
 lang: en-US
