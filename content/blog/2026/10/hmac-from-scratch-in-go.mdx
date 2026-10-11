@@ -5,6 +5,8 @@ slug: hmac-sha-256-from-scratch-in-go
 draft: true
 ---
 
+import XorTruthTable from "@components/XorTruthTable.svelte";
+
 The Key-Hashed Message Authentication Code algorithm, first standardized as [RFC&nbsp;2104](https://datatracker.ietf.org/doc/html/rfc2104) all the way back in February 1997, is a cornerstone of modern cryptography.
 It is widely used in software that billions of people around the world rely on in everyday life.
 [TLS](https://datatracker.ietf.org/doc/html/rfc8446) uses HMAC to verify message authenticity, and, via [HKDF](https://www.rfc-editor.org/info/rfc5869/), to derive encryption keys.
@@ -27,12 +29,7 @@ In this formula, `H` represents the hash function (in our case, SHA-256) and `K`
 
 `XOR` is the bitwise _exclusive OR_ operation, which returns 1 if and only if its two operands are not equal:
 
-```
-1 XOR 1 = 0
-1 XOR 0 = 1
-0 XOR 1 = 1
-0 XOR 0 = 0
-```
+{/* @oxfmt-ignore */}<XorTruthTable client:visible>Exclusive OR of two bits. Click to toggle the operands A and B.</XorTruthTable>
 
 Applied on the level of a byte:
 
