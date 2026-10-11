@@ -71,6 +71,13 @@ html {
 
 :is(.content) {
   @apply prose dark:prose-invert xl:prose-xl;
+
+  /* gray-600 rather than the plugin's gray-500: 7:1 on white */
+  --tw-prose-captions: var(--color-gray-600);
+
+  @variant dark {
+    --tw-prose-captions: var(--color-gray-400);
+  }
 }
 
 .snippet-wrapper {
