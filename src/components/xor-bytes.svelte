@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import XorBit from "./XorBit.svelte";
-  import XorResult from "./XorResult.svelte";
+  import XorBit from "./xor-bit.svelte";
+  import XorResult from "./xor-result.svelte";
 
   interface Props {
     children?: Snippet;

@@ -1,6 +1,6 @@
 ---
 import { paginatePosts } from "@/lib/blog.ts";
-import BlogPage from "@components/BlogPage.astro";
+import BlogPage from "@components/blog-page.astro";
 
 const displayDrafts = process.env.NODE_ENV === "development";
 const { posts, totalPageCount } = await paginatePosts(1, displayDrafts);
