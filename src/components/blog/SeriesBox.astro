@@ -1,0 +1,93 @@
+---
+import type { Series } from "@/lib/blog.ts";
+import { plural } from "@/lib/blog.ts";
+
+interface Props {
+  series: Series;
+  // Phones: a disclosure that shows the parts on demand.
+  collapsible?: boolean;
+  class?: string;
+}
+
+const { series, collapsible = false, class: className } = Astro.props;
+---
+
+{
+  collapsible ? (
+    <details class:list={["box", className]}>
+      <summary class="flex min-h-14 items-center justify-between gap-3 px-4 py-3">
+        <span class="flex flex-col gap-0.5">
+          <span class="label">
+            Series · {plural(series.parts.length, "part")}
+          </span>
+          <span class="leading-snug font-bold">{series.name}</span>
+        </span>
+        <svg
+          class="chevron shrink-0 text-amber-400"
+          aria-hidden="true"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </summary>
+      <ol class="parts px-4 pb-4 pl-9">
+        {series.parts.map((p) => (
+          <li>
+            <a href={`/blog/${p.id}`}>{p.title}</a>
+          </li>
+        ))}
+      </ol>
+    </details>
+  ) : (
+    <section class:list={["box flex flex-col gap-3 p-5", className]}>
+      <h2 class="label">Series</h2>
+      <p class="text-lg leading-snug font-bold">{series.name}</p>
+      <ol class="parts pl-5">
+        {series.parts.map((p) => (
+          <li>
+            <a href={`/blog/${p.id}`}>{p.title}</a>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}
+
+<style>
+  @reference "@css/global.css";
+
+  .box {
+    @apply rounded-xl bg-slate-900 text-slate-50 dark:border dark:border-gray-700 dark:bg-gray-900;
+  }
+
+  .label {
+    @apply font-mono text-[0.8125rem] font-medium tracking-wider text-amber-400 uppercase;
+  }
+
+  summary {
+    @apply cursor-pointer list-none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  details[open] .chevron {
+    @apply rotate-180;
+  }
+
+  .parts {
+    @apply flex list-decimal flex-col gap-1.5 leading-snug;
+
+    a {
+      @apply text-slate-200 transition hover:text-amber-300 dark:text-gray-300;
+    }
+  }
+</style>

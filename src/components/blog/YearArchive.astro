@@ -1,0 +1,26 @@
+---
+import { type YearEntry, yearHref } from "@/lib/blog.ts";
+import SectionLabel from "./SectionLabel.astro";
+
+interface Props {
+  years: YearEntry[];
+}
+
+const { years } = Astro.props;
+---
+
+<section class="flex flex-col gap-2">
+  <SectionLabel>Archive</SectionLabel>
+  <ul class="grid grid-cols-2 gap-x-4 gap-y-1.5 font-mono text-sm">
+    {
+      years.map((y) => (
+        <li>
+          <a href={yearHref(y)} class="text-primary hover:text-primary-hover">
+            {y.year}
+          </a>{" "}
+          <span class="text-slate-600 dark:text-gray-400">{y.count}</span>
+        </li>
+      ))
+    }
+  </ul>
+</section>

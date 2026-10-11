@@ -1,0 +1,36 @@
+---
+import type { Series } from "@/lib/blog.ts";
+import { plural } from "@/lib/blog.ts";
+import SectionLabel from "./SectionLabel.astro";
+
+interface Props {
+  series: Series[];
+  // "box" in the sidebar, "ruled" (a top rule) below the list on phones.
+  variant: "box" | "ruled";
+  class?: string;
+}
+
+const { series, variant, class: className } = Astro.props;
+---
+
+{
+  series.length > 0 && (
+    <section
+      class:list={[
+        "flex flex-col gap-2 border-slate-200 dark:border-gray-800",
+        variant === "box" ? "rounded-xl border p-5" : "border-t pt-5",
+        className,
+      ]}
+    >
+      <SectionLabel>More series</SectionLabel>
+      {series.map((s) => (
+        <a
+          href={`/blog/${s.parts[0].id}`}
+          class="text-primary hover:text-primary-hover flex min-h-8 items-center font-semibold"
+        >
+          {s.name} — {plural(s.parts.length, "part")}
+        </a>
+      ))}
+    </section>
+  )
+}

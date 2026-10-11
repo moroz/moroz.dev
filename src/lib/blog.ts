@@ -109,3 +109,24 @@ export function readingMinutes(body = ""): number {
   const words = body.replace(CJK, " ").match(/\S+/g)?.length ?? 0;
   return Math.max(1, Math.round(words / 230 + cjk / 300));
 }
+
+export const plural = (n: number, noun: string) =>
+  `${n} ${noun}${n === 1 ? "" : "s"}`;
+
+export const pageHref = (page: number) =>
+  page === 1 ? "/blog/" : `/blog/page/${page}/`;
+
+export const yearHref = ({ year, page }: YearEntry) =>
+  `${pageHref(page)}#y${year}`;
+
+// Consecutive runs of posts from the same year; posts are newest first.
+export function groupByYear(posts: BlogPost[]) {
+  const groups: { year: number; posts: BlogPost[] }[] = [];
+  for (const post of posts) {
+    const year = post.data.date.year;
+    const last = groups.at(-1);
+    if (last?.year === year) last.posts.push(post);
+    else groups.push({ year, posts: [post] });
+  }
+  return groups;
+}
