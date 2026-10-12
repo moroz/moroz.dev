@@ -6,7 +6,6 @@ import MoreSeries from "@components/blog/more-series.astro";
 import SeriesBox from "@components/blog/series-box.astro";
 import YearArchive from "@components/blog/year-archive.astro";
 import YearSection from "@components/blog/year-section.astro";
-import YearShortcuts from "@components/blog/year-shortcuts.astro";
 
 interface Props {
   posts: BlogPost[];
@@ -34,7 +33,6 @@ const yearCounts = new Map(years.map((y) => [y.year, y.count]));
           Blog
         </h1>
 
-        <YearShortcuts {years} class="desktop:hidden" />
         {
           currentSeries && (
             <SeriesBox
