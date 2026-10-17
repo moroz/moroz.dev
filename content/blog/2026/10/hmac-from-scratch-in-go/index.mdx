@@ -99,15 +99,25 @@ buffer[i] = buffer[i] ^ mask
 return buffer
 ```
 
-`XOR` is the bitwise _exclusive OR_ operation, which returns 1 if and only if its two operands are not equal:
+### How exclusive OR (XOR) works
+
+In the previous section, we have referred to the `XOR` operation. This section explains how `XOR` works.
+
+`XOR` is the bitwise _exclusive OR_ operation. On the level of single bits, it returns 1 if and only if its two operands are not equal, and 0 otherwise:
 
 {/* @oxfmt-ignore */}<XorTruthTable client:visible>Exclusive OR of two bits. Click to toggle the operands A and B.</XorTruthTable>
 
-Applied on the level of a byte:
+On the level of a byte, the same operation is applied to each pair of bits:
 
 {/* @oxfmt-ignore */}<XorBytes client:visible>Bitwise XOR of two bytes. Toggle the bits of A and B, or pick a preset.</XorBytes>
 
+`XOR` is widely used in cryptography as a sort of binary mask. This is due to `XOR`'s unique reversibility: (<var>A</var> XOR <var>B</var>) XOR <var>B</var> always returns <var>A</var>, but if <var>B</var> is random and secret, <var>A</var> XOR <var>B</var> is as good as indistinguishable from random noise. This property is widely used in AEAD constructs, such as AES-GCM and ChaCha20-Poly1305.
+
+Side note: `XOR` is also the fastest way to zero a register in x86 assembly, because <code>xor&nbsp;eax,&nbsp;eax</code> in Intel machine code is shorter than <code>mov&nbsp;eax,&nbsp;0</code>, and because <var>A</var>&nbsp;XOR&nbsp;<var>A</var>&nbsp;=&nbsp;0. On ARM processors, the idiom works as well, but since all instructions in ARM machine code have the same length, the `XOR` idiom has no advantage over a move.
+
 ### Putting it all together
+
+Start by creating
 
 We will implement the algorithm as a single function. For now, let's just stub the implementation with a `panic`, so that the code compiles:
 
@@ -117,4 +127,4 @@ func HmacSha256(key, message []byte) []byte {
 }
 ```
 
-[RFC 4231](https://www.rfc-editor.org/info/rfc4231/#section-4) lists several test cases for
+[RFC 4231](https://www.rfc-editor.org/info/rfc4231/#section-4) lists several test cases for HMAC-SHA-256. We will copy the examples almost verbatim. First
