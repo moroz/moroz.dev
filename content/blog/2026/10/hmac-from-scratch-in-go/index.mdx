@@ -1,6 +1,6 @@
 ---
 title: HMAC-SHA-256 from Scratch in Go
-date: 2026-10-11
+date: 2026-10-17
 slug: hmac-sha-256-from-scratch-in-go
 draft: true
 ---
@@ -8,7 +8,7 @@ draft: true
 import XorBytes from "./xor-bytes.svelte";
 import XorTruthTable from "./xor-truth-table.svelte";
 
-The **Key-Hashed Message Authentication Code** algorithm, first standardized in 1997 as [RFC&nbsp;2104](https://datatracker.ietf.org/doc/html/rfc2104), is a cornerstone of modern cryptography.
+The **Keyed-Hash Message Authentication Code** algorithm, first standardized in 1997 as [RFC&nbsp;2104](https://datatracker.ietf.org/doc/html/rfc2104), is a cornerstone of modern cryptography.
 It is widely used in software that billions of people around the world rely on in everyday life.
 
 [TLS version 1.3](https://datatracker.ietf.org/doc/html/rfc8446) uses HMAC to authenticate handshakes, and, via [HKDF](https://www.rfc-editor.org/info/rfc5869/), to derive encryption keys.
@@ -37,42 +37,67 @@ We can break the HMAC calculation into the following steps:
 3. Calculate the outer padding of the key <var>K</var>, and store the resulting binary string in the variable `outerKey`.
 4. Hash `outerKey`, concatenated with `innerHash`.
 5. ???
-6. Profit
+6. PROFIT!!!
+
+First, let's discuss the padding algorithm, which is arguably the most complicated part of HMAC.
 
 ### Padding the key
 
-This section explains the steps necessary to calculate the inner and outer padding of the key. For both the inner and the outer padding, the steps are exactly the same, except for the binary values that the key is combined with.
+This section explains the steps necessary to calculate the inner and outer padding of the key. For both the inner and the outer padding, the steps are exactly the same, except for the constants <var>ipad</var> and <var>opad</var> that the key is combined with.
 
-1. Allocate a buffer of exactly <var>B</var> bytes and fill it with zeroes. For HMAC-SHA-256, <var>B</var>&nbsp;=&nbsp;64.
-   In Go, a new byte slice will be filled with zeroes by default.
+Our padding function takes a key and a padding mask, and returns a byte slice:
 
 ```go
-const B = 64
-buffer := make([]byte, B)
+func padKey(key []byte, mask byte) []byte {
 ```
 
-2. If the key <var>K</var> is longer than <var>B</var>, hash it first using <var>H</var> (i. e. SHA-256). Since `sha256.Sum256` returns `[32]byte`, not a byte slice, we need to allocate a variable first to slice it:
+1. Allocate a buffer of exactly `sha256.BlockSize` bytes:
 
 ```go
-if len(K) > B {
-    hashed := sha256.Sum256(K)
-    K = hashed[:]
+buffer := make([]byte, sha256.BlockSize) // 64 bytes
+```
+
+The RFC specifies that the key should be padded with zeroes at the end. Go takes care of that by automatically filling the buffer with zeroes.
+In C, you would need to allocate the buffer with [calloc(3p)](https://man7.org/linux/man-pages/man3/calloc.3p.html) rather than [malloc(3p)](https://man7.org/linux/man-pages/man3/malloc.3p.html), or call [memset(3p)](https://man7.org/linux/man-pages/man3/memset.3p.html) after allocating the buffer.
+
+2. If the key is longer than the block size, hash it and store the digest in place of the original key:
+
+```go
+if len(key) > sha256.BlockSize {
+    hashed := sha256.Sum256(key)
+    key = hashed[:]
 }
 ```
 
-3. `XOR` each byte in the buffer with the value `0x36` (`0b00110110`):
+Since `sha256.Sum256` returns `[32]byte`, an array, rather than the expected byte slice, we need to convert it using the slice expression `hashed[:]`.
+
+You might be tempted to try and inline the expression as `sha256.Sum256(key)[:]`. Alas, this does not compile: in Go, the return value of a function is not _addressable_ (it does not have a stable address in memory). To think that I chose Go over Rust because I do not care about memory safety...
+
+3. Copy the key to the buffer. Note that the destination comes first and the source second.
+
+```go
+copy(buffer, key)
+```
+
+4. `XOR` each byte in the buffer with the mask value. For inner padding, it's `0x36` (`0b00110110`). For outer padding, it's `0x5C` (`0b01011100`).
 
 ```go
 for i := range buffer {
-    buffer[i] ^= 0x36
+    buffer[i] ^= mask
 }
 ```
 
-4. Return the buffer.
+The `^=` operator is a shorthand form, inherited from C. We could also write the block body like so:
 
-Pad the key <var>K</var> to <var>B</var> bytes of length. Append zeroes at the end if the key is shorter than <var>B</var>. If the key is longer than <var>B</var> bytes, hash the key with <var>H</var> first. Then, `XOR` each byte in the buffer with the value `0x36`. An in-depth explanation of `XOR` will follow.
+```go
+buffer[i] = buffer[i] ^ mask
+```
 
-2. Allocate a buffer
+4. Return the buffer:
+
+```go
+return buffer
+```
 
 `XOR` is the bitwise _exclusive OR_ operation, which returns 1 if and only if its two operands are not equal:
 
@@ -82,22 +107,12 @@ Applied on the level of a byte:
 
 {/* @oxfmt-ignore */}<XorBytes client:visible>Bitwise XOR of two bytes. Toggle the bits of A and B, or pick a preset.</XorBytes>
 
-Let's start by defining a few constants:
-
-```go
-package myhmac
-
-const (
-	BlockLength = 64   // defined as B in RFC 2104
-	InnerPad    = 0x36 // pattern for inner padding
-	OuterPad    = 0x5C // pattern for outer padding
-)
-```
+### Putting it all together
 
 We will implement the algorithm as a single function. For now, let's just stub the implementation with a `panic`, so that the code compiles:
 
 ```go
-func HmacSha256(key, message []byte) ([]byte, error) {
+func HmacSha256(key, message []byte) []byte {
 	panic("unimplemented")
 }
 ```

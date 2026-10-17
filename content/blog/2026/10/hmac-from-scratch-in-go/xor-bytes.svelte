@@ -145,7 +145,7 @@
   </figcaption>
 </figure>
 
-<style>
+<style type="postcss">
   @reference "@css/global.css";
 
   .widget {

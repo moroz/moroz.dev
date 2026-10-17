@@ -20,7 +20,7 @@
   {value}
 </button>
 
-<style>
+<style type="postcss">
   @reference "@css/global.css";
 
   .bit {
