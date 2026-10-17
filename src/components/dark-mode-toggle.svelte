@@ -63,10 +63,10 @@
 >
   <div class="relative h-5 w-5">
     <MoonIcon
-      class="absolute inset-0 h-5 w-5 fill-current transition-opacity not-dark:opacity-0"
+      class="absolute inset-0 h-5 w-5 transition-opacity not-dark:opacity-0"
     />
     <SunIcon
-      class="absolute inset-0 h-5 w-5 fill-current transition-opacity dark:opacity-0"
+      class="absolute inset-0 h-5 w-5 transition-opacity dark:opacity-0"
     />
   </div>
   <span class="sr-only">{description}</span>
