@@ -158,6 +158,103 @@ var examples = []example{
 }
 ```
 
+Add a helper function to decode hex-encoded strings into byte slices. It's going to come in handy with all the different struct fields:
+
+```go filename="myhmac_test.go" imports
+func mustDecodeHex(data string) []byte {
+	bytes, err := hex.DecodeString(data)
+	if err != nil {
+		panic(err)
+	}
+	return bytes
+}
+```
+
+Finally, we can add the tests themselves. First, run the test vectors against the standard library implementation from `crypto/hmac`, so we can make sure the tests are correct:
+
+```go filename="myhmac_test.go" imports
+func TestStandardLibraryBaseline(t *testing.T) {
+	for _, example := range examples {
+		t.Run(example.name, func(t *testing.T) {
+			expected := mustDecodeHex(example.expected)
+
+			mac := hmac.New(sha256.New, mustDecodeHex(example.key))
+			mac.Write(mustDecodeHex(example.text))
+			actual := mac.Sum(nil)
+
+			if !hmac.Equal(actual, expected) {
+				t.Errorf(`Expected "%x", got "%x"`, expected, actual)
+			}
+		})
+	}
+}
+```
+
+At this point, all tests should pass:
+
+```bash
+$ go test .
+ok      myhmac  0.002s
+```
+
+Next, let's test our own implementation:
+
+```go filename="myhmac_test.go" imports
+func TestSHA256(t *testing.T) {
+	for _, example := range examples {
+		t.Run(example.name, func(t *testing.T) {
+			key := mustDecodeHex(example.key)
+			text := mustDecodeHex(example.text)
+			expected := mustDecodeHex(example.expected)
+
+			actual := myhmac.SHA256(key, text)
+
+			if !hmac.Equal(actual, expected) {
+				t.Errorf(`Expected "%x", got "%x"`, expected, actual)
+			}
+		})
+	}
+}
+```
+
+All the examples for this test should fail, because our implementation currently only returns `nil`:
+
+```bash fails
+$ go test .
+--- FAIL: TestSHA256 (0.00s)
+    --- FAIL: TestSHA256/Test_Case_1 (0.00s)
+        myhmac_test.go:120: Expected "b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7", got ""
+    --- FAIL: TestSHA256/Test_Case_2_(short_key) (0.00s)
+        myhmac_test.go:120: Expected "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843", got ""
+    --- FAIL: TestSHA256/Test_Case_3_(combined_length_of_key_and_data_>_64_bytes) (0.00s)
+        myhmac_test.go:120: Expected "773ea91e36800e46854db8ebd09181a72959098b3ef8c122d9635514ced565fe", got ""
+    --- FAIL: TestSHA256/Test_Case_4_(combined_length_of_key_and_data_>_64_bytes) (0.00s)
+        myhmac_test.go:120: Expected "82558a389a443c0ea4cc819899f2083a85f0faa3e578f8077a2e3ff46729665b", got ""
+    --- FAIL: TestSHA256/Test_Case_6_(key_>_64_bytes) (0.00s)
+        myhmac_test.go:120: Expected "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54", got ""
+    --- FAIL: TestSHA256/Test_Case_7_(key_and_data_both_>_128_bytes) (0.00s)
+        myhmac_test.go:120: Expected "9b09ffa71b942fcb27635fbcd5b0e944bfdc63644f0713938a7f51535c3a35e2", got ""
+FAIL
+FAIL    myhmac  0.002s
+FAIL
+```
+
+We will fix this soon, but first, we need to discuss XOR.
+
+### How exclusive OR (XOR) works
+
+`XOR` is the bitwise _exclusive OR_ operation. On the level of single bits, it returns 1 if and only if its two operands are not equal, and 0 otherwise:
+
+{/* @oxfmt-ignore */}<XorTruthTable client:visible>Exclusive OR of two bits. Click to toggle the operands A and B.</XorTruthTable>
+
+On the level of a byte, the same operation is applied to each pair of bits:
+
+{/* @oxfmt-ignore */}<XorBytes client:visible>Bitwise XOR of two bytes. Toggle the bits of A and B, or pick a preset.</XorBytes>
+
+`XOR` is widely used in cryptography as a sort of binary mask. This is due to `XOR`'s unique reversibility: (<var>A</var> XOR <var>B</var>) XOR <var>B</var> always returns <var>A</var>, but if <var>B</var> is random and secret, <var>A</var> XOR <var>B</var> is as good as indistinguishable from random noise. This property is widely used in AEAD constructs, such as AES-GCM and ChaCha20-Poly1305.
+
+Side note: `XOR` is also the fastest way to zero a register in x86 assembly, because <code>xor&nbsp;eax,&nbsp;eax</code> in Intel machine code is shorter than <code>mov&nbsp;eax,&nbsp;0</code>, and because <var>A</var>&nbsp;XOR&nbsp;<var>A</var>&nbsp;=&nbsp;0. On ARM processors, the idiom works as well, but since all instructions in ARM machine code have the same length, the `XOR` idiom has no advantage over a move.
+
 ### Padding the key
 
 This section explains the steps necessary to calculate the inner and outer padding of the key. For both the inner and the outer padding, the steps are exactly the same, except for the constants ipad and opad that the key is combined with.
@@ -215,19 +312,3 @@ buffer[i] = buffer[i] ^ mask
 ```go
 return buffer
 ```
-
-### How exclusive OR (XOR) works
-
-In the previous section, we have referred to the `XOR` operation. This section explains how `XOR` works.
-
-`XOR` is the bitwise _exclusive OR_ operation. On the level of single bits, it returns 1 if and only if its two operands are not equal, and 0 otherwise:
-
-{/* @oxfmt-ignore */}<XorTruthTable client:visible>Exclusive OR of two bits. Click to toggle the operands A and B.</XorTruthTable>
-
-On the level of a byte, the same operation is applied to each pair of bits:
-
-{/* @oxfmt-ignore */}<XorBytes client:visible>Bitwise XOR of two bytes. Toggle the bits of A and B, or pick a preset.</XorBytes>
-
-`XOR` is widely used in cryptography as a sort of binary mask. This is due to `XOR`'s unique reversibility: (<var>A</var> XOR <var>B</var>) XOR <var>B</var> always returns <var>A</var>, but if <var>B</var> is random and secret, <var>A</var> XOR <var>B</var> is as good as indistinguishable from random noise. This property is widely used in AEAD constructs, such as AES-GCM and ChaCha20-Poly1305.
-
-Side note: `XOR` is also the fastest way to zero a register in x86 assembly, because <code>xor&nbsp;eax,&nbsp;eax</code> in Intel machine code is shorter than <code>mov&nbsp;eax,&nbsp;0</code>, and because <var>A</var>&nbsp;XOR&nbsp;<var>A</var>&nbsp;=&nbsp;0. On ARM processors, the idiom works as well, but since all instructions in ARM machine code have the same length, the `XOR` idiom has no advantage over a move.

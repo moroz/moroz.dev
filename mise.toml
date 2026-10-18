@@ -2,3 +2,6 @@
 node = "26"
 "npm:prettier" = "latest"
 pnpm = "latest"
+
+[tasks.test]
+run = "tests/tutorials/run.sh"
