@@ -8,46 +8,163 @@ draft: true
 import XorBytes from "./xor-bytes.svelte";
 import XorTruthTable from "./xor-truth-table.svelte";
 
-The **Keyed-Hash Message Authentication Code** algorithm, first standardized in 1997 as [RFC&nbsp;2104](https://datatracker.ietf.org/doc/html/rfc2104), is a cornerstone of modern cryptography.
-It is widely used in software that billions of people around the world rely on in everyday life.
+**HMAC**, or **Keyed-Hash Message Authentication Code** algorithm, is a cornerstone of modern cryptography.
+First standardized in 1997 as [RFC&nbsp;2104](https://datatracker.ietf.org/doc/html/rfc2104), it now secures software that billions of people rely on in everyday life.
 
-[TLS version 1.3](https://datatracker.ietf.org/doc/html/rfc8446) uses HMAC to authenticate handshakes, and, via [HKDF](https://www.rfc-editor.org/info/rfc5869/), to derive encryption keys.
-The previous version of the protocol, [TLS&nbsp;1.2](https://www.rfc-editor.org/info/rfc5246/), which is still in widespread use as of this writing, also uses HMAC for message authentication.
-
+To name a few examples: [TLS version 1.3](https://datatracker.ietf.org/doc/html/rfc8446) uses HMAC to authenticate handshakes, and, via [HKDF](https://www.rfc-editor.org/info/rfc5869/), to derive encryption keys.
 HMAC is also widely used in **JSON Web Tokens** (JWT). In fact, HMAC with SHA-256 (`HS256`) is the only signing algorithm that a JWT implementation MUST implement, as per [RFC&nbsp;7519](https://datatracker.ietf.org/doc/html/rfc7519#section-8).
 
-Last but not least, [TOTP](https://www.rfc-editor.org/info/rfc6238/), or the **Time-based One-Time Password** algorithm, uses HMAC (traditionally with SHA-1) to generate single-use numeric codes for two-factor authentication. You may have used TOTP with Google Authenticator, Microsoft Authenticator, or similar mobile apps. For an in-depth explanation of TOTP, refer to my YouTube video [Implementing 2FA Codes (TOTP) in C](https://youtu.be/TNAXkPI7JBc).
+Last but not least, [TOTP](https://www.rfc-editor.org/info/rfc6238/), or the **Time-based One-Time Password** algorithm, uses HMAC (traditionally with the older [SHA-1 hash function](https://en.wikipedia.org/wiki/SHA-1)) to generate single-use numeric codes for two-factor authentication. You may have used TOTP with Google Authenticator, Microsoft Authenticator, or similar mobile apps. For an in-depth explanation of TOTP, refer to my YouTube video [Implementing 2FA Codes (TOTP) in C](https://youtu.be/TNAXkPI7JBc).
 
-Therefore, it is with greatest regret that I admit that, until today, I have never really understood how HMAC worked.
+It is with deepest regret that I admit that, until today, I have never truly understood how HMAC worked.
 I have used it in numerous ways, and I have even tried to read through the RFC one time, but the true meaning of all of these arcane formulae has eluded me for many years.
 
 There is no better way to understand an algorithm than to implement it yourself, therefore in this post I'm going to implement HMAC-SHA-256 in Go.
-I will not be implementing SHA-256 myself, but will use the `sha256.Sum256(data []byte)` function from the `crypto/sha256` package instead.
+
+### Formal definition
 
 The general definition of HMAC, as defined in RFC 2104, is as follows:
 
-{/* @oxfmt-ignore */}<p class="text-center"><var>H</var>(<var>K</var> XOR <var>opad</var>, <var>H</var>(<var>K</var> XOR <var>ipad</var>, <var>text</var>))</p>
+{/* @oxfmt-ignore */}<p class="text-center"><var>H</var>(<var>K</var> XOR opad, <var>H</var>(<var>K</var> XOR ipad, <var>text</var>))</p>
 
-In this formula, <var>H</var> represents the hash function (in our case, SHA-256) and <var>K</var> represents the secret key.
+In this formula, <var>H</var> represents the hash function (in our case, SHA-256) and <var>K</var> represents the secret key. XOR refers to the bitwise _exclusive OR_ operation, and is explained in depth at a further point in this article. The symbols ipad and opad are constants. In the case of HMAC-SHA-256, ipad is the byte `0x36`, and opad is the byte `0x5C`, each repeated 64 times. The variable <var>text</var> refers to the message being authenticated.
 
-We can break the HMAC calculation into the following steps:
+One way to break the HMAC calculation into human-sized morsels would be as follows:
 
-1. Calculate the inner padding of the key <var>K</var> (explained in the next section), and store the resulting binary string in the variable `innerKey`.
+1. Calculate the inner padding of the key <var>K</var>, and store the resulting binary string in the variable `innerKey`. The padding algorithm is explained at a further point in the article.
 2. Hash `innerKey`, concatenated with the message, and store the resulting hash in the variable `innerHash`.
 3. Calculate the outer padding of the key <var>K</var>, and store the resulting binary string in the variable `outerKey`.
-4. Hash `outerKey`, concatenated with `innerHash`.
+4. Hash `outerKey`, concatenated with `innerHash`. The resulting binary string
 5. ???
 6. PROFIT!!!
 
-First, let's discuss the padding algorithm, which is arguably the most complicated part of HMAC.
+### First implementation
+
+Let's start by creating a Go module called `myhmac`:
+
+```bash
+$ mkdir myhmac
+$ cd myhmac
+$ go mod init myhmac
+```
+
+It's a good habit to keep your source files under version control. Initialize a Git repository:
+
+```bash
+$ git init -b main
+$ git add .
+$ git commit -m "Initial commit"
+```
+
+In the file `myhmac.go`, define a package and a single exported function. For now, the implementation will just return `nil`, which is a valid return value for `[]byte`.
+
+```go filename="myhmac.go"
+package myhmac
+
+func SHA256(key, message []byte) []byte {
+	return nil
+}
+```
+
+### Set up a test harness
+
+Next, let's set up a test suite. When implementing HMAC in Go, the natural choice of test data is [RFC 4231](https://www.rfc-editor.org/info/rfc4231/):
+_Identifiers and Test Vectors for HMAC-SHA-224, HMAC-SHA-256, HMAC-SHA-384, and HMAC-SHA-512_.
+In particular, [section&nbsp;4](https://www.rfc-editor.org/info/rfc4231/#section-4) lists several test cases for HMAC-SHA-256, HMAC-SHA-512, and variants thereof.
+
+We will use only the test vectors relevant to the standard usage of HMAC-SHA-256, which excludes Test&nbsp;Case&nbsp;5 (_Test with a truncation of output to 128 bits._)
+
+In the file `myhmac_test.go`, define a package and a struct type describing each test example:
+
+```go filename="myhmac_test.go"
+package myhmac_test
+
+type example struct {
+	// name is a human-readable name of the test example.
+	name string
+
+	// key is the HMAC key (K), hex-encoded.
+	key string
+
+	// text is the message to be authenticated, hex-encoded.
+	text string
+
+	// expected is the correct return value of the
+	// HMAC-SHA-256 function, hex-encoded.
+	expected string
+}
+```
+
+Next, add the examples in a package-level variable:
+
+```go filename="myhmac_test.go" imports
+var examples = []example{
+	{
+		name: "Test Case 1",
+		key:  strings.Repeat("0b", 20),
+		text: "4869205468657265", // "Hi There"
+		expected: "b0344c61d8db38535ca8afceaf0bf12b" +
+			"881dc200c9833da726e9376c2e32cff7",
+	},
+	{
+		name: "Test Case 2 (short key)",
+		key:  "4a656665", // "Jefe"
+		text: "7768617420646f2079612077616e7420" + // "what do ya want "
+			"666f72206e6f7468696e673f", // "for nothing?"
+		expected: "5bdcc146bf60754e6a042426089575c7" +
+			"5a003f089d2739839dec58b964ec3843",
+	},
+	{
+		name: "Test Case 3 (combined length of key and data > 64 bytes)",
+		key:  strings.Repeat("aa", 20),
+		text: strings.Repeat("dd", 50),
+		expected: "773ea91e36800e46854db8ebd09181a7" +
+			"2959098b3ef8c122d9635514ced565fe",
+	},
+	{
+		name: "Test Case 4 (combined length of key and data > 64 bytes)",
+		key: "0102030405060708090a0b0c0d0e0f10" +
+			"111213141516171819",
+		text: strings.Repeat("cd", 50),
+		expected: "82558a389a443c0ea4cc819899f2083a" +
+			"85f0faa3e578f8077a2e3ff46729665b",
+	},
+	{
+		name: "Test Case 6 (key > 64 bytes)",
+		key:  strings.Repeat("aa", 131),
+		text: "54657374205573696e67204c61726765" +
+			"72205468616e20426c6f636b2d53697a" +
+			"65204b6579202d2048617368204b6579" +
+			"204669727374",
+		expected: "60e431591ee0b67f0d8a26aacbf5b77f" +
+			"8e0bc6213728c5140546040f0ee37f54",
+	},
+	{
+		name: "Test Case 7 (key and data both > 128 bytes)",
+		key:  strings.Repeat("aa", 131),
+		text: "54686973206973206120746573742075" +
+			"73696e672061206c6172676572207468" +
+			"616e20626c6f636b2d73697a65206b65" +
+			"7920616e642061206c61726765722074" +
+			"68616e20626c6f636b2d73697a652064" +
+			"6174612e20546865206b6579206e6565" +
+			"647320746f2062652068617368656420" +
+			"6265666f7265206265696e6720757365" +
+			"642062792074686520484d414320616c" +
+			"676f726974686d2e",
+		expected: "9b09ffa71b942fcb27635fbcd5b0e944" +
+			"bfdc63644f0713938a7f51535c3a35e2",
+	},
+}
+```
 
 ### Padding the key
 
-This section explains the steps necessary to calculate the inner and outer padding of the key. For both the inner and the outer padding, the steps are exactly the same, except for the constants <var>ipad</var> and <var>opad</var> that the key is combined with.
+This section explains the steps necessary to calculate the inner and outer padding of the key. For both the inner and the outer padding, the steps are exactly the same, except for the constants ipad and opad that the key is combined with.
 
 Our padding function takes a key and a padding mask, and returns a byte slice:
 
-```go
+```go unclosed
 func padKey(key []byte, mask byte) []byte {
 ```
 
@@ -64,8 +181,8 @@ In C, you would need to allocate the buffer with [calloc(3p)](https://man7.org/l
 
 ```go
 if len(key) > sha256.BlockSize {
-    hashed := sha256.Sum256(key)
-    key = hashed[:]
+	hashed := sha256.Sum256(key)
+	key = hashed[:]
 }
 ```
 
@@ -83,7 +200,7 @@ copy(buffer, key)
 
 ```go
 for i := range buffer {
-    buffer[i] ^= mask
+	buffer[i] ^= mask
 }
 ```
 
@@ -114,17 +231,3 @@ On the level of a byte, the same operation is applied to each pair of bits:
 `XOR` is widely used in cryptography as a sort of binary mask. This is due to `XOR`'s unique reversibility: (<var>A</var> XOR <var>B</var>) XOR <var>B</var> always returns <var>A</var>, but if <var>B</var> is random and secret, <var>A</var> XOR <var>B</var> is as good as indistinguishable from random noise. This property is widely used in AEAD constructs, such as AES-GCM and ChaCha20-Poly1305.
 
 Side note: `XOR` is also the fastest way to zero a register in x86 assembly, because <code>xor&nbsp;eax,&nbsp;eax</code> in Intel machine code is shorter than <code>mov&nbsp;eax,&nbsp;0</code>, and because <var>A</var>&nbsp;XOR&nbsp;<var>A</var>&nbsp;=&nbsp;0. On ARM processors, the idiom works as well, but since all instructions in ARM machine code have the same length, the `XOR` idiom has no advantage over a move.
-
-### Putting it all together
-
-Start by creating
-
-We will implement the algorithm as a single function. For now, let's just stub the implementation with a `panic`, so that the code compiles:
-
-```go
-func HmacSha256(key, message []byte) []byte {
-	panic("unimplemented")
-}
-```
-
-[RFC 4231](https://www.rfc-editor.org/info/rfc4231/#section-4) lists several test cases for HMAC-SHA-256. We will copy the examples almost verbatim. First
