@@ -1,0 +1,2 @@
+# Posts replayed by run.sh, relative to the repository root.
+content/blog/2026/10/hmac-from-scratch-in-go/index.mdx
