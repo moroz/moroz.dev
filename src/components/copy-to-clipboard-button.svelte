@@ -4,7 +4,7 @@
     isCommands: boolean;
   }
 
-  const { code, isCommands } = $props();
+  const { code, isCommands }: Props = $props();
 
   let success = $state(false);
 
@@ -24,7 +24,7 @@
   });
 </script>
 
-<button on:click={onClick}>
+<button onclick={onClick}>
   {#if success}
     <span class="success"> Copied! </span>
   {/if}
@@ -37,7 +37,7 @@
   </div>
 </button>
 
-<style>
+<style type="postcss">
   @reference "@css/global.css";
 
   .success {
