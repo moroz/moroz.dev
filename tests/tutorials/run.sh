@@ -6,6 +6,9 @@
 #   tests/tutorials/run.sh --fix [post.mdx...]
 #                                          gofmt the Go fences in place instead
 #
+# Each replay leaves the reader's working directory in out/<post>/, wiped
+# before the run, so the result can be picked up and worked on.
+#
 # Uses podman if it is installed, docker otherwise; CONTAINER_ENGINE overrides.
 set -euo pipefail
 
@@ -17,6 +20,13 @@ if [ -z "$engine" ]; then
   if command -v podman >/dev/null; then engine=podman; else engine=docker; fi
 fi
 image=moroz-dev-tutorials
+
+# Rootless podman maps the container's root to the calling user; docker needs
+# to be told, or the copied result would belong to root.
+user_args=()
+if [ "$(basename "$engine")" = docker ]; then
+  user_args=(--user "$(id -u):$(id -g)" --env HOME=/tmp)
+fi
 
 fix=0
 if [ "${1:-}" = "--fix" ]; then
@@ -39,9 +49,17 @@ for post in "${posts[@]}"; do
   if [ "$fix" = 1 ]; then
     "$engine" run --rm --network=none --volume "$path:/post.mdx:z" \
       --entrypoint tutorial-runner "$image" -fix /post.mdx || failed=1
-  elif ! "$engine" run --rm --network=none \
-      --volume "$path:/post.mdx:ro,z" "$image"; then
-    failed=1
+  else
+    # content/blog/.../<slug>/index.mdx and content/blog/.../<slug>.mdx alike.
+    slug=$(basename "$path" .mdx)
+    [ "$slug" = index ] && slug=$(basename "$(dirname "$path")")
+    out="$here/out/$slug"
+    rm -rf "$out"
+    mkdir -p "$out"
+    "$engine" run --rm --network=none "${user_args[@]}" \
+      --volume "$path:/post.mdx:ro,z" --volume "$out:/out:z" \
+      "$image" || failed=1
+    echo "Result: ${out#"$root"/}"
   fi
   echo
 done

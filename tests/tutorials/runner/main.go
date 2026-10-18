@@ -174,6 +174,8 @@ func emit(w *bufio.Writer, fences []fence) {
 set -euo pipefail
 current="start"
 trap 'echo >&2; echo "FAILED at $current" >&2' ERR
+# Hand the reader's working directory back to the host, failed or not.
+trap 'if [ -d /out ]; then find /work -mindepth 1 -maxdepth 1 -exec cp -a {} /out/ \; ; fi' EXIT
 step() { current="$*"; printf '\n==> %s\n' "$*"; }
 `)
 	for _, f := range fences {

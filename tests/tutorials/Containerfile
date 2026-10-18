@@ -11,5 +11,7 @@ RUN go install golang.org/x/tools/cmd/goimports@v0.51.0
 COPY runner/main.go /src/runner/main.go
 RUN go build -o /usr/local/bin/tutorial-runner /src/runner/main.go
 
+# Writable by whichever user the engine runs as.
+RUN mkdir -p /work && chmod 1777 /work
 WORKDIR /work
 ENTRYPOINT ["sh", "-c", "tutorial-runner /post.mdx > /tmp/tutorial.sh && exec bash /tmp/tutorial.sh"]
