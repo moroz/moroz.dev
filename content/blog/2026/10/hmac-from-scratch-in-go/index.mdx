@@ -25,7 +25,12 @@ There is no better way to understand an algorithm than to implement it yourself,
 
 The general definition of HMAC, as defined in RFC 2104, is as follows:
 
-{/* @oxfmt-ignore */}<p class="text-center"><var>H</var>(<var>K</var> XOR opad, <var>H</var>(<var>K</var> XOR ipad, <var>text</var>))</p>
+$$
+\begin{aligned}
+H\big( & K \xor \mathrm{opad}, \\
+& H(K \xor \mathrm{ipad},\ \mathit{text}) \big)
+\end{aligned}
+$$
 
 In this formula, <var>H</var> represents the hash function (in our case, SHA-256) and <var>K</var> represents the secret key. XOR refers to the bitwise _exclusive OR_ operation, and is explained in depth at a further point in this article. The symbols ipad and opad are constants. In the case of HMAC-SHA-256, ipad is the byte `0x36`, and opad is the byte `0x5C`, each repeated 64 times. The variable <var>text</var> refers to the message being authenticated.
 
@@ -34,11 +39,9 @@ One way to break the HMAC calculation into human-sized morsels would be as follo
 1. Calculate the inner padding of the key <var>K</var>, and store the resulting binary string in the variable `innerKey`. The padding algorithm is explained at a further point in the article.
 2. Hash `innerKey`, concatenated with the message, and store the resulting hash in the variable `innerHash`.
 3. Calculate the outer padding of the key <var>K</var>, and store the resulting binary string in the variable `outerKey`.
-4. Hash `outerKey`, concatenated with `innerHash`. The resulting binary string
-5. ???
-6. PROFIT!!!
+4. Hash `outerKey`, concatenated with `innerHash`. The resulting binary string is the HMAC digest.
 
-### First implementation
+### Project setup
 
 Let's start by creating a Go module called `myhmac`:
 
@@ -182,6 +185,8 @@ func TestStandardLibraryBaseline(t *testing.T) {
 			mac.Write(mustDecodeHex(example.text))
 			actual := mac.Sum(nil)
 
+			// hmac.Equal compares the two slices in constant time
+			// to prevent timing attacks.
 			if !hmac.Equal(actual, expected) {
 				t.Errorf(`Expected "%x", got "%x"`, expected, actual)
 			}
@@ -190,7 +195,7 @@ func TestStandardLibraryBaseline(t *testing.T) {
 }
 ```
 
-At this point, all tests should pass:
+At this point, all tests should pass, as we're only testing the standard library:
 
 ```bash
 $ go test .
@@ -239,11 +244,11 @@ FAIL    myhmac  0.002s
 FAIL
 ```
 
-We will fix this soon, but first, we need to discuss XOR.
+We will fix this soon by implementing the `myhmac.SHA256` function. Before we can do that, however, we need to understand the XOR operation, which is used by the HMAC key padding algorithm.
 
 ### How exclusive OR (XOR) works
 
-`XOR` is the bitwise _exclusive OR_ operation. On the level of single bits, it returns 1 if and only if its two operands are not equal, and 0 otherwise:
+XOR is the bitwise _exclusive OR_ operation. On the level of single bits, it returns 1 if and only if its two operands are not equal, and 0 otherwise. The following interactive figure displays this principle in practice:
 
 {/* @oxfmt-ignore */}<XorTruthTable client:visible>Exclusive OR of two bits. Click to toggle the operands A and B.</XorTruthTable>
 
@@ -251,13 +256,53 @@ On the level of a byte, the same operation is applied to each pair of bits:
 
 {/* @oxfmt-ignore */}<XorBytes client:visible>Bitwise XOR of two bytes. Toggle the bits of A and B, or pick a preset.</XorBytes>
 
-`XOR` is widely used in cryptography as a sort of binary mask. This is due to `XOR`'s unique reversibility: (<var>A</var> XOR <var>B</var>) XOR <var>B</var> always returns <var>A</var>, but if <var>B</var> is random and secret, <var>A</var> XOR <var>B</var> is as good as indistinguishable from random noise. This property is widely used in AEAD constructs, such as AES-GCM and ChaCha20-Poly1305.
+XOR is widely used in cryptography as a sort of binary mask. This is due to XOR's unique reversibility:
 
-Side note: `XOR` is also the fastest way to zero a register in x86 assembly, because <code>xor&nbsp;eax,&nbsp;eax</code> in Intel machine code is shorter than <code>mov&nbsp;eax,&nbsp;0</code>, and because <var>A</var>&nbsp;XOR&nbsp;<var>A</var>&nbsp;=&nbsp;0. On ARM processors, the idiom works as well, but since all instructions in ARM machine code have the same length, the `XOR` idiom has no advantage over a move.
+$$
+\begin{aligned}
+& (A \xor B) \xor B \\
+={} & A \xor (B \xor B) \\
+={} & A \xor 0 \\
+={} & A
+\end{aligned}
+$$
+
+If you apply the same binary mask $$B$$ to the plaintext $$A$$ twice, the mask zeroes out, and you end up with the plaintext.
+If $$B$$ is random and secret, <span class="text-nowrap">$$A \xor B$$</span> is as good as indistinguishable from random noise.
+This property is widely used in [AEAD constructs](https://en.wikipedia.org/wiki/Authenticated_encryption#Authenticated_encryption_with_associated_data), such as [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) and [ChaCha20-Poly1305](https://en.wikipedia.org/wiki/ChaCha20-Poly1305).
+
+Side note: XOR is also the fastest way to zero a register in x86 assembly, because <code>xor&nbsp;eax,&nbsp;eax</code> in Intel machine code is shorter than <code>mov&nbsp;eax,&nbsp;0</code>, and because <span class="text-nowrap">$$A \xor A = 0$$</span>. On ARM processors, the idiom works as well, but since all instructions in ARM machine code have the same length, the XOR idiom has no advantage over a move.
+
+With the XOR primer out of the way, we can proceed to pad the key.
 
 ### Padding the key
 
 This section explains the steps necessary to calculate the inner and outer padding of the key. For both the inner and the outer padding, the steps are exactly the same, except for the constants ipad and opad that the key is combined with.
+
+1. If the key is longer than 64 bytes, hash it with SHA-256 and use the resulting digest in place of the key.
+2. Pad the key with zeroes at the end so that it is exactly 64 bytes long.
+3. XOR each byte of the padded key with either the ipad or the opad constant, depending on whether you are calculating the inner or the outer padding.
+
+Expressed in Go, the function could look like this:
+
+```go filename="myhmac.go" imports
+func padKey(key []byte, mask byte) []byte {
+	buffer := make([]byte, sha256.BlockSize)
+
+	if len(key) > sha256.BlockSize {
+		hashed := sha256.Sum256(key)
+		key = hashed[:]
+	}
+
+	copy(buffer, key)
+
+	for i := range buffer {
+		buffer[i] ^= mask
+	}
+
+	return buffer
+}
+```
 
 Our padding function takes a key and a padding mask, and returns a byte slice:
 
@@ -293,7 +338,7 @@ You might be tempted to try and inline the expression as `sha256.Sum256(key)[:]`
 copy(buffer, key)
 ```
 
-4. `XOR` each byte in the buffer with the mask value. For inner padding, it's `0x36` (`0b00110110`). For outer padding, it's `0x5C` (`0b01011100`).
+4. XOR each byte in the buffer with the mask value. For inner padding, it's `0x36` (`0b00110110`). For outer padding, it's `0x5C` (`0b01011100`).
 
 ```go
 for i := range buffer {
