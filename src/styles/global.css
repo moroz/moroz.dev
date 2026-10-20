@@ -139,6 +139,13 @@ figure {
   @apply relative;
 }
 
+/* With the default unitless tab-size, Chromium rendered tabs in code about 4.4
+   characters wide; a length in ch keeps them on the character grid. */
+pre,
+code {
+  tab-size: 4ch;
+}
+
 /* Display math that is still wider than the column scrolls instead of overflowing the page. */
 .katex-display {
   overflow-x: auto;
