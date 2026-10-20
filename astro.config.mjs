@@ -6,6 +6,8 @@ import markdoc from "@astrojs/markdoc";
 import svelte from "@astrojs/svelte";
 import path from "path";
 import rehypeExternalLinks from "rehype-external-links";
+import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
 
 import mdx from "@astrojs/mdx";
 
@@ -55,7 +57,10 @@ export default defineConfig({
       wrap: true,
       transformers: [transformerFilename()],
     },
+    // Single dollars stay literal; math is written as $$...$$ (inline or display).
+    remarkPlugins: [[remarkMath, { singleDollarTextMath: false }]],
     rehypePlugins: [
+      [rehypeKatex, { macros: { "\\xor": "\\mathbin{\\text{XOR}}" } }],
       [
         rehypeExternalLinks,
         {
