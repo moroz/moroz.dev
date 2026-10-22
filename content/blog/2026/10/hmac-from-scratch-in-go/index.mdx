@@ -23,7 +23,7 @@ There is no better way to understand an algorithm than to implement it yourself,
 
 ### Formal definition
 
-The general definition of HMAC, as defined in RFC 2104, is as follows:
+The general definition of HMAC, as stated in [RFC 2104](https://datatracker.ietf.org/doc/html/rfc2104#section-2), is as follows:
 
 $$
 \begin{aligned}
@@ -32,14 +32,23 @@ H\big( & K \xor \mathrm{opad}, \\
 \end{aligned}
 $$
 
-In this formula, <var>H</var> represents the hash function (in our case, SHA-256) and <var>K</var> represents the secret key. XOR refers to the bitwise _exclusive OR_ operation, and is explained in depth at a further point in this article. The symbols ipad and opad are constants. In the case of HMAC-SHA-256, ipad is the byte `0x36`, and opad is the byte `0x5C`, each repeated 64 times. The variable <var>text</var> refers to the message being authenticated.
+In this formula, $$H$$ represents the hash function (in our case, SHA-256) and $$K$$ represents the secret key, which is a binary string of arbitrary length. XOR refers to the bitwise _exclusive OR_ operation, and is explained in depth at a further point in this article. The symbols $$\mathrm{ipad}$$ and $$\mathrm{opad}$$ are constants. In the case of HMAC-SHA-256, $$\mathrm{ipad}$$ is the byte `0x36`, repeated 64 times; $$\mathrm{opad}$$ is the byte `0x5C`, repeated 64 times. The variable $$\mathit{text}$$ refers to the message being authenticated.
 
-One way to break the HMAC calculation into human-sized morsels would be as follows:
+One way to break this cryptic formula into human-digestible morsels of pseudocode would be as follows:
 
-1. Calculate the inner padding of the key <var>K</var>, and store the resulting binary string in the variable `innerKey`. The padding algorithm is explained at a further point in the article.
-2. Hash `innerKey`, concatenated with the message, and store the resulting hash in the variable `innerHash`.
-3. Calculate the outer padding of the key <var>K</var>, and store the resulting binary string in the variable `outerKey`.
-4. Hash `outerKey`, concatenated with `innerHash`. The resulting binary string is the HMAC digest.
+1. $$\mathit{innerKey} \gets K_0 \xor \mathrm{ipad}$$  
+   Pad the secret key $$K$$ with zeroes at the end, so that it is exactly 64 bytes long, and call the result $$K_0$$.
+   If $$K$$ is longer than 64 bytes, hash the key with SHA-256 and pad the resulting hash digest rather than the original key.
+   Apply the _exclusive OR_ (XOR) operation on $$K_0$$ and the constant $$\mathrm{ipad}$$ (the byte `0x36` repeated 64 times), and store the result in the variable `innerKey`.
+
+2. $$\mathit{innerHash} \gets H(\mathit{innerKey} \,\|\, \mathit{text})$$  
+   Hash `innerKey`, concatenated with the message, and store the resulting hash in the variable `innerHash`.
+
+3. $$\mathit{outerKey} \gets K_0 \xor \mathrm{opad}$$  
+   Apply the _exclusive OR_ operation on $$K_0$$ and the constant $$\mathrm{opad}$$ (the byte `0x5C` repeated 64 times), and store the result in the variable `outerKey`.
+
+4. $$\mathit{hmac} \gets H(\mathit{outerKey} \,\|\, \mathit{innerHash})$$  
+   Hash `outerKey`, concatenated with `innerHash`. The resulting binary string is the HMAC digest.
 
 ### Project setup
 
