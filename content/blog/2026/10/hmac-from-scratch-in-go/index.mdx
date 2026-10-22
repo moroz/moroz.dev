@@ -50,6 +50,8 @@ One way to break this cryptic formula into human-digestible morsels of pseudocod
 4. $$\mathit{hmac} \gets H(\mathit{outerKey} \,\|\, \mathit{innerHash})$$  
    Hash `outerKey`, concatenated with `innerHash`. The resulting binary string is the HMAC digest.
 
+Before converting these steps into actual executable code, we need to do some prepping.
+
 ### Project setup
 
 Let's start by creating a Go module called `myhmac`:
