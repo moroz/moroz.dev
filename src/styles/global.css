@@ -146,8 +146,22 @@ code {
   tab-size: 4ch;
 }
 
+/* Fontsource's CSS for STIX Two Math limits it to a Latin unicode-range, which
+   leaves out the math alphanumerics and operators; the file itself has them. */
+@font-face {
+  font-family: "STIX Two Math";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff2") format("woff2");
+}
+
+math {
+  font-family: "STIX Two Math", math;
+}
+
 /* Display math that is still wider than the column scrolls instead of overflowing the page. */
-.katex-display {
+math.tml-display {
   overflow-x: auto;
   overflow-y: hidden;
 }

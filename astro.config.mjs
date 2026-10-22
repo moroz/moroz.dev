@@ -6,7 +6,10 @@ import markdoc from "@astrojs/markdoc";
 import svelte from "@astrojs/svelte";
 import path from "path";
 import rehypeExternalLinks from "rehype-external-links";
-import rehypeKatex from "rehype-katex";
+import { fromHtml } from "hast-util-from-html";
+import { toText } from "hast-util-to-text";
+import temml from "temml";
+import { SKIP, visitParents } from "unist-util-visit-parents";
 import remarkMath from "remark-math";
 
 import mdx from "@astrojs/mdx";
@@ -35,6 +38,41 @@ function transformerFilename() {
   };
 }
 
+/**
+ * Rehype plugin that renders the math nodes produced by remark-math to MathML
+ * with Temml, so the browser lays formulas out in an OpenType math font.
+ *
+ * remark-math emits `<code class="math-inline">` for inline math and
+ * `<pre><code class="math-display">` for display math; both are replaced by
+ * the rendered `<math>` element.
+ */
+function rehypeTemml(options = {}) {
+  return (tree) => {
+    visitParents(tree, "element", (node, ancestors) => {
+      const classes = node.properties.className ?? [];
+      const inline = classes.includes("math-inline");
+      const display = classes.includes("math-display");
+      if (!inline && !display) return;
+
+      const html = temml.renderToString(toText(node, { whitespace: "pre" }), {
+        ...options,
+        displayMode: display,
+        throwOnError: true,
+      });
+      const rendered = fromHtml(html, { fragment: true }).children;
+
+      let target = node;
+      let parent = ancestors.at(-1);
+      if (display && parent?.tagName === "pre") {
+        target = parent;
+        parent = ancestors.at(-2);
+      }
+      parent.children.splice(parent.children.indexOf(target), 1, ...rendered);
+      return SKIP;
+    });
+  };
+}
+
 // https://astro.build/config
 export default defineConfig({
   vite: {
@@ -60,7 +98,7 @@ export default defineConfig({
     // Single dollars stay literal; math is written as $$...$$ (inline or display).
     remarkPlugins: [[remarkMath, { singleDollarTextMath: false }]],
     rehypePlugins: [
-      [rehypeKatex, { macros: { "\\xor": "\\mathbin{\\text{XOR}}" } }],
+      [rehypeTemml, { macros: { "\\xor": "\\mathbin{\\text{XOR}}" } }],
       [
         rehypeExternalLinks,
         {
