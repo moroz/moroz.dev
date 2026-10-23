@@ -32,9 +32,9 @@
 // directory is copied to /out if it exists.
 //
 // With -fix, the command instead formats every Go fence in the post in place,
-// excerpts included, and skips the ones go/format cannot parse. Mark a fence
-// that opens a block without closing it, such as a lone function signature,
-// with `unclosed`; it is formatted as if followed by a closing brace.
+// excerpts included, and skips the ones go/format cannot parse. A lone
+// function signature parses if it does not open the body: a declaration
+// without a body is valid Go.
 package main
 
 import (
@@ -146,20 +146,12 @@ func fixFences(path string, fences []fence) error {
 			body = append(body, strings.TrimPrefix(line, indent))
 		}
 		src := strings.Join(body, "\n") + "\n"
-		unclosed := hasFlag(f.meta, "unclosed")
-		input := src
-		if unclosed {
-			input += "}\n"
-		}
-		out, err := format.Source([]byte(input))
+		out, err := format.Source([]byte(src))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s:%d: skipped: %v\n", path, f.line, err)
 			continue
 		}
 		result := strings.TrimSuffix(string(out), "\n")
-		if unclosed {
-			result = strings.TrimRight(strings.TrimSuffix(result, "}"), " \t\n")
-		}
 		if result+"\n" == src {
 			continue
 		}
