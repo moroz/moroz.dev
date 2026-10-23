@@ -16,7 +16,7 @@ HMAC is also widely used in **JSON Web Tokens** (JWT). In fact, HMAC with SHA-25
 Last but not least, [TOTP](https://www.rfc-editor.org/info/rfc6238/), or the **Time-based One-Time Password** algorithm, uses HMAC (traditionally with the older [SHA-1 hash function](https://en.wikipedia.org/wiki/SHA-1)) to generate single-use numeric codes for two-factor authentication. You may have used TOTP with Google Authenticator, Microsoft Authenticator, or similar mobile apps. For an in-depth explanation of TOTP, refer to my YouTube video [Implementing 2FA Codes (TOTP) in C](https://youtu.be/TNAXkPI7JBc).
 
 It is with deepest regret that I admit that, until today, I have never truly understood how HMAC worked.
-I have used it in numerous ways, and I have even tried to read through the RFC one time, but the true meaning of all of these arcane formulae has eluded me for many years.
+I have used it in numerous ways, and I have even tried to read through the RFC one time, but the true meaning of all of these arcane formulæ has eluded me for many years.
 
 There is no better way to understand an algorithm than to implement it yourself, therefore in this post I'm going to implement HMAC-SHA-256 in Go.
 
@@ -328,7 +328,7 @@ The XOR operation is also used to compare binary strings in constant time: if ev
 
 ```go
 // src/crypto/internal/fips140/subtle/constant_time.go
-// (standard library, reflowed for aesthetic purposes)
+// (standard library, reflowed for æsthetic purposes)
 package subtle
 
 // ConstantTimeCompare returns 1 if the two slices, x and y, have equal
@@ -490,7 +490,7 @@ innerHash := sha256.Sum256(
 )
 ```
 
-Calculate the the hash of the `outerKey` concatenated with the `innerHash`.
+Calculate the hash of the `outerKey` concatenated with the `innerHash`.
 Due to the fact that `sha256.Sum256` returns `[32]byte` rather than `[]byte`, we need to convert it to a slice:
 
 ```go
