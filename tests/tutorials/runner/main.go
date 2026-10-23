@@ -13,8 +13,8 @@
 //	```go filename="x" merge
 //	                    each top-level declaration in the block replaces the
 //	                    declarations in file x that share a name with it, or
-//	                    is appended to x if there are none; imports are added
-//	                    to those of x
+//	                    is added to x if there are none; imports are added to
+//	                    those of x
 //	```go filename="x" imports
 //	                    the block is appended to (or with merge, merged into)
 //	                    file x, then goimports fixes the imports of x
@@ -28,8 +28,11 @@
 // A merged declaration is matched by every name it declares, methods by
 // receiver type and name. A grouped declaration, such as const ( ... ),
 // replaces the whole group: the first declaration in x that shares a name with
-// it gives way to it, and the others are removed. Merged imports are rewritten
-// into a single import declaration, standard library first.
+// it gives way to it, and the others are removed. A new declaration keeps its
+// place in the block: it goes right before the next declaration of the block
+// that replaces one in x, or else right after the last one that did, or else
+// at the end of x. Merged imports are rewritten into a single import
+// declaration, standard library first.
 //
 // Commands run one at a time in bash, under `set -euo pipefail`. The working
 // directory and the environment carry over from one command to the next, so
@@ -457,7 +460,11 @@ func merge(src, block []byte) ([]byte, []string, error) {
 	srcOffset := func(p token.Pos) int { return int(p - srcFile.FileStart) }
 
 	var edits []edit
-	var added [][]byte
+	// New declarations keep their place in the block: they go right before the
+	// next declaration of the block that replaces one in src, or else right
+	// after the last one that did, or else at the end of src.
+	var pending, added [][]byte
+	lastReplacement := -1
 	var imports []*ast.ImportSpec
 	var report []string
 	declared := map[string]bool{}
@@ -494,7 +501,7 @@ func merge(src, block []byte) ([]byte, []string, error) {
 		text := block[blockOffset(start):blockOffset(end):blockOffset(end)]
 		label := describe(d, names)
 		if len(olds) == 0 {
-			added = append(added, text)
+			pending = append(pending, text)
 			report = append(report, "added "+label)
 			continue
 		}
@@ -504,12 +511,21 @@ func merge(src, block []byte) ([]byte, []string, error) {
 		for i, old := range olds {
 			start, end := declRange(old)
 			if i == 0 {
+				text := bytes.Join(append(pending, text), []byte("\n\n"))
+				pending = nil
 				edits = append(edits, edit{srcOffset(start), srcOffset(end), text})
+				lastReplacement = len(edits) - 1
 			} else {
 				edits = append(edits, deletion(src, srcOffset(start), srcOffset(end)))
 			}
 		}
 		report = append(report, "replaced "+label)
+	}
+	if lastReplacement >= 0 && len(pending) > 0 {
+		e := &edits[lastReplacement]
+		e.text = bytes.Join(append([][]byte{e.text}, pending...), []byte("\n\n"))
+	} else {
+		added = pending
 	}
 
 	if len(imports) > 0 {

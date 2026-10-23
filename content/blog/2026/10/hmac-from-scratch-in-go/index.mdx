@@ -20,6 +20,8 @@ I have used it in numerous ways, and I have even tried to read through the RFC o
 
 There is no better way to understand an algorithm than to implement it yourself, therefore in this post I'm going to implement HMAC-SHA-256 in Go.
 
+You can find the final result of the tutorial on my GitHub account: in the repository [moroz/hmac-go](https://github.com/moroz/hmac-go/tree/main).
+
 ### Formal definition
 
 The general definition of HMAC, as stated in [RFC 2104](https://datatracker.ietf.org/doc/html/rfc2104#section-2), is as follows:
@@ -85,7 +87,7 @@ Next, let's set up a test suite. When implementing HMAC in Go, the natural choic
 _Identifiers and Test Vectors for HMAC-SHA-224, HMAC-SHA-256, HMAC-SHA-384, and HMAC-SHA-512_.
 In particular, [section&nbsp;4](https://www.rfc-editor.org/info/rfc4231/#section-4) lists several test cases for HMAC-SHA-256, HMAC-SHA-512, and variants thereof.
 
-We will use only the test vectors relevant to the standard usage of HMAC-SHA-256, which excludes Test&nbsp;Case&nbsp;5 (_Test with a truncation of output to 128 bits._)
+We will use only the test vectors relevant to the standard usage of HMAC-SHA-256, which excludes Test&nbsp;Case&nbsp;5 (_Test with a truncation of output to 128 bits_).
 
 In the file `myhmac_test.go`, define a package and a struct type describing each test example:
 
@@ -238,17 +240,17 @@ All the examples for this test should fail, because our implementation currently
 $ go test .
 --- FAIL: TestSHA256 (0.00s)
     --- FAIL: TestSHA256/Test_Case_1 (0.00s)
-        myhmac_test.go:120: Expected "b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7", got ""
+        myhmac_test.go:122: Expected "b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7", got ""
     --- FAIL: TestSHA256/Test_Case_2_(short_key) (0.00s)
-        myhmac_test.go:120: Expected "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843", got ""
+        myhmac_test.go:122: Expected "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843", got ""
     --- FAIL: TestSHA256/Test_Case_3_(combined_length_of_key_and_data_>_64_bytes) (0.00s)
-        myhmac_test.go:120: Expected "773ea91e36800e46854db8ebd09181a72959098b3ef8c122d9635514ced565fe", got ""
+        myhmac_test.go:122: Expected "773ea91e36800e46854db8ebd09181a72959098b3ef8c122d9635514ced565fe", got ""
     --- FAIL: TestSHA256/Test_Case_4_(combined_length_of_key_and_data_>_64_bytes) (0.00s)
-        myhmac_test.go:120: Expected "82558a389a443c0ea4cc819899f2083a85f0faa3e578f8077a2e3ff46729665b", got ""
+        myhmac_test.go:122: Expected "82558a389a443c0ea4cc819899f2083a85f0faa3e578f8077a2e3ff46729665b", got ""
     --- FAIL: TestSHA256/Test_Case_6_(key_>_64_bytes) (0.00s)
-        myhmac_test.go:120: Expected "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54", got ""
+        myhmac_test.go:122: Expected "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54", got ""
     --- FAIL: TestSHA256/Test_Case_7_(key_and_data_both_>_128_bytes) (0.00s)
-        myhmac_test.go:120: Expected "9b09ffa71b942fcb27635fbcd5b0e944bfdc63644f0713938a7f51535c3a35e2", got ""
+        myhmac_test.go:122: Expected "9b09ffa71b942fcb27635fbcd5b0e944bfdc63644f0713938a7f51535c3a35e2", got ""
 FAIL
 FAIL    myhmac  0.002s
 FAIL
@@ -316,7 +318,7 @@ $$
 \end{aligned}
 $$
 
-This property is widely used in [AEAD constructs](https://en.wikipedia.org/wiki/Authenticated_encryption#Authenticated_encryption_with_associated_data), such as [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) and [ChaCha20-Poly1305](https://en.wikipedia.org/wiki/ChaCha20-Poly1305).
+This property is widely used in [AEAD constructions](https://en.wikipedia.org/wiki/Authenticated_encryption#Authenticated_encryption_with_associated_data), such as [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) and [ChaCha20-Poly1305](https://en.wikipedia.org/wiki/ChaCha20-Poly1305).
 
 Side note: XOR is the most concise and fastest way to zero a register in x86 assembly: <code>xor&nbsp;eax,&nbsp;eax</code> takes 2&nbsp;bytes in Intel machine code, while <code>mov&nbsp;eax,&nbsp;0</code> takes a whopping 5&nbsp;bytes. On ARM processors, the idiom works as well, but since all instructions in ARM machine code have the same length, the XOR idiom has no advantage over a move.
 
@@ -451,7 +453,7 @@ With the padding algorithm explained, we can attempt to implement the rest of th
 
 ### Putting everything together
 
-After all we've gone through, the final implementation of `SHA256` is poignantly simple:
+After all we've gone through, the final implementation of `SHA256` is anticlimactically simple:
 
 ```go filename="myhmac.go" merge imports
 const (
@@ -480,19 +482,20 @@ innerKey := padKey(key, ipad)
 outerKey := padKey(key, opad)
 ```
 
-Calculate the hash of `innerKey` concatenated with the `message`:
+Calculate the hash of the `innerKey` concatenated with the `message`:
 
 ```go
 innerHash := sha256.Sum256(
-    slices.Concat(innerKey, message),
+	slices.Concat(innerKey, message),
 )
 ```
 
-Due to the fact that `sha256.Sum256` returns `[32]byte` rather than `[]byte`, we need to convert it to a slice in the next lines:
+Calculate the the hash of the `outerKey` concatenated with the `innerHash`.
+Due to the fact that `sha256.Sum256` returns `[32]byte` rather than `[]byte`, we need to convert it to a slice:
 
 ```go
 outerHash := sha256.Sum256(
-    slices.Concat(outerKey, innerHash[:]),
+	slices.Concat(outerKey, innerHash[:]),
 )
 ```
 
@@ -507,4 +510,10 @@ This implementation should pass all tests:
 ```bash
 $ go test .
 ok      myhmac  0.002s
+```
+
+If you were following along, now is the time for our final commit:
+
+```bash
+$ git commit -am "Draw the rest of the owl"
 ```
