@@ -14,4 +14,4 @@ RUN go build -o /usr/local/bin/tutorial-runner /src/runner/main.go
 # Writable by whichever user the engine runs as.
 RUN mkdir -p /work && chmod 1777 /work
 WORKDIR /work
-ENTRYPOINT ["sh", "-c", "tutorial-runner /post.mdx > /tmp/tutorial.sh && exec bash /tmp/tutorial.sh"]
+ENTRYPOINT ["tutorial-runner", "/post.mdx"]
