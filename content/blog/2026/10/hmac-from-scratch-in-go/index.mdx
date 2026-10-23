@@ -490,7 +490,7 @@ innerHash := sha256.Sum256(
 )
 ```
 
-Calculate the the hash of the `outerKey` concatenated with the `innerHash`.
+Calculate the hash of the `outerKey` concatenated with the `innerHash`.
 Due to the fact that `sha256.Sum256` returns `[32]byte` rather than `[]byte`, we need to convert it to a slice:
 
 ```go
