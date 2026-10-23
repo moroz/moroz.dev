@@ -388,6 +388,7 @@ func checkGo(sh *shell, name string, fixImports bool) error {
 		return err
 	}
 	if out != "" {
+		// gofmt -d exits with 1 when it prints a diff.
 		diff, _ := sh.output("gofmt", "-d", name)
 		return fmt.Errorf("%s is not gofmt-formatted:\n%s", name, diff)
 	}
@@ -411,8 +412,8 @@ func checkGo(sh *shell, name string, fixImports bool) error {
 	return vet.Run()
 }
 
-// output runs a tool in the shell's working directory and returns its output;
-// on failure, the error includes the tool's stderr.
+// output runs a tool in the shell's working directory and returns its output,
+// even if it fails; on failure, the error includes the tool's stderr.
 func (sh *shell) output(name string, args ...string) (string, error) {
 	c := exec.Command(name, args...)
 	c.Dir, c.Env = sh.dir, sh.env
@@ -420,7 +421,7 @@ func (sh *shell) output(name string, args ...string) (string, error) {
 	c.Stderr = &stderr
 	out, err := c.Output()
 	if err != nil {
-		return "", fmt.Errorf("%s: %w\n%s", name, err, stderr.String())
+		return string(out), fmt.Errorf("%s: %w\n%s", name, err, stderr.String())
 	}
 	return string(out), nil
 }
