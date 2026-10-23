@@ -12,9 +12,9 @@
 //	                    the block is appended to file x
 //	```go filename="x" merge
 //	                    each top-level declaration in the block replaces the
-//	                    declaration of the same name in file x, or is appended
-//	                    to x if there is none; methods are matched by receiver
-//	                    type and name
+//	                    declarations in file x that share a name with it, or
+//	                    is appended to x if there are none; imports are added
+//	                    to those of x
 //	```go filename="x" imports
 //	                    the block is appended to (or with merge, merged into)
 //	                    file x, then goimports fixes the imports of x
@@ -24,6 +24,12 @@
 // imports must be complete, unless the fence is marked `imports` (which implies
 // `append` unless it is marked `merge`): then goimports fixes them first, as the
 // reader's editor would on save.
+//
+// A merged declaration is matched by every name it declares, methods by
+// receiver type and name. A grouped declaration, such as const ( ... ),
+// replaces the whole group: the first declaration in x that shares a name with
+// it gives way to it, and the others are removed. Merged imports are rewritten
+// into a single import declaration, standard library first.
 //
 // Commands run one at a time in bash, under `set -euo pipefail`. The working
 // directory and the environment carry over from one command to the next, so
@@ -49,7 +55,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 )
 
@@ -418,9 +424,10 @@ func (sh *shell) output(name string, args ...string) (string, error) {
 	return string(out), nil
 }
 
-// merge replaces the declarations of src that block declares again, and
-// appends the others to src. It returns the merged source and a line per
-// declaration of block saying which of the two happened to it.
+// merge merges the declarations of block into src. A declaration replaces the
+// declarations of src that share a name with it, or is appended if there are
+// none; imports are added to the imports of src. merge returns the merged
+// source and a line per declaration of block saying what happened to it.
 func merge(src, block []byte) ([]byte, []string, error) {
 	const header = "package p\n"
 	fset := token.NewFileSet()
@@ -428,55 +435,100 @@ func merge(src, block []byte) ([]byte, []string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	offset := func(p token.Pos) int { return fset.Position(p).Offset - len(header) }
+	blockOffset := func(p token.Pos) int { return fset.Position(p).Offset - len(header) }
 
-	existing := map[string]ast.Decl{}
 	var srcFile *ast.File
+	owner := map[string]ast.Decl{}
 	if len(bytes.TrimSpace(src)) > 0 {
 		srcFile, err = parser.ParseFile(fset, "file", src, parser.ParseComments)
 		if err != nil {
 			return nil, nil, err
 		}
 		for _, d := range srcFile.Decls {
-			if key, err := declKey(d); err == nil {
-				existing[key] = d
+			names, err := declNames(d)
+			if err != nil {
+				continue
+			}
+			for _, name := range names {
+				owner[name] = d
 			}
 		}
 	}
+	srcOffset := func(p token.Pos) int { return int(p - srcFile.FileStart) }
 
-	type edit struct {
-		start, end int
-		text       []byte
-	}
 	var edits []edit
 	var added [][]byte
+	var imports []*ast.ImportSpec
 	var report []string
-	seen := map[string]bool{}
+	declared := map[string]bool{}
+	replaced := map[ast.Decl]bool{}
 	for _, d := range blockFile.Decls {
-		key, err := declKey(d)
+		if g, ok := d.(*ast.GenDecl); ok && g.Tok == token.IMPORT {
+			for _, s := range g.Specs {
+				imports = append(imports, s.(*ast.ImportSpec))
+			}
+			continue
+		}
+		names, err := declNames(d)
 		if err != nil {
 			return nil, nil, fmt.Errorf("block line %d: %w", fset.Position(d.Pos()).Line-1, err)
 		}
-		if seen[key] {
-			return nil, nil, fmt.Errorf("block declares %s twice", key)
+		var olds []ast.Decl
+		for _, name := range names {
+			if declared[name] {
+				return nil, nil, fmt.Errorf("block declares %s twice", name)
+			}
+			declared[name] = true
+			old, ok := owner[name]
+			if !ok || slices.Contains(olds, old) {
+				continue
+			}
+			if replaced[old] {
+				return nil, nil, fmt.Errorf("%s is declared together with a name the block declares separately; declare them together", name)
+			}
+			replaced[old] = true
+			olds = append(olds, old)
 		}
-		seen[key] = true
 		start, end := declRange(d)
 		// Capped, so that appending to text cannot overwrite the rest of block.
-		text := block[offset(start):offset(end):offset(end)]
-		if old, ok := existing[key]; ok {
-			start, end := declRange(old)
-			base := srcFile.FileStart
-			edits = append(edits, edit{int(start - base), int(end - base), text})
-			report = append(report, "replaced "+key)
-		} else {
+		text := block[blockOffset(start):blockOffset(end):blockOffset(end)]
+		label := describe(d, names)
+		if len(olds) == 0 {
 			added = append(added, text)
-			report = append(report, "added "+key)
+			report = append(report, "added "+label)
+			continue
 		}
+		// The first declaration in the file gives way to the block's; the
+		// others are removed.
+		slices.SortFunc(olds, func(a, b ast.Decl) int { return int(a.Pos() - b.Pos()) })
+		for i, old := range olds {
+			start, end := declRange(old)
+			if i == 0 {
+				edits = append(edits, edit{srcOffset(start), srcOffset(end), text})
+			} else {
+				edits = append(edits, deletion(src, srcOffset(start), srcOffset(end)))
+			}
+		}
+		report = append(report, "replaced "+label)
 	}
 
-	// Back to front, so that each edit leaves the offsets before it valid.
-	sort.Slice(edits, func(i, j int) bool { return edits[i].start > edits[j].start })
+	if len(imports) > 0 {
+		if srcFile == nil {
+			return nil, nil, errors.New("cannot add imports to a file without a package clause")
+		}
+		importEdits, importReport := mergeImports(src, srcFile, imports)
+		edits = append(edits, importEdits...)
+		report = append(report, importReport...)
+	}
+
+	// Back to front, so that each edit leaves the offsets before it valid. An
+	// insertion goes after a deletion that starts at the same offset.
+	slices.SortFunc(edits, func(a, b edit) int {
+		if a.start != b.start {
+			return b.start - a.start
+		}
+		return b.end - a.end
+	})
 	out := append([]byte(nil), src...)
 	for _, e := range edits {
 		out = append(out[:e.start:e.start], append(e.text, out[e.end:]...)...)
@@ -484,15 +536,108 @@ func merge(src, block []byte) ([]byte, []string, error) {
 	for _, text := range added {
 		// Separate the declaration from what is already there, as a reader would.
 		if len(out) > 0 {
-			if !bytes.HasSuffix(out, []byte("\n")) {
-				out = append(out, '\n')
-			}
-			out = append(out, '\n')
+			out = append(bytes.TrimRight(out, "\n"), "\n\n"...)
 		}
 		out = append(out, text...)
-		out = append(out, '\n')
 	}
+	// A declaration removed from the end leaves blank lines behind.
+	out = append(bytes.TrimRight(out, " \t\n"), '\n')
 	return out, report, nil
+}
+
+// edit replaces src[start:end] with text.
+type edit struct {
+	start, end int
+	text       []byte
+}
+
+// deletion removes src[start:end] and the blank lines before it.
+func deletion(src []byte, start, end int) edit {
+	for start > 0 && strings.ContainsRune(" \t\n", rune(src[start-1])) {
+		start--
+	}
+	return edit{start, end, nil}
+}
+
+// mergeImports adds the imports that src does not have yet, rewriting the
+// imports of src as a single declaration laid out as goimports does: the
+// standard library first, then the other packages. Comments on the existing
+// imports are lost.
+func mergeImports(src []byte, file *ast.File, specs []*ast.ImportSpec) ([]edit, []string) {
+	key := func(s *ast.ImportSpec) string {
+		if s.Name != nil {
+			return s.Name.Name + " " + s.Path.Value
+		}
+		return s.Path.Value
+	}
+	var all []string
+	for _, s := range file.Imports {
+		if !slices.Contains(all, key(s)) {
+			all = append(all, key(s))
+		}
+	}
+	var report []string
+	for _, s := range specs {
+		if !slices.Contains(all, key(s)) {
+			all = append(all, key(s))
+			report = append(report, "imported "+key(s))
+		}
+	}
+	if len(report) == 0 {
+		return nil, nil
+	}
+
+	var std, other []string
+	for _, k := range all {
+		_, path, _ := strings.Cut(k, `"`)
+		if first, _, _ := strings.Cut(path, "/"); strings.Contains(first, ".") {
+			other = append(other, k)
+		} else {
+			std = append(std, k)
+		}
+	}
+	byPath := func(a, b string) int {
+		_, pa, _ := strings.Cut(a, `"`)
+		_, pb, _ := strings.Cut(b, `"`)
+		return strings.Compare(pa, pb)
+	}
+	slices.SortFunc(std, byPath)
+	slices.SortFunc(other, byPath)
+	var decl string
+	if len(all) == 1 {
+		decl = "import " + all[0]
+	} else {
+		var groups []string
+		for _, group := range [][]string{std, other} {
+			if len(group) > 0 {
+				groups = append(groups, "\t"+strings.Join(group, "\n\t")+"\n")
+			}
+		}
+		decl = "import (\n" + strings.Join(groups, "\n") + ")"
+	}
+
+	offset := func(p token.Pos) int { return int(p - file.FileStart) }
+	var edits []edit
+	first := true
+	for _, d := range file.Decls {
+		g, ok := d.(*ast.GenDecl)
+		if !ok || g.Tok != token.IMPORT {
+			continue
+		}
+		start, end := declRange(g)
+		if first {
+			edits = append(edits, edit{offset(start), offset(end), []byte(decl)})
+			first = false
+		} else {
+			edits = append(edits, deletion(src, offset(start), offset(end)))
+		}
+	}
+	if first {
+		// No imports yet: they go right after the package clause.
+		at := offset(file.Name.End())
+		edits = append(edits, edit{at, at, []byte("\n\n" + decl)})
+	}
+	return edits, report
 }
 
 // declRange returns the extent of d, including its doc comment.
@@ -510,14 +655,14 @@ func declRange(d ast.Decl) (token.Pos, token.Pos) {
 	return d.Pos(), d.End()
 }
 
-// declKey names the declaration d for merging: Name for functions, types,
-// variables and constants, and Type.Name for methods. Imports and grouped
-// declarations cannot be merged.
-func declKey(d ast.Decl) (string, error) {
+// declNames returns the names that d declares, as merge matches them: Name
+// for functions, types, variables and constants, and Type.Name for methods.
+// The blank identifier is left out.
+func declNames(d ast.Decl) ([]string, error) {
 	switch d := d.(type) {
 	case *ast.FuncDecl:
 		if d.Recv == nil || len(d.Recv.List) == 0 {
-			return d.Name.Name, nil
+			return []string{d.Name.Name}, nil
 		}
 		t := d.Recv.List[0].Type
 		if star, ok := t.(*ast.StarExpr); ok {
@@ -530,27 +675,39 @@ func declKey(d ast.Decl) (string, error) {
 			t = g.X
 		}
 		if id, ok := t.(*ast.Ident); ok {
-			return id.Name + "." + d.Name.Name, nil
+			return []string{id.Name + "." + d.Name.Name}, nil
 		}
-		return "", fmt.Errorf("cannot merge method %s: unexpected receiver type", d.Name.Name)
+		return nil, fmt.Errorf("cannot merge method %s: unexpected receiver type", d.Name.Name)
 	case *ast.GenDecl:
-		if d.Tok == token.IMPORT {
-			return "", errors.New("cannot merge imports; mark the fence 'imports' instead")
-		}
-		if len(d.Specs) != 1 {
-			return "", fmt.Errorf("cannot merge a grouped %s declaration", d.Tok)
-		}
-		switch s := d.Specs[0].(type) {
-		case *ast.TypeSpec:
-			return s.Name.Name, nil
-		case *ast.ValueSpec:
-			if len(s.Names) == 1 {
-				return s.Names[0].Name, nil
+		var names []string
+		for _, s := range d.Specs {
+			switch s := s.(type) {
+			case *ast.TypeSpec:
+				names = append(names, s.Name.Name)
+			case *ast.ValueSpec:
+				for _, n := range s.Names {
+					if n.Name != "_" {
+						names = append(names, n.Name)
+					}
+				}
 			}
 		}
-		return "", fmt.Errorf("cannot merge a %s declaration of several names", d.Tok)
+		return names, nil
 	}
-	return "", errors.New("cannot merge this declaration")
+	return nil, errors.New("cannot merge this declaration")
+}
+
+// describe names d for the report: its name, or its keyword and names if it
+// declares several.
+func describe(d ast.Decl, names []string) string {
+	if len(names) == 1 {
+		return names[0]
+	}
+	tok := "func"
+	if g, ok := d.(*ast.GenDecl); ok {
+		tok = g.Tok.String()
+	}
+	return tok + " (" + strings.Join(names, ", ") + ")"
 }
 
 // quote returns s as a single-quoted bash word.
