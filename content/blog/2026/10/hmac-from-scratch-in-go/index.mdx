@@ -50,7 +50,7 @@ One way to break this cryptic formula into human-digestible morsels of pseudocod
 4. $$\mathit{hmac} \gets H(\mathit{outerKey} \,\|\, \mathit{innerHash})$$  
    Hash `outerKey`, concatenated with `innerHash`. The resulting binary string is the HMAC digest.
 
-Before converting these steps into actual executable code, we need to do some prepping.
+Before converting these steps into Go code, we need to prepare a project.
 
 ### Project setup
 
@@ -255,7 +255,14 @@ FAIL    myhmac  0.002s
 FAIL
 ```
 
-We will fix this soon by implementing the `myhmac.SHA256` function. Before we can do that, however, we need to understand the XOR operation, which is used by the HMAC key padding algorithm.
+We will fix this soon by implementing the `myhmac.SHA256` function. In the meantime, commit the changes to version control:
+
+```bash
+$ git add .
+$ git commit -m "Set up library API and test harness"
+```
+
+Next, let us briefly discuss the _exclusive OR_ (XOR) operation.
 
 ### How exclusive OR (XOR) works
 
@@ -267,7 +274,39 @@ On the level of a byte, the same operation is applied to each pair of bits:
 
 {/* @oxfmt-ignore */}<XorBytes client:visible>Bitwise XOR of two bytes. Toggle the bits of A and B, or pick a preset.</XorBytes>
 
-XOR is widely used in cryptography as a sort of binary mask. This is due to XOR's unique reversibility:
+If you XOR a value with itself, you always end up with 0, because every bit in both operands is the same on either side:
+
+$$
+\begin{aligned}
+A \xor A = 0
+\end{aligned}
+$$
+
+Any value XOR-ed with 0, on the other hand, returns the same value unchanged:
+
+$$
+\begin{aligned}
+A \xor 0 = A
+\end{aligned}
+$$
+
+Like addition and multiplication, XOR is **commutative**:
+
+$$
+\begin{aligned}
+A \xor B = B \xor A
+\end{aligned}
+$$
+
+Like addition and multiplication, XOR is **associative**, meaning that the order in which you chain the operations does not matter:
+
+$$
+\begin{aligned}
+(A \xor B) \xor C = A \xor (B \xor C)
+\end{aligned}
+$$
+
+This set of properties makes it possible to use XOR as a sort of cryptographic binary mask (the [one-time pad](https://en.wikipedia.org/wiki/One-time_pad) technique). Assuming the secret message is the binary $$A$$, and that $$B$$ stands for a binary mask that is random, secret, and at least as long as the message, we can compute the ciphertext as $$A \xor B$$. Applying the same mask again returns the original secret message:
 
 $$
 \begin{aligned}
@@ -278,21 +317,47 @@ $$
 \end{aligned}
 $$
 
-If you apply the same binary mask $$B$$ to the plaintext $$A$$ twice, the mask zeroes out, and you end up with the plaintext.
-If $$B$$ is random and secret, <span class="text-nowrap">$$A \xor B$$</span> is as good as indistinguishable from random noise.
 This property is widely used in [AEAD constructs](https://en.wikipedia.org/wiki/Authenticated_encryption#Authenticated_encryption_with_associated_data), such as [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) and [ChaCha20-Poly1305](https://en.wikipedia.org/wiki/ChaCha20-Poly1305).
 
-Side note: XOR is also the fastest way to zero a register in x86 assembly, because <code>xor&nbsp;eax,&nbsp;eax</code> in Intel machine code is shorter than <code>mov&nbsp;eax,&nbsp;0</code>, and because <span class="text-nowrap">$$A \xor A = 0$$</span>. On ARM processors, the idiom works as well, but since all instructions in ARM machine code have the same length, the XOR idiom has no advantage over a move.
+Side note: XOR is the most concise and fastest way to zero a register in x86 assembly: <code>xor&nbsp;eax,&nbsp;eax</code> takes 2&nbsp;bytes in Intel machine code, while <code>mov&nbsp;eax,&nbsp;0</code> takes a whopping 5&nbsp;bytes. On ARM processors, the idiom works as well, but since all instructions in ARM machine code have the same length, the XOR idiom has no advantage over a move.
+
+#### Constant-time comparison
+
+The XOR operation is also used to compare binary strings in constant time: if every bit in two strings is equal, the XOR operation of all of them should return 0. The function `hmac.Equal` uses this technique under the hood to compare HMAC digests:
+
+```go
+// src/crypto/internal/fips140/subtle/constant_time.go
+// (standard library, reflowed for aesthetic purposes)
+package subtle
+
+// ConstantTimeCompare returns 1 if the two slices, x and y, have equal
+// contents and 0 otherwise. The time taken is a function of the length
+// of the slices and is independent of the contents. If the lengths of
+// x and y do not match it returns 0 immediately.
+func ConstantTimeCompare(x, y []byte) int {
+	if len(x) != len(y) {
+		return 0
+	}
+
+	var v byte
+
+	for i := 0; i < len(x); i++ {
+		v |= x[i] ^ y[i]
+	}
+
+	return constanttime.ByteEq(v, 0)
+}
+```
 
 With the XOR primer out of the way, we can proceed to pad the key.
 
 ### Padding the key
 
-This section explains the steps necessary to calculate the inner and outer padding of the key. For both the inner and the outer padding, the steps are exactly the same, except for the constants ipad and opad that the key is combined with.
+This section explains the steps necessary to calculate the inner and outer padding of the key. For both the inner and the outer padding, the steps are exactly the same, except for the constants $$\mathrm{ipad}$$ and $$\mathrm{opad}$$ that the key is combined with.
 
 1. If the key is longer than 64 bytes, hash it with SHA-256 and use the resulting digest in place of the key.
 2. Pad the key with zeroes at the end so that it is exactly 64 bytes long.
-3. XOR each byte of the padded key with either the ipad or the opad constant, depending on whether you are calculating the inner or the outer padding.
+3. XOR each byte of the padded key with either the $$\mathrm{ipad}$$ or the $$\mathrm{opad}$$ constant, depending on whether you are calculating the inner or the outer padding.
 
 Expressed in Go, the function could look like this:
 
@@ -315,13 +380,19 @@ func padKey(key []byte, mask byte) []byte {
 }
 ```
 
-Our padding function takes a key and a padding mask, and returns a byte slice:
+Let's dissect this function.
+
+`padKey` takes a key and a padding mask, and returns a byte slice:
 
 ```go unclosed
-func padKey(key []byte, mask byte) []byte {
+func padKey(key []byte, mask byte) []byte
 ```
 
-1. Allocate a buffer of exactly `sha256.BlockSize` bytes:
+The argument `key` is a byte slice: it has no fixed length. The argument `mask` is a single byte.
+Technically, $$\mathrm{ipad}$$ and $$\mathrm{opad}$$ are defined as 64-byte strings, but since all 64&nbsp;bytes are identical, we only need a single byte to apply the XOR operation correctly.
+The returned value is a byte slice: we _know_ it's going to be exactly 64&nbsp;bytes long, but we also know it will be concatenated with byte slices; therefore, returning a byte slice is the simpler choice.
+
+Within the function body we first allocate a buffer exactly as long as a SHA-256 block &mdash; 64&nbsp;bytes:
 
 ```go
 buffer := make([]byte, sha256.BlockSize) // 64 bytes
@@ -330,7 +401,7 @@ buffer := make([]byte, sha256.BlockSize) // 64 bytes
 The RFC specifies that the key should be padded with zeroes at the end. Go takes care of that by automatically filling the buffer with zeroes.
 In C, you would need to allocate the buffer with [calloc(3p)](https://man7.org/linux/man-pages/man3/calloc.3p.html) rather than [malloc(3p)](https://man7.org/linux/man-pages/man3/malloc.3p.html), or call [memset(3p)](https://man7.org/linux/man-pages/man3/memset.3p.html) after allocating the buffer.
 
-2. If the key is longer than the block size, hash it and store the digest in place of the original key:
+If the key is longer than the block size, we need to hash it and store the digest in place of the original key:
 
 ```go
 if len(key) > sha256.BlockSize {
@@ -339,17 +410,17 @@ if len(key) > sha256.BlockSize {
 }
 ```
 
-Since `sha256.Sum256` returns `[32]byte`, an array, rather than the expected byte slice, we need to convert it using the slice expression `hashed[:]`.
+`sha256.Sum256` returns `[32]byte`, a fixed-size array rather than a byte slice; therefore, we need to convert it using the slice expression `hashed[:]`.
 
-You might be tempted to try and inline the expression as `sha256.Sum256(key)[:]`. Alas, this does not compile: in Go, the return value of a function is not _addressable_ (it does not have a stable address in memory). To think that I chose Go over Rust because I do not care about memory safety...
+You might be tempted to try and inline the expression as `sha256.Sum256(key)[:]`. Alas, this does not compile: in Go, the return value of a function is not [_addressable_](https://go.dev/ref/spec#Address_operators), and as such cannot be sliced. To think that I chose Go over Rust because I do not care about memory safety...
 
-3. Copy the key to the buffer. Note that the destination comes first and the source second.
+Copy the key to the buffer. Note that the destination comes first and the source second:
 
 ```go
 copy(buffer, key)
 ```
 
-4. XOR each byte in the buffer with the mask value. For inner padding, it's `0x36` (`0b00110110`). For outer padding, it's `0x5C` (`0b01011100`).
+XOR each byte in the buffer with the mask value. For inner padding, it's `0x36` (`0b00110110`). For outer padding, it's `0x5C` (`0b01011100`).
 
 ```go
 for i := range buffer {
@@ -363,7 +434,7 @@ The `^=` operator is a shorthand form, inherited from C. We could also write the
 buffer[i] = buffer[i] ^ mask
 ```
 
-4. Return the buffer:
+Return the buffer:
 
 ```go
 return buffer
