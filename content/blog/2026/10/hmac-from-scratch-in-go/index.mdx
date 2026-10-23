@@ -1,8 +1,7 @@
 ---
 title: HMAC-SHA-256 from Scratch in Go
-date: 2026-10-17
+date: 2026-10-23
 slug: hmac-sha-256-from-scratch-in-go
-draft: true
 ---
 
 import XorBytes from "./xor-bytes.svelte";
@@ -382,15 +381,19 @@ func padKey(key []byte, mask byte) []byte {
 
 Let's dissect this function.
 
+#### Function head
+
 `padKey` takes a key and a padding mask, and returns a byte slice:
 
-```go unclosed
+```go
 func padKey(key []byte, mask byte) []byte
 ```
 
 The argument `key` is a byte slice: it has no fixed length. The argument `mask` is a single byte.
 Technically, $$\mathrm{ipad}$$ and $$\mathrm{opad}$$ are defined as 64-byte strings, but since all 64&nbsp;bytes are identical, we only need a single byte to apply the XOR operation correctly.
 The returned value is a byte slice: we _know_ it's going to be exactly 64&nbsp;bytes long, but we also know it will be concatenated with byte slices; therefore, returning a byte slice is the simpler choice.
+
+#### Allocate a buffer
 
 Within the function body we first allocate a buffer exactly as long as a SHA-256 block &mdash; 64&nbsp;bytes:
 
@@ -400,6 +403,8 @@ buffer := make([]byte, sha256.BlockSize) // 64 bytes
 
 The RFC specifies that the key should be padded with zeroes at the end. Go takes care of that by automatically filling the buffer with zeroes.
 In C, you would need to allocate the buffer with [calloc(3p)](https://man7.org/linux/man-pages/man3/calloc.3p.html) rather than [malloc(3p)](https://man7.org/linux/man-pages/man3/malloc.3p.html), or call [memset(3p)](https://man7.org/linux/man-pages/man3/memset.3p.html) after allocating the buffer.
+
+#### Maybe hash the key
 
 If the key is longer than the block size, we need to hash it and store the digest in place of the original key:
 
@@ -413,6 +418,8 @@ if len(key) > sha256.BlockSize {
 `sha256.Sum256` returns `[32]byte`, a fixed-size array rather than a byte slice; therefore, we need to convert it using the slice expression `hashed[:]`.
 
 You might be tempted to try and inline the expression as `sha256.Sum256(key)[:]`. Alas, this does not compile: in Go, the return value of a function is not [_addressable_](https://go.dev/ref/spec#Address_operators), and as such cannot be sliced. To think that I chose Go over Rust because I do not care about memory safety...
+
+#### Copy and XOR
 
 Copy the key to the buffer. Note that the destination comes first and the source second:
 
@@ -434,8 +441,70 @@ The `^=` operator is a shorthand form, inherited from C. We could also write the
 buffer[i] = buffer[i] ^ mask
 ```
 
-Return the buffer:
+Finally, return the buffer:
 
 ```go
 return buffer
+```
+
+With the padding algorithm explained, we can attempt to implement the rest of the HMAC-SHA-256 function.
+
+### Putting everything together
+
+After all we've gone through, the final implementation of `SHA256` is poignantly simple:
+
+```go filename="myhmac.go" merge imports
+const (
+	ipad = 0x36
+	opad = 0x5C
+)
+
+func SHA256(key, message []byte) []byte {
+	innerKey := padKey(key, ipad)
+	outerKey := padKey(key, opad)
+	innerHash := sha256.Sum256(
+		slices.Concat(innerKey, message),
+	)
+	outerHash := sha256.Sum256(
+		slices.Concat(outerKey, innerHash[:]),
+	)
+
+	return outerHash[:]
+}
+```
+
+Let's walk through the new code quickly. First, we calculate the inner and outer padding of $$K_0$$:
+
+```go
+innerKey := padKey(key, ipad)
+outerKey := padKey(key, opad)
+```
+
+Calculate the hash of `innerKey` concatenated with the `message`:
+
+```go
+innerHash := sha256.Sum256(
+    slices.Concat(innerKey, message),
+)
+```
+
+Due to the fact that `sha256.Sum256` returns `[32]byte` rather than `[]byte`, we need to convert it to a slice in the next lines:
+
+```go
+outerHash := sha256.Sum256(
+    slices.Concat(outerKey, innerHash[:]),
+)
+```
+
+Finally, we return the `outerHash`, converted to a slice:
+
+```go
+return outerHash[:]
+```
+
+This implementation should pass all tests:
+
+```bash
+$ go test .
+ok      myhmac  0.002s
 ```
