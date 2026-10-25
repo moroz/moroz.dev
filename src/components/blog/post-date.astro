@@ -1,0 +1,15 @@
+---
+import { formatDateTime, formatMonth } from "@/lib/datetime.ts";
+
+interface Props {
+  date: Date | Temporal.PlainDate;
+  precision: "day" | "month";
+}
+
+const { date, precision } = Astro.props;
+const month = precision === "month";
+---
+
+<time datetime={month ? date.toJSON().slice(0, 7) : date.toJSON()}
+  >{month ? formatMonth(date) : formatDateTime(date)}</time
+>

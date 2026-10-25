@@ -11,6 +11,8 @@ const blog = defineCollection({
   schema: z.object({
     title: z.string(),
     date: z.date(),
+    // "month" when only the month is known; the day in `date` is then a placeholder.
+    datePrecision: z.enum(["day", "month"]).default("day"),
     summary: z.string().optional(),
     // Series name and the part's label within it ("Part Two", "Day 12").
     series: z.string().optional(),

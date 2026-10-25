@@ -1,6 +1,6 @@
 ---
 import type { BlogPost } from "@/lib/blog.ts";
-import { formatDateTime } from "@/lib/datetime.ts";
+import PostDate from "./post-date.astro";
 import { marked } from "marked";
 
 interface Props {
@@ -8,12 +8,12 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { date, lang, series, part, title, summary } = post.data;
+const { date, datePrecision, lang, series, part, title, summary } = post.data;
 ---
 
 <article class="row">
   <div class="meta mobile:order-last mobile:flex mobile:gap-2 desktop:pt-1">
-    <time datetime={date.toJSON()}>{formatDateTime(date)}</time>
+    <PostDate {date} precision={datePrecision} />
     <span class="desktop:hidden" aria-hidden="true">·</span>
     <span class="desktop:hidden">{post.readingMinutes} min read</span>
   </div>

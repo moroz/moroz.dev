@@ -1,7 +1,7 @@
 ---
 import Layout from "@layouts/Layout.astro";
 import { render, getEntry, getCollection } from "astro:content";
-import { formatDateTime } from "@/lib/datetime.ts";
+import PostDate from "@components/blog/post-date.astro";
 const { slug } = Astro.params;
 
 export async function getStaticPaths() {
@@ -28,9 +28,12 @@ const documentTitle = series ? `${title} – ${kicker}` : title;
 
 <Layout {title} {kicker} {documentTitle}>
   <p class="text-center">
-    <strong>Karol Moroz</strong> on <time datetime={post.data.date.toJSON()}
-      >{formatDateTime(post.data.date)}</time
-    >
+    <strong>Karol Moroz</strong>{
+      post.data.datePrecision === "month" ? ", " : " on "
+    }<PostDate
+      date={post.data.date}
+      precision={post.data.datePrecision}
+    />
   </p>
 
   <div class="content mx-auto my-8" lang={post.data.lang}>

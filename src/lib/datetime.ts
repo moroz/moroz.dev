@@ -16,3 +16,13 @@ export function formatDateTime(dt: Date | Temporal.PlainDate) {
   const suffix = suffixes[ordinal.select(day) as keyof typeof suffixes];
   return `${day}${suffix} ${month}${month === "May" ? "" : "."}, ${part("year")}`;
 }
+
+const monthFormat = new Intl.DateTimeFormat("en", {
+  month: "long",
+  year: "numeric",
+});
+
+// "November 2025", for a date of which only the month is known.
+export function formatMonth(dt: Date | Temporal.PlainDate) {
+  return monthFormat.format(dt);
+}
