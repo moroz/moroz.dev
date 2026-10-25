@@ -24,9 +24,21 @@ const documentTitle = series ? `${title} – ${kicker}` : title;
 
 <script>
   import "@/lib/snippets.ts";
+  import { backHref } from "@/lib/blog-href.ts";
+
+  const back = document.querySelector<HTMLAnchorElement>("a[data-back]");
+  if (back) back.href = backHref(location.search);
 </script>
 
 <Layout {title} {kicker} {documentTitle}>
+  <a
+    slot="nav"
+    href="/blog/"
+    data-back
+    class="not-prose text-primary hover:text-primary-hover text-sm font-semibold"
+  >
+  <span aria-hidden="true">«</span> Back to the blog
+  </a>
   <p class="text-center">
     <strong>Karol Moroz</strong>{
       post.data.datePrecision === "month" ? ", " : " on "

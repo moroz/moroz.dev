@@ -16,6 +16,13 @@ const { title, kicker, documentTitle = title } = Astro.props;
   <main class="flex-1 py-16">
     <div class="mobile:px-4">
       {
+        Astro.slots.has("nav") && (
+          <nav class="prose xl:prose-xl mx-auto mt-6 xl:mt-10">
+            <slot name="nav" />
+          </nav>
+        )
+      }
+      {
         kicker && (
           <p class="container mx-auto mt-6 max-w-180 text-center text-slate-600 xl:mt-10 dark:text-gray-400">
             {kicker}

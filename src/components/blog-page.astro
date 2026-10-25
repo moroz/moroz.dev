@@ -38,6 +38,7 @@ const yearCounts = new Map(years.map((y) => [y.year, y.count]));
             <SeriesBox
               series={currentSeries}
               collapsible
+              {page}
               class="desktop:hidden"
             />
           )
@@ -45,7 +46,7 @@ const yearCounts = new Map(years.map((y) => [y.year, y.count]));
 
         {
           groupByYear(posts).map(({ year, posts }) => (
-            <YearSection {year} count={yearCounts.get(year)!} {posts} />
+            <YearSection {year} count={yearCounts.get(year)!} {posts} {page} />
           ))
         }
 
@@ -54,6 +55,7 @@ const yearCounts = new Map(years.map((y) => [y.year, y.count]));
         <MoreSeries
           series={moreSeries}
           variant="ruled"
+          {page}
           class="desktop:hidden"
         />
       </div>
@@ -62,8 +64,8 @@ const yearCounts = new Map(years.map((y) => [y.year, y.count]));
         aria-label="Blog navigation"
         class="mobile:hidden flex flex-col gap-7"
       >
-        {currentSeries && <SeriesBox series={currentSeries} />}
-        <MoreSeries series={moreSeries} variant="box" />
+        {currentSeries && <SeriesBox series={currentSeries} {page} />}
+        <MoreSeries series={moreSeries} variant="box" {page} />
         <YearArchive {years} />
       </aside>
     </div>

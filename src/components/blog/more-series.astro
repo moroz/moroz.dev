@@ -1,6 +1,7 @@
 ---
 import type { Series } from "@/lib/blog.ts";
 import { plural } from "@/lib/blog.ts";
+import { postHref } from "@/lib/blog-href.ts";
 import SectionLabel from "./section-label.astro";
 
 interface Props {
@@ -8,9 +9,11 @@ interface Props {
   // "box" in the sidebar, "ruled" (a top rule) below the list on phones.
   variant: "box" | "ruled";
   class?: string;
+  // The list page the section is on.
+  page: number;
 }
 
-const { series, variant, class: className } = Astro.props;
+const { series, variant, class: className, page } = Astro.props;
 ---
 
 {
@@ -25,7 +28,7 @@ const { series, variant, class: className } = Astro.props;
       <SectionLabel>More series</SectionLabel>
       {series.map((s) => (
         <a
-          href={`/blog/${s.parts[0].id}`}
+          href={postHref(s.parts[0].id, page)}
           class="text-primary hover:text-primary-hover flex min-h-8 items-center font-semibold"
         >
           {s.name} — {plural(s.parts.length, "part")}

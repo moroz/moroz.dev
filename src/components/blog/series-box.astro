@@ -1,15 +1,18 @@
 ---
 import type { Series } from "@/lib/blog.ts";
 import { plural } from "@/lib/blog.ts";
+import { postHref } from "@/lib/blog-href.ts";
 
 interface Props {
   series: Series;
   // Phones: a disclosure that shows the parts on demand.
   collapsible?: boolean;
   class?: string;
+  // The list page the box is on.
+  page: number;
 }
 
-const { series, collapsible = false, class: className } = Astro.props;
+const { series, collapsible = false, class: className, page } = Astro.props;
 ---
 
 {
@@ -40,7 +43,7 @@ const { series, collapsible = false, class: className } = Astro.props;
       <ol class="parts px-4 pb-4 pl-9">
         {series.parts.map((p) => (
           <li>
-            <a href={`/blog/${p.id}`}>{p.title}</a>
+            <a href={postHref(p.id, page)}>{p.title}</a>
           </li>
         ))}
       </ol>
@@ -52,7 +55,7 @@ const { series, collapsible = false, class: className } = Astro.props;
       <ol class="parts pl-5">
         {series.parts.map((p) => (
           <li>
-            <a href={`/blog/${p.id}`}>{p.title}</a>
+            <a href={postHref(p.id, page)}>{p.title}</a>
           </li>
         ))}
       </ol>

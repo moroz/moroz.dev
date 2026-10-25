@@ -7,9 +7,10 @@ interface Props {
   // Posts that year across all pages, not only this one.
   count: number;
   posts: BlogPost[];
+  page: number;
 }
 
-const { year, count, posts } = Astro.props;
+const { year, count, posts, page } = Astro.props;
 ---
 
 <section aria-labelledby={`y${year}`}>
@@ -22,5 +23,5 @@ const { year, count, posts } = Astro.props;
     >
     {plural(count, "post")}
   </h2>
-  {posts.map((post) => <PostRow {post} />)}
+  {posts.map((post) => <PostRow {post} {page} />)}
 </section>

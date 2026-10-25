@@ -1,4 +1,5 @@
 import { type CollectionEntry, getCollection } from "astro:content";
+import { pageHref } from "./blog-href.ts";
 
 export const PER_PAGE = 20;
 
@@ -113,8 +114,7 @@ export function readingMinutes(body = ""): number {
 export const plural = (n: number, noun: string) =>
   `${n} ${noun}${n === 1 ? "" : "s"}`;
 
-export const pageHref = (page: number) =>
-  page === 1 ? "/blog/" : `/blog/page/${page}/`;
+export { pageHref, postHref } from "./blog-href.ts";
 
 export const yearHref = ({ year, page }: YearEntry) =>
   `${pageHref(page)}#y${year}`;

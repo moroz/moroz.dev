@@ -1,13 +1,16 @@
 ---
 import type { BlogPost } from "@/lib/blog.ts";
+import { postHref } from "@/lib/blog-href.ts";
 import PostDate from "./post-date.astro";
 import { marked } from "marked";
 
 interface Props {
   post: BlogPost;
+  // The list page the row is on.
+  page: number;
 }
 
-const { post } = Astro.props;
+const { post, page } = Astro.props;
 const { date, datePrecision, lang, series, part, title, summary } = post.data;
 ---
 
@@ -27,7 +30,7 @@ const { date, datePrecision, lang, series, part, title, summary } = post.data;
       )
     }
     <h3 class="desktop:text-[1.3125rem] text-lg leading-snug font-semibold">
-      <a href={`/blog/${post.id}`} class="title">{title}</a>
+      <a href={postHref(post.id, page)} class="title">{title}</a>
     </h3>
     {
       summary && (
