@@ -26,7 +26,7 @@ summary: |
 
 第二個單純的方法是使用一種密碼雜湊函數（英：*hash function*）。密碼雜湊函數保證，接受同樣的輸入資料，都會返回一樣的輸出資料。這種加密法是單向的，也就是說，密碼一旦寫入資料庫，我們無法解密原本的密碼，只能判斷使用者所輸入的密碼是否正確。
 
-常見的密碼雜湊函數主要為 [MD5](https://zh.wikipedia.org/zh-tw/MD5) 與 [SHA 家族](https://zh.wikipedia.org/wiki/SHA%E5%AE%B6%E6%97%8F)的函數（[SHA-1](https://zh.wikipedia.org/wiki/SHA-1)、[SHA-256](https://zh.wikipedia.org/wiki/SHA-2)等）。我在台灣一個上線的專案裡看到有人直接使用 MD5，用一臺筆電在幾分鐘內解密了系統裡七成的密碼。
+常見的密碼雜湊函數主要為 [MD5](https://zh.wikipedia.org/zh-tw/MD5) 與 [SHA 家族](https://zh.wikipedia.org/wiki/SHA%E5%AE%B6%E6%97%8F)的函數（[SHA-1](https://zh.wikipedia.org/wiki/SHA-1)、[SHA-256](https://zh.wikipedia.org/wiki/SHA-2)等）。我在台灣一個上線的專案裡看到有人直接使用 MD5，用一台筆電在幾分鐘內解密了系統裡七成的密碼。
 
 如果直接使用密碼雜湊函數，所有使用同一個不好的密碼的使用者在資料庫裡也都看得到同樣的密碼雜湊函數結果。另外，這種函數可以計算得很快，大多數的常用密碼也可以直接對[彩虹表](https://zh.wikipedia.org/zh-tw/%E5%BD%A9%E8%99%B9%E8%A1%A8)（英：*rainbow table*）。這樣的方法僅比直接儲存純文本好一點點，請不要使用。
 

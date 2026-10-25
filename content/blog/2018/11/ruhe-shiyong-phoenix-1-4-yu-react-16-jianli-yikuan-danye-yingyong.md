@@ -9,7 +9,7 @@ description: 如果使用 Phoenix 1.4 框架及 React 16 開發一款簡單的�
 本文所介紹的是如何在Phoenix 1.4上建立一個基於React的應用程式。文中所開發的程式極為簡單，也就是一款待辦事清單，只有一個介面。
 
 #### 技術要求
-為了完成這篇教程，你需要一臺裝有類UNIX系統（[GNU/Linux](https://www.debian.org/distrib/)、Mac OS X、或[FreeBSD](https://www.freebsd.org/where.html)）的電腦。除此之外，還需要安裝[Erlang/OTP平臺](http://www.erlang.org/downloads)、[Elixir 1.5+](https://elixir-lang.org/install.html#distributions)、[Node.js](https://nodejs.org/en/)與[PostgreSQL資料庫管理系統](https://www.postgresql.org)。安裝以上軟體不在本文章的範圍內。本文假設讀者已有Elixir與JavaScript的基礎（jQuery不算）。
+為了完成這篇教程，你需要一台裝有類UNIX系統（[GNU/Linux](https://www.debian.org/distrib/)、Mac OS X、或[FreeBSD](https://www.freebsd.org/where.html)）的電腦。除此之外，還需要安裝[Erlang/OTP平台](http://www.erlang.org/downloads)、[Elixir 1.5+](https://elixir-lang.org/install.html#distributions)、[Node.js](https://nodejs.org/en/)與[PostgreSQL資料庫管理系統](https://www.postgresql.org)。安裝以上軟體不在本文章的範圍內。本文假設讀者已有Elixir與JavaScript的基礎（jQuery不算）。
 
 雖然原則上任何編輯器，包括 Microsoft 記事本，都可以寫出良好的軟體，然而這家公司另外開發了一款編輯器，[Visual Studio Code](https://code.visualstudio.com)，筆者推薦寫React的時候都使用這一款編輯器（但我寫其他程式語言都用VIM和Spacemacs）。
 
