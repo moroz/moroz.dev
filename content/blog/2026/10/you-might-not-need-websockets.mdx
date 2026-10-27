@@ -11,3 +11,9 @@ In late 2017, I was working in my first full-time job in the picturesque German 
 In the liminal glow of linear fluorescent lamps, on a late fall afternoon, I would talk to my bearded German coworkers about the latest and greatest in the Ruby on Rails ecosystem.
 At the time, Action Cable was almost two years old, and we were still struggling to find a real-world use case for WebSockets.
 We came to the conclusion that "WebSockets were for chat demos."
+
+In the years that followed, I worked on several projects involving WebSockets and came to realize that using WebSockets reliably is tough.
+WebSockets are, by design, bi-directional, meaning that both the server and the client may send messages to the other party at any point.
+That alone would not pose an issue, were it not for the fact that a connection that sits idle for some time **may time out and be terminated by the server, or the browser, or literally any network node in between.**
+An accepted workaround (can we even call it a solution?) is for the client to ping the server every few seconds.
+[Let that sink in](https://www.youtube.com/watch?v=5DN4nuVEC7c): in order to keep **receiving** real-time events, the client is compelled to keep **sending** packets, or else the connection gets brutally dropped.
