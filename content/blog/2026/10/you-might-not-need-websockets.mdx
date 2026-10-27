@@ -1,8 +1,8 @@
 ---
-title: "You Might Not Need WebSockets: Server-Sent Events in Go"
-slug: you-might-not-need-websockets-sse-in-go
+title: "Stop Using WebSockets"
+slug: "stop-using-websockets"
 draft: true
-date: 2026-10-26
+date: 2026-10-27
 ---
 
 Back in late 2015, [Ruby on Rails&nbsp;5](https://guides.rubyonrails.org/5_0_release_notes.html) was launched, with the main selling point being [Action Cable](https://guides.rubyonrails.org/v5.0/action_cable_overview.html). In its essence, Action Cable is a Ruby framework built around the [WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API), allowing you to build real-life features, like [this real-time chat tutorial](https://www.youtube.com/watch?v=n0WUjGkDFS0) built on stream by [DHH](https://en.wikipedia.org/wiki/David_Heinemeier_Hansson).
@@ -17,3 +17,10 @@ WebSockets are, by design, bi-directional, meaning that both the server and the 
 That alone would not pose an issue, were it not for the fact that a connection that sits idle for some time **may time out and be terminated by the server, or the browser, or literally any network node in between.**
 An accepted workaround (can we even call it a solution?) is for the client to ping the server every few seconds.
 [Let that sink in](https://www.youtube.com/watch?v=5DN4nuVEC7c): in order to keep **receiving** real-time events, the client is compelled to keep **sending** packets, or else the connection gets brutally dropped.
+
+And let's circle back to the bi-directional nature of WebSockets: does [pub/sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) even need to be bi-directional in the first place?
+For years, we have been building around a janky bi-directional API, when we really just needed a way to "stream stuff from the server."
+
+Why have we stuck with WebSockets to begin with?
+Because it's a Web&nbsp;Standard&trade;? Well, guess what, so is [synchronous AJAX](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest_API/Synchronous_and_Asynchronous_Requests#synchronous_request).
+[They have played us for absolute fools.](https://knowyourmeme.com/memes/stop-doing-math)
